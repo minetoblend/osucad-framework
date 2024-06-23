@@ -51,9 +51,15 @@ export abstract class Drawable implements IDisposable {
     return this;
   }
 
-  abstract createDrawNode(): PIXIContainer;
-
   label?: string;
+
+  get name() {
+    return this.constructor.name;
+  }
+
+  //#region drawNode
+
+  abstract createDrawNode(): PIXIContainer;
 
   #drawNode?: PIXIContainer;
 
@@ -63,6 +69,14 @@ export abstract class Drawable implements IDisposable {
     }
     return this.#drawNode;
   }
+
+  get drawNodePosition(): Vec2 {
+    return Vec2.from(this.drawNode.position);
+  }
+
+  //#endregion
+
+  //#region position
 
   #x: number = 0;
 
@@ -97,6 +111,10 @@ export abstract class Drawable implements IDisposable {
   get position(): Vec2 {
     return new Vec2(this.x, this.y);
   }
+
+  //#endregion
+
+  //#region size
 
   set position(value: IVec2) {
     if (this.x === value.x && this.y === value.y) return;
@@ -158,6 +176,10 @@ export abstract class Drawable implements IDisposable {
     }
   }
 
+  //#endregion
+
+  //#region scale
+
   #scale = new Vec2(1);
 
   get scale(): Readonly<Vec2> {
@@ -165,7 +187,7 @@ export abstract class Drawable implements IDisposable {
   }
 
   set scale(value: IVec2) {
-    if(this.#scale.equals(value)) return;
+    if (this.#scale.equals(value)) return;
 
     this.#scale.x = value.x;
     this.#scale.y = value.y;
@@ -197,6 +219,10 @@ export abstract class Drawable implements IDisposable {
     this.invalidate(Invalidation.Transform);
   }
 
+  //#endregion
+
+  //#region rotation
+
   #rotation: number = 0;
 
   get rotation() {
@@ -211,6 +237,10 @@ export abstract class Drawable implements IDisposable {
     this.#rotation = value;
     this.invalidate(Invalidation.Transform);
   }
+
+  // endregion
+
+  // region tint & alpha
 
   get tint() {
     return this.drawNode.tint;
@@ -234,6 +264,10 @@ export abstract class Drawable implements IDisposable {
   set alpha(value: number) {
     this.#alpha = value;
   }
+
+  //#endregion
+
+  //#region layout
 
   #relativeSizeAxes: Axes = Axes.None;
 
@@ -259,51 +293,25 @@ export abstract class Drawable implements IDisposable {
     this.#relativePositionAxes = value;
   }
 
-  get drawPosition(): Vec2 {
-    const position = this.applyRelativeAxes(
-      this.relativePositionAxes,
-      this.position
-    );
-
-    return position.add({
-      x: this.margin.left,
-      y: this.margin.top,
-    });
-  }
-
-  #drawSizeBacking = new LayoutComputed(
-    () => this.applyRelativeAxes(this.relativeSizeAxes, this.size),
-    Invalidation.Transform | Invalidation.RequiredParentSizeToFit
-  );
-
-  get drawSize(): Vec2 {
-    return this.#drawSizeBacking.value;
-  }
-
-  get layoutSize(): Vec2 {
-    return this.drawSize.add(this.margin.total);
-  }
-
-  get requiredParentSizeToFit(): Vec2 {
-    const v = this.layoutSize;
-
-    if (this.relativeSizeAxes & Axes.X) {
-      v.x = 0;
-    } else if (this.relativeSizeAxes & Axes.Y) {
-      v.y = 0;
+  protected applyRelativeAxes(axes: Axes, v: Readonly<Vec2>): Readonly<Vec2> {
+    if (axes === Axes.None) {
+      return v;
     }
 
-    return v;
-  }
+    let x = v.x;
+    let y = v.y;
 
-  #margin: MarginPadding = new MarginPadding();
+    const conversion = this.#relativeToAbsoluteFactor;
 
-  get margin(): MarginPadding {
-    return this.#margin;
-  }
+    if (axes & Axes.X) {
+      x *= conversion.x;
+    }
 
-  set margin(value: MarginPadding | MarginPaddingOptions) {
-    this.#margin = MarginPadding.from(value);
+    if (axes & Axes.Y) {
+      y *= conversion.y;
+    }
+
+    return new Vec2(x, y).readonly();
   }
 
   #anchor: Anchor = Anchor.TopLeft;
@@ -382,7 +390,65 @@ export abstract class Drawable implements IDisposable {
     return this.relativeOriginPosition.mul(this.drawSize);
   }
 
-  // region lifecycle
+  #margin: MarginPadding = new MarginPadding();
+
+  get margin(): MarginPadding {
+    return this.#margin;
+  }
+
+  set margin(value: MarginPadding | MarginPaddingOptions) {
+    this.#margin = MarginPadding.from(value);
+  }
+
+  //#endregion
+
+  //#region computed layout properties
+
+  get drawPosition(): Vec2 {
+    const position = this.applyRelativeAxes(
+      this.relativePositionAxes,
+      this.position
+    );
+
+    return position.add({
+      x: this.margin.left,
+      y: this.margin.top,
+    });
+  }
+
+  #drawSizeBacking = new LayoutComputed(
+    () => this.applyRelativeAxes(this.relativeSizeAxes, this.size),
+    Invalidation.Transform | Invalidation.RequiredParentSizeToFit
+  );
+
+  get drawSize(): Vec2 {
+    return this.#drawSizeBacking.value;
+  }
+
+  get layoutSize(): Vec2 {
+    return this.drawSize.add(this.margin.total);
+  }
+
+  get requiredParentSizeToFit(): Vec2 {
+    const v = this.layoutSize;
+
+    if (this.relativeSizeAxes & Axes.X) {
+      v.x = 0;
+    } else if (this.relativeSizeAxes & Axes.Y) {
+      v.y = 0;
+    }
+
+    return v;
+  }
+
+  get #relativeToAbsoluteFactor(): Vec2 {
+    return this.parent?.relativeToAbsoluteFactor ?? new Vec2(1);
+  }
+
+  //#endregion
+
+  //#region lifecycle
+
   #loadState: LoadState = LoadState.NotLoaded;
 
   get loadState() {
@@ -393,6 +459,11 @@ export abstract class Drawable implements IDisposable {
 
   removeFromParent(dispose = true) {
     this.parent?.["removeInternal"]?.(this, dispose);
+  }
+
+  #completeLoading() {
+    this.#loadState = LoadState.Loaded;
+    this.onLoadComplete();
   }
 
   load(dependencies: ReadonlyDependencyContainer) {
@@ -406,6 +477,10 @@ export abstract class Drawable implements IDisposable {
       popDrawableScope();
     }
   }
+
+  onLoad() {}
+
+  onLoadComplete() {}
 
   #injectDependencies(dependencies: ReadonlyDependencyContainer) {
     this.dependencies = new DependencyContainer(dependencies);
@@ -458,6 +533,33 @@ export abstract class Drawable implements IDisposable {
     return axes;
   }
 
+  onDispose(callback: () => void): void {
+    this.#onDispose.push(callback);
+  }
+
+  withScope<T>(callback: () => T): T {
+    try {
+      pushDrawableScope(this);
+      return callback();
+    } finally {
+      popDrawableScope();
+    }
+  }
+
+  //#endregion
+
+  //#region parent
+
+  #parent: CompositeDrawable | null = null;
+
+  get parent() {
+    return this.#parent;
+  }
+
+  set parent(value: CompositeDrawable | null) {
+    this.#parent = value;
+  }
+
   findClosestParentOfType<T extends Drawable>(type: new () => T): T | null {
     let parent = this.parent;
 
@@ -472,33 +574,9 @@ export abstract class Drawable implements IDisposable {
     return null;
   }
 
-  onDispose(callback: () => void): void {
-    this.#onDispose.push(callback);
-  }
+  //#endregion
 
-  // endregion
-
-  get drawNodePosition(): Vec2 {
-    return Vec2.from(this.drawNode.position);
-  }
-
-  // region parent
-
-  #parent: CompositeDrawable | null = null;
-
-  get parent() {
-    return this.#parent;
-  }
-
-  set parent(value: CompositeDrawable | null) {
-    this.#parent = value;
-  }
-
-  get #relativeToAbsoluteFactor(): Vec2 {
-    return this.parent?.relativeToAbsoluteFactor ?? new Vec2(1);
-  }
-
-  // endregion
+  //#region update & invalidation
 
   updateSubTree() {
     debugAssert(
@@ -516,10 +594,6 @@ export abstract class Drawable implements IDisposable {
     }
 
     this.update();
-  }
-
-  get name() {
-    return this.constructor.name;
   }
 
   update() {}
@@ -540,17 +614,6 @@ export abstract class Drawable implements IDisposable {
     this.drawNode.scale.copyFrom(this.scale);
     this.drawNode.rotation = this.rotation;
   }
-
-  #completeLoading() {
-    this.#loadState = LoadState.Loaded;
-    this.onLoadComplete();
-  }
-
-  onLoad() {}
-
-  onLoadComplete() {}
-
-  // region invalidation
 
   #invalidationState = new InvalidationState(Invalidation.All);
 
@@ -603,15 +666,6 @@ export abstract class Drawable implements IDisposable {
     return Invalidation.DrawSize;
   }
 
-  withLifetimeScope<T>(callback: () => T): T {
-    try {
-      pushDrawableScope(this);
-      return callback();
-    } finally {
-      popDrawableScope();
-    }
-  }
-
   // @ts-expect-error unused parameter
   onInvalidate(invalidation: Invalidation): boolean {
     return false;
@@ -623,28 +677,7 @@ export abstract class Drawable implements IDisposable {
     }
   }
 
-  // endregion
-
-  protected applyRelativeAxes(axes: Axes, v: Readonly<Vec2>): Readonly<Vec2> {
-    if (axes === Axes.None) {
-      return v;
-    }
-
-    let x = v.x;
-    let y = v.y;
-
-    const conversion = this.#relativeToAbsoluteFactor;
-
-    if (axes & Axes.X) {
-      x *= conversion.x;
-    }
-
-    if (axes & Axes.Y) {
-      y *= conversion.y;
-    }
-
-    return new Vec2(x, y).readonly();
-  }
+  //#endregion
 }
 
 export const enum LoadState {
