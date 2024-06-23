@@ -8,10 +8,12 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "vitest",
-    "test:watch": "vitest --watch"
+    "test:watch": "vitest --watch",
+    "test:ci": "vitest --coverage.enabled true"
   },
   "devDependencies": {
     "@vitest/browser": "^1.6.0",
+    "@vitest/coverage-v8": "^1.6.0",
     "typescript": "^5.2.2",
     "vite": "^5.3.1",
     "vitest": "^1.6.0",
