@@ -1,4 +1,3 @@
-import { DependencyContainer } from "../../di/DependencyContainer";
 import { Anchor } from "../../graphics/drawables/Anchor";
 import { Container } from "../../graphics/drawables/containers/Container";
 
