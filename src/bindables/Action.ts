@@ -1,6 +1,6 @@
 import { getCurrentDrawablScope } from "./lifetimeScope";
 
-export class Action<T> {
+export class Action<T = void> {
   #listeners = new Set<(value: T) => void>();
 
   addListener(listener: (value: T) => void, scoped: boolean = true) {

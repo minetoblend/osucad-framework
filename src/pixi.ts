@@ -11,4 +11,5 @@ export {
   type Renderer as PIXIRenderer,
   type ColorSource,
   Color,
+  isMobile,
 } from 'pixi.js'

@@ -1,12 +1,19 @@
-export class FrameworkEnvironment {
+import { isMobile } from "./pixi";
 
+export class FrameworkEnvironment {
   get antialiasPreferred() {
-    if(devicePixelRatio >= 2) {
-      // If the device has a high pixel density, antialiasing is not needed
-      return false
+    if (devicePixelRatio >= 2) {
+      return false;
     }
 
-    return true
+    if (isMobile.any) {
+      return false;
+    }
+
+    return true;
   }
 
+  get webGpuSupported() {
+    return "gpu" in navigator && "requestAdapter" in navigator.gpu;
+  }
 }

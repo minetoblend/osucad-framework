@@ -87,6 +87,14 @@ export class Vec2 implements ILerp<Vec2> {
     return this.x === v.x && this.y === v.y;
   }
 
+  componentMin(v: IVec2): Vec2 {
+    return new Vec2(Math.min(this.x, v.x), Math.min(this.y, v.y));
+  }
+
+  componentMax(v: IVec2): Vec2 {
+    return new Vec2(Math.max(this.x, v.x), Math.max(this.y, v.y));
+  }
+
   withX(x: number): Vec2 {
     return new Vec2(x, this.y);
   }
@@ -105,6 +113,10 @@ export class Vec2 implements ILerp<Vec2> {
   
   static zero(): Vec2 {
     return new Vec2(0);
+  }
+
+  static one(): Vec2 {
+    return new Vec2(1);
   }
 
   lerp(target: Vec2, t: number): Vec2 {

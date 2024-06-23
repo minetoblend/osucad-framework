@@ -36,7 +36,7 @@ export class Container extends CompositeDrawable {
     return this;
   }
 
-  get children(): Drawable[]{
+  get children(): Drawable[] {
     if (this.content === this) {
       return this.internalChildren;
     }
@@ -64,5 +64,24 @@ export class Container extends CompositeDrawable {
     } else {
       return this.content.remove(child);
     }
+  }
+
+  clear() {
+    // TODO
+  }
+
+  get child(): Drawable {
+    if (this.children.length !== 1) {
+      throw new Error("Cannot get child when there are multiple children");
+    }
+
+    return this.children[0];
+  }
+
+  set child(child: Drawable) {
+    if (this.isDisposed) return;
+
+    this.clear();
+    this.add(child);
   }
 }
