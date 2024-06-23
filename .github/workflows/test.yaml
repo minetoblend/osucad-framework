@@ -18,7 +18,7 @@ jobs:
     - name: 'Install Deps'
       run: pnpm install
     - name: 'Test'
-      run: pnpm test:ci --coverage.enabled true
+      run: pnpm test:ci
     - name: 'Report Coverage'
       if: always() 
       uses:  davelosert/vitest-coverage-report-action@v2
