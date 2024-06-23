@@ -173,6 +173,30 @@ export abstract class Drawable implements IDisposable {
     this.invalidate(Invalidation.Transform);
   }
 
+  get scaleX() {
+    return this.#scale.x;
+  }
+
+  set scaleX(value: number) {
+    if (this.#scale.x === value) return;
+
+    this.#scale.x = value;
+
+    this.invalidate(Invalidation.Transform);
+  }
+
+  get scaleY() {
+    return this.#scale.y;
+  }
+
+  set scaleY(value: number) {
+    if (this.#scale.y === value) return;
+
+    this.#scale.y = value;
+
+    this.invalidate(Invalidation.Transform);
+  }
+
   #rotation: number = 0;
 
   get rotation() {
@@ -513,6 +537,7 @@ export abstract class Drawable implements IDisposable {
 
     this.drawNode.position.copyFrom(pos);
     this.drawNode.pivot.copyFrom(this.originPosition);
+    this.drawNode.scale.copyFrom(this.scale);
     this.drawNode.rotation = this.rotation;
   }
 
