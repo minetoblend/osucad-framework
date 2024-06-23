@@ -12,14 +12,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: 'Install Node'
-      uses: actions/setup-node@v4
+    - uses: pnpm/action-setup@v4
       with:
-        node-version: '20.x'
+        version: 8
     - name: 'Install Deps'
       run: pnpm install
     - name: 'Test'
-      run: npx vitest --coverage.enabled true
+      run: pnpm test:ci --coverage.enabled true
     - name: 'Report Coverage'
       if: always() 
       uses:  davelosert/vitest-coverage-report-action@v2
