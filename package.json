@@ -5,15 +5,31 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsup",
     "preview": "vite preview",
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:ci": "vitest --coverage.enabled true"
   },
+  "files": [
+    "dist"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./math": {
+      "import": "./dist/math.js",
+      "types": "./dist/math.d.ts"
+    }
+  },
   "devDependencies": {
     "@vitest/browser": "^1.6.0",
     "@vitest/coverage-v8": "^1.6.0",
+    "tsup": "^8.1.0",
     "typescript": "^5.2.2",
     "vite": "^5.3.1",
     "vitest": "^1.6.0",
