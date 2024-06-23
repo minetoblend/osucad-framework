@@ -102,6 +102,10 @@ export class Vec2 implements ILerp<Vec2> {
   static from(v: IVec2): Vec2 {
     return new Vec2(v.x, v.y);
   }
+  
+  static zero(): Vec2 {
+    return new Vec2(0);
+  }
 
   lerp(target: Vec2, t: number): Vec2 {
     return new Vec2(

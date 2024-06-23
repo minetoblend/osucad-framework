@@ -11,6 +11,7 @@ import { Vec2, type IVec2 } from "../../math/Vec2";
 import { Color, PIXIContainer, type ColorSource } from "../../pixi";
 import type { IDisposable } from "../../types/IDisposable";
 import { debugAssert } from "../../utils/debugAssert";
+import { Anchor } from "./Anchor";
 import { Axes } from "./Axes";
 import { InvalidationState } from "./InvalidationState";
 import { LayoutComputed } from "./LayoutComputed";
@@ -30,6 +31,8 @@ export interface DrawableOptions {
   tint?: number;
   relativeSizeAxes?: Axes;
   relativePositionAxes?: Axes;
+  anchor?: Anchor;
+  origin?: Anchor;
   margin?: MarginPadding | MarginPaddingOptions;
   label?: string;
 }
@@ -155,6 +158,21 @@ export abstract class Drawable implements IDisposable {
     }
   }
 
+  #scale = new Vec2(1);
+
+  get scale(): Readonly<Vec2> {
+    return this.#scale;
+  }
+
+  set scale(value: IVec2) {
+    if(this.#scale.equals(value)) return;
+
+    this.#scale.x = value.x;
+    this.#scale.y = value.y;
+
+    this.invalidate(Invalidation.Transform);
+  }
+
   #rotation: number = 0;
 
   get rotation() {
@@ -264,6 +282,82 @@ export abstract class Drawable implements IDisposable {
     this.#margin = MarginPadding.from(value);
   }
 
+  #anchor: Anchor = Anchor.TopLeft;
+
+  get anchor(): Anchor {
+    return this.#anchor;
+  }
+
+  set anchor(value: Anchor) {
+    if (this.#anchor === value) return;
+
+    this.#anchor = value;
+
+    this.invalidate(Invalidation.Transform);
+  }
+
+  get relativeAnchorPosition(): Vec2 {
+    const v = Vec2.zero();
+
+    if (this.#anchor & Anchor.x1) {
+      v.x = 0.5;
+    } else if (this.#anchor & Anchor.x2) {
+      v.x = 1;
+    }
+
+    if (this.#anchor & Anchor.y1) {
+      v.y = 0.5;
+    } else if (this.#anchor & Anchor.y2) {
+      v.y = 1;
+    }
+
+    return v;
+  }
+
+  get anchorPosition(): Vec2 {
+    if (this.parent) {
+      return this.relativeAnchorPosition.mul(this.parent.childSize);
+    }
+
+    return this.relativeAnchorPosition;
+  }
+
+  #origin: Anchor = Anchor.TopLeft;
+
+  get origin(): Anchor {
+    return this.#origin;
+  }
+
+  set origin(value: Anchor) {
+    if (this.#origin === value) return;
+
+    this.#origin = value;
+
+    this.invalidate(Invalidation.Transform);
+  }
+
+  get relativeOriginPosition(): Vec2 {
+    const v = Vec2.zero();
+
+    if (this.#origin & Anchor.x1) {
+      v.x = 0.5;
+    } else if (this.#origin & Anchor.x2) {
+      v.x = 1;
+    }
+
+    if (this.#origin & Anchor.y1) {
+      v.y = 0.5;
+    } else if (this.#origin & Anchor.y2) {
+      v.y = 1;
+    }
+
+    return v;
+  }
+
+  get originPosition() {
+    return this.relativeOriginPosition.mul(this.drawSize);
+  }
+
   // region lifecycle
   #loadState: LoadState = LoadState.NotLoaded;
 
@@ -274,7 +368,7 @@ export abstract class Drawable implements IDisposable {
   dependencies!: ReadonlyDependencyContainer;
 
   removeFromParent(dispose = true) {
-    this.parent?.['removeInternal']?.(this, dispose);
+    this.parent?.["removeInternal"]?.(this, dispose);
   }
 
   load(dependencies: ReadonlyDependencyContainer) {
@@ -411,13 +505,14 @@ export abstract class Drawable implements IDisposable {
   );
 
   updateDrawNodeTransform() {
-    let pos = this.drawPosition;
+    let pos = this.drawPosition.add(this.anchorPosition);
 
     if (this.parent) {
       pos = pos.add(this.parent.childOffset);
     }
 
     this.drawNode.position.copyFrom(pos);
+    this.drawNode.pivot.copyFrom(this.originPosition);
     this.drawNode.rotation = this.rotation;
   }
 

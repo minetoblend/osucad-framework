@@ -1,13 +1,13 @@
 export const enum Anchor {
   x0 = 1,
-  x1 = 2,
-  x2 = 3,
+  x1 = 1 << 1,
+  x2 = 1 << 2,
 
-  y0 = 4,
-  y1 = 5,
-  y2 = 6,
+  y0 = 1 << 3,
+  y1 = 1 << 4,
+  y2 = 1 << 5,
 
-  Custom = 7,
+  Custom = 1 << 6,
 
   TopLeft = x0 | y0,
   TopCenter = x1 | y0,
