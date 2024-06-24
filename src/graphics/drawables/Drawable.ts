@@ -39,7 +39,6 @@ export interface DrawableOptions {
 
 export abstract class Drawable implements IDisposable {
   constructor() {
-    this.#drawNode = this.createDrawNode();
     this.addLayout(this.#transformBacking);
     this.addLayout(this.#drawSizeBacking);
   }
@@ -64,9 +63,7 @@ export abstract class Drawable implements IDisposable {
   #drawNode?: PIXIContainer;
 
   get drawNode() {
-    if (!this.#drawNode) {
-      throw new Error("Drawable not loaded");
-    }
+    this.#drawNode ??= this.createDrawNode();
     return this.#drawNode;
   }
 
@@ -280,6 +277,9 @@ export abstract class Drawable implements IDisposable {
 
     this.#relativeSizeAxes = value;
 
+    if (this.width === 0) this.width = 1;
+    if (this.height === 0) this.height = 1;
+
     this.invalidate(Invalidation.DrawSize);
   }
 
@@ -302,7 +302,7 @@ export abstract class Drawable implements IDisposable {
     let y = v.y;
 
     const conversion = this.#relativeToAbsoluteFactor;
-
+    
     if (axes & Axes.X) {
       x *= conversion.x;
     }
@@ -652,7 +652,7 @@ export abstract class Drawable implements IDisposable {
       }
     }
 
-    if (this.onInvalidate(invalidation)) {
+    if (this.onInvalidate(invalidation, source)) {
       anyInvalidated = true;
     }
 
@@ -667,7 +667,7 @@ export abstract class Drawable implements IDisposable {
   }
 
   // @ts-expect-error unused parameter
-  onInvalidate(invalidation: Invalidation): boolean {
+  onInvalidate(invalidation: Invalidation, source: InvalidationSource): boolean {
     return false;
   }
 

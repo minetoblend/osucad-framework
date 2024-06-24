@@ -25,8 +25,9 @@ export class CompositeDrawable extends Drawable {
 
   protected addInternal<T extends Drawable>(child: T): T {
     this.internalChildren.push(child);
-    this.drawNode?.addChild(child.drawNode);
+    
     child.parent = this;
+    this.drawNode.addChild(child.drawNode);
 
     if(this.loadState >= LoadState.Loading) {
       this.#loadChild(child);
@@ -78,32 +79,31 @@ export class CompositeDrawable extends Drawable {
     return this.childSize;
   }
 
-  override get width() {
-    return super.width;
-  }
+  override onInvalidate(invalidation: Invalidation, source: InvalidationSource): boolean {
+    let anyInvalidated = super.onInvalidate(invalidation, source);
 
-  override set width(value: number) {
-    super.width = value;
-    this.#invalidateChildSize(Invalidation.DrawSize);
-  }
+    if (source === InvalidationSource.Child)
+      return anyInvalidated;
 
-  #invalidateChildSize(invalidation: Invalidation) {
-    this.invalidate(invalidation);
-    for (const child of this.internalChildren) {
-      child.invalidate(
-        invalidation | child.invalidationFromParentSize,
-        InvalidationSource.Parent
-      );
-    }
-  }
+    if (invalidation === Invalidation.None)
+      return anyInvalidated;
 
-  override onInvalidate(invalidation: Invalidation): boolean {
-    let anyInvalidated = super.onInvalidate(invalidation);
     if (invalidation & Invalidation.DrawSize) {
-      for (const child of this.internalChildren) {
+      for (const c of this.internalChildren) {
+        let childInvalidation = invalidation;
+
+        // Other geometry things like rotation, shearing, etc don't affect child properties.
+        childInvalidation &= ~Invalidation.Transform;
+
+        if (c.relativePositionAxes !== Axes.None && (invalidation & Invalidation.DrawSize) > 0)
+          childInvalidation |= Invalidation.Transform;
+
+        if (c.relativeSizeAxes === Axes.None)
+          childInvalidation &= ~Invalidation.DrawSize;
+
         if (
-          child.invalidate(
-            child.invalidationFromParentSize,
+          c.invalidate(
+            childInvalidation,
             InvalidationSource.Parent
           )
         ) {
@@ -157,7 +157,7 @@ export class CompositeDrawable extends Drawable {
     axes &= this.autoSizeAxes;
 
     // If no remaining axes remain, then children size dependencies can immediately be re-validated as the auto-sized size would not change.
-    if (wasValid && axes == Axes.None)
+    if (wasValid && axes === Axes.None)
         this.#childrenSizeDependencies.validate();
   }
 

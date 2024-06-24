@@ -38,6 +38,8 @@ export abstract class GameHost {
 
     this.#frameCount++;
 
+    this.renderer!.size = this.getWindowSize();
+
     this.root.size = this.getWindowSize();
 
     this.root.size = this.root.size.componentMax(Vec2.one());
@@ -81,14 +83,14 @@ export abstract class GameHost {
 
     this.#bootstrapSceneGraph(game);
 
-    container.appendChild(this.renderer!.canvas)
+    container.appendChild(this.renderer!.canvas);
 
     this.executionState = ExecutionState.Running;
 
-    while(this.executionState === ExecutionState.Running) {
-       this.update();
-       this.render();
-       await new Promise(resolve => requestAnimationFrame(resolve));
+    while (this.executionState === ExecutionState.Running) {
+      this.update();
+      this.render();
+      await new Promise((resolve) => requestAnimationFrame(resolve));
     }
 
     this.#performExit();

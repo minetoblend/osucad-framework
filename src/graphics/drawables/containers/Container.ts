@@ -20,14 +20,6 @@ export class Container extends CompositeDrawable {
     if (child && children) {
       throw new Error("Cannot set both child and children");
     }
-    if (children) {
-      for (const child of children) {
-        this.add(child);
-      }
-    }
-    if (child) {
-      this.add(child);
-    }
 
     return this;
   }
