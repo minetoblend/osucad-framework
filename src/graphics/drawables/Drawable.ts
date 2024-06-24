@@ -8,7 +8,7 @@ import {
   type ReadonlyDependencyContainer,
 } from "../../di/DependencyContainer";
 import { Vec2, type IVec2 } from "../../math/Vec2";
-import { Color, PIXIContainer, type ColorSource } from "../../pixi";
+import { Color, Filter, PIXIContainer, type ColorSource } from "../../pixi";
 import type { IDisposable } from "../../types/IDisposable";
 import { debugAssert } from "../../utils/debugAssert";
 import { Anchor } from "./Anchor";
@@ -35,6 +35,7 @@ export interface DrawableOptions {
   origin?: Anchor;
   margin?: MarginPadding | MarginPaddingOptions;
   label?: string;
+  filters?: Filter[];
 }
 
 export abstract class Drawable implements IDisposable {
@@ -443,6 +444,18 @@ export abstract class Drawable implements IDisposable {
 
   get #relativeToAbsoluteFactor(): Vec2 {
     return this.parent?.relativeToAbsoluteFactor ?? new Vec2(1);
+  }
+
+  //#endregion
+
+  //#region filters
+  
+  get filters(): Filter[] {
+    return this.drawNode.filters as Filter[];
+  }
+
+  set filters(value: Filter[]) {
+    this.drawNode.filters = value;
   }
 
   //#endregion

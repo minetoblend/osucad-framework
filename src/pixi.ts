@@ -12,4 +12,7 @@ export {
   type ColorSource,
   Color,
   isMobile,
+  Filter,
+  BlurFilter,
+  AlphaFilter,
 } from 'pixi.js'
