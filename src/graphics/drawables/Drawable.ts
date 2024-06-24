@@ -28,7 +28,7 @@ export interface DrawableOptions {
   height?: number;
   rotation?: number;
   alpha?: number;
-  tint?: number;
+  tint?: ColorSource;
   relativeSizeAxes?: Axes;
   relativePositionAxes?: Axes;
   anchor?: Anchor;
