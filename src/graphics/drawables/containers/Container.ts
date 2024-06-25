@@ -17,8 +17,17 @@ export class Container extends CompositeDrawable {
   override apply(options: ContainerOptions): this {
     const { children, child, ...rest } = options;
     super.apply(rest);
+
     if (child && children) {
       throw new Error("Cannot set both child and children");
+    }
+
+    if (child) {
+      this.child = child;
+    }
+
+    if (children) {
+      this.addAll(...children);
     }
 
     return this;
