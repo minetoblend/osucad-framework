@@ -849,7 +849,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   }
 
   get dragBlocksClick() {
-    return false;
+    return true;
   }
 
   isHovered = false;
