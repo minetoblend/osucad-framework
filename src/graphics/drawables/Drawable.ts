@@ -7,6 +7,12 @@ import {
   DependencyContainer,
   type ReadonlyDependencyContainer,
 } from "../../di/DependencyContainer";
+import type { IInputReceiver } from "../../input/IInputReceiver";
+import type { InputManager } from "../../input/InputManager";
+import type { HoverEvent } from "../../input/events/HoverEvent";
+import type { HoverLostEvent } from "../../input/events/HoverLostEvent";
+import type { MouseMoveEvent } from "../../input/events/MouseMoveEvent";
+import type { UIEvent } from "../../input/events/UIEvent";
 import { Vec2, type IVec2 } from "../../math/Vec2";
 import { Color, Filter, PIXIContainer, type ColorSource } from "../../pixi";
 import type { IDisposable } from "../../types/IDisposable";
@@ -38,7 +44,7 @@ export interface DrawableOptions {
   filters?: Filter[];
 }
 
-export abstract class Drawable implements IDisposable {
+export abstract class Drawable implements IDisposable, IInputReceiver {
   constructor() {
     this.addLayout(this.#transformBacking);
     this.addLayout(this.#drawSizeBacking);
@@ -184,7 +190,10 @@ export abstract class Drawable implements IDisposable {
     return this.#scale;
   }
 
-  set scale(value: IVec2) {
+  set scale(value: IVec2 | number) {
+    if(typeof value === 'number')
+      value = { x: value, y: value };
+
     if (this.#scale.equals(value)) return;
 
     this.#scale.x = value.x;
@@ -303,7 +312,7 @@ export abstract class Drawable implements IDisposable {
     let y = v.y;
 
     const conversion = this.#relativeToAbsoluteFactor;
-    
+
     if (axes & Axes.X) {
       x *= conversion.x;
     }
@@ -449,7 +458,7 @@ export abstract class Drawable implements IDisposable {
   //#endregion
 
   //#region filters
-  
+
   get filters(): Filter[] {
     return this.drawNode.filters as Filter[];
   }
@@ -573,7 +582,25 @@ export abstract class Drawable implements IDisposable {
     this.#parent = value;
   }
 
-  findClosestParentOfType<T extends Drawable>(type: new () => T): T | null {
+  findClosestParent<T extends Drawable>(
+    predicate: (d: Drawable) => d is T
+  ): T | null {
+    let parent = this.parent;
+
+    while (parent) {
+      if (predicate(parent)) {
+        return parent;
+      }
+
+      parent = parent.parent;
+    }
+
+    return null;
+  }
+
+  findClosestParentOfType<T extends Drawable>(
+    type: abstract new () => T
+  ): T | null {
     let parent = this.parent;
 
     while (parent) {
@@ -679,8 +706,10 @@ export abstract class Drawable implements IDisposable {
     return Invalidation.DrawSize;
   }
 
-  // @ts-expect-error unused parameter
-  onInvalidate(invalidation: Invalidation, source: InvalidationSource): boolean {
+  onInvalidate(
+    invalidation: Invalidation,
+    source: InvalidationSource
+  ): boolean {
     return false;
   }
 
@@ -689,6 +718,94 @@ export abstract class Drawable implements IDisposable {
       this.parent?.validateSuperTree(invalidation);
     }
   }
+
+  //#endregion
+
+  //#region input
+
+  get handlePositionalInput() {
+    return true;
+  }
+
+  get propagatePositionalInputSubTree() {
+    return true;
+  }
+
+  receivePositionalInputAt(screenSpacePosition: Vec2): boolean {
+    return this.contains(screenSpacePosition);
+  }
+
+  toLocalSpace(screenSpacePosition: Vec2): Vec2 {
+    return Vec2.from(this.drawNode.toLocal(screenSpacePosition));
+  }
+
+  contains(screenSpacePosition: Vec2): boolean {
+    const pos = this.toLocalSpace(screenSpacePosition);
+
+    return (
+      pos.x >= 0 &&
+      pos.x <= this.drawSize.x &&
+      pos.y >= 0 &&
+      pos.y <= this.drawSize.y
+    );
+  }
+
+  getContainingInputManager(): InputManager | null {
+    return this.findClosestParent((d): d is InputManager => {
+      return !!("isInputManager" in d && d.isInputManager);
+    });
+  }
+
+  buildPositionalInputQueue(screenSpacePos: Vec2, queue: Drawable[]): boolean {
+    if (!this.propagatePositionalInputSubTree) return false;
+
+    if (
+      this.handlePositionalInput &&
+      this.receivePositionalInputAt(screenSpacePos)
+    ) {
+      queue.push(this);
+    }
+
+    return true;
+  }
+
+  get handleNonPositionalInput() {
+    return true;
+  }
+
+  get propagateNonPositionalInputSubTree() {
+    return true;
+  }
+
+  buildNonPositionalInputQueue(queue: Drawable[], allowBlocking = true) {
+    if (!this.propagateNonPositionalInputSubTree) return false;
+
+    if (this.handleNonPositionalInput) queue.push(this);
+
+    return true;
+  }
+
+  triggerEvent(e: UIEvent): boolean {
+    return this[e.handler](e as any);
+  }
+
+  handle(e: UIEvent) {
+    return false;
+  }
+
+  onMouseMove(e: MouseMoveEvent): boolean {
+    return this.handle(e);
+  }
+
+  onHover(e: HoverEvent): boolean {
+    return this.handle(e);
+  }
+
+  onHoverLost(e: HoverLostEvent): boolean {
+    return this.handle(e);
+  }
+
+  isHovered = false;
 
   //#endregion
 }

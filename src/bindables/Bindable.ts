@@ -28,13 +28,19 @@ export class Bindable<T> {
 
   #listeners = new Set<BindableListener<T>>();
 
-  addOnChangeListener(listener: BindableListener<T>, scoped: boolean = true) {
+  addOnChangeListener(
+    listener: BindableListener<T>,
+    options: AddOnChangeListenerOptions = {}
+  ) {
     this.#listeners.add(() => listener(this.value));
-    if (scoped) {
+    if (options.scoped === false) {
       const scope = getCurrentDrawablScope();
       if (scope) {
         scope.onDispose(() => this.removeOnChangeListener(listener));
       }
+    }
+    if (options.immediate) {
+      listener(this.value);
     }
   }
 
@@ -55,4 +61,9 @@ export class Bindable<T> {
   get listenerCount() {
     return this.#listeners.size;
   }
+}
+
+export interface AddOnChangeListenerOptions {
+  scoped?: boolean;
+  immediate?: boolean;
 }

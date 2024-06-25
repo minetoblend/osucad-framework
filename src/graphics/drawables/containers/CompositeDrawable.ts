@@ -168,4 +168,15 @@ export class CompositeDrawable extends Drawable {
       child.updateSubTree();
     }
   }
+
+  override buildPositionalInputQueue(screenSpacePos: Vec2, queue: Drawable[]): boolean {
+    if(!super.buildPositionalInputQueue(screenSpacePos, queue)) 
+      return false;
+
+    for (const child of this.internalChildren) {
+      child.buildPositionalInputQueue(screenSpacePos, queue);
+    }
+
+    return true;
+  }
 }

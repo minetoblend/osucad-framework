@@ -2,6 +2,7 @@ import { FrameworkEnvironment } from "../FrameworkEnvironment";
 import type { Game } from "../Game";
 import { DependencyContainer } from "../di/DependencyContainer";
 import type { Container } from "../graphics/drawables/containers/Container";
+import { UserInputManager } from "../input/UserInputManager";
 import { Vec2 } from "../math";
 import { Renderer } from "../renderers/Renderer";
 
@@ -12,7 +13,9 @@ export interface GameHostOptions {
 export abstract class GameHost {
   #renderer?: Renderer;
 
-  get renderer(): Renderer | undefined {
+  get renderer(): Renderer {
+    if (!this.#renderer) throw new Error("Renderer not initialized");
+
     return this.#renderer;
   }
 
@@ -123,11 +126,15 @@ export abstract class GameHost {
 
   #bootstrapSceneGraph(game: Game) {
     // TODO: add root containers for input handling & safe area insets
+    const root = new UserInputManager().apply({
+      child: game,
+    });
 
     this.dependencies.provide(game);
     game.host = this;
-    game.load(this.dependencies);
-    this.root = game;
+    root.load(this.dependencies);
+
+    this.root = root;
   }
 
   #performExit() {
