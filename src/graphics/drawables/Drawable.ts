@@ -9,9 +9,15 @@ import {
 } from "../../di/DependencyContainer";
 import type { IInputReceiver } from "../../input/IInputReceiver";
 import type { InputManager } from "../../input/InputManager";
+import type { ClickEvent } from "../../input/events/ClickEvent";
+import type { DragEndEvent } from "../../input/events/DragEndEvent";
+import type { DragEvent } from "../../input/events/DragEvent";
+import type { DragStartEvent } from "../../input/events/DragStartEvent";
 import type { HoverEvent } from "../../input/events/HoverEvent";
 import type { HoverLostEvent } from "../../input/events/HoverLostEvent";
+import type { MouseDownEvent } from "../../input/events/MouseDownEvent";
 import type { MouseMoveEvent } from "../../input/events/MouseMoveEvent";
+import type { MouseUpEvent } from "../../input/events/MouseUpEvent";
 import type { UIEvent } from "../../input/events/UIEvent";
 import { Vec2, type IVec2 } from "../../math/Vec2";
 import { Color, Filter, PIXIContainer, type ColorSource } from "../../pixi";
@@ -49,8 +55,6 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     this.addLayout(this.#transformBacking);
     this.addLayout(this.#drawSizeBacking);
   }
-
-  onClick = new Action<MouseEvent>();
 
   apply(options: DrawableOptions): this {
     Object.assign(this, options);
@@ -191,8 +195,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   }
 
   set scale(value: IVec2 | number) {
-    if(typeof value === 'number')
-      value = { x: value, y: value };
+    if (typeof value === "number") value = { x: value, y: value };
 
     if (this.#scale.equals(value)) return;
 
@@ -614,6 +617,20 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     return null;
   }
 
+  isRootedAt(parent: CompositeDrawable): boolean {
+    let current: Drawable | null = this;
+
+    while (current) {
+      if (current === parent) {
+        return true;
+      }
+
+      current = current.parent;
+    }
+
+    return false;
+  }
+
   //#endregion
 
   //#region update & invalidation
@@ -698,6 +715,8 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
     return anyInvalidated;
   }
+
+  readonly invalidated = new Action<[Drawable, Invalidation]>();
 
   get invalidationFromParentSize(): Invalidation {
     if (this.relativeSizeAxes === Axes.None) {
@@ -793,6 +812,30 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     return false;
   }
 
+  onMouseDown(e: MouseDownEvent): boolean {
+    return this.handle(e);
+  }
+
+  onMouseUp(e: MouseUpEvent): boolean {
+    return this.handle(e);
+  }
+
+  onClick(e: ClickEvent): boolean {
+    return this.handle(e);
+  }
+
+  onDrag(e: DragEvent): boolean {
+    return this.handle(e);
+  }
+
+  onDragStart(e: DragStartEvent): boolean {
+    return this.handle(e);
+  }
+
+  onDragEnd(e: DragEndEvent): boolean {
+    return this.handle(e);
+  }
+
   onMouseMove(e: MouseMoveEvent): boolean {
     return this.handle(e);
   }
@@ -805,7 +848,13 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     return this.handle(e);
   }
 
+  get dragBlocksClick() {
+    return false;
+  }
+
   isHovered = false;
+
+  isDragged = false;
 
   //#endregion
 }
@@ -821,6 +870,7 @@ export const enum Invalidation {
   Transform = 1,
   DrawSize = 1 << 1,
   Color = 1 << 2,
+  Parent = 1 << 3,
 
   Layout = Transform | DrawSize,
   RequiredParentSizeToFit = Transform | DrawSize,

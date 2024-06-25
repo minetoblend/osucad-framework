@@ -55,7 +55,7 @@ export class MouseHandler extends InputHandler {
 
     if (button === null) return;
 
-    this.pendingInputs.push(new MouseButtonInput(button, true));
+    this.#enqueueInput(new MouseButtonInput(button, true));
   };
 
   #mouseUp = (event: MouseEvent) => {
@@ -63,7 +63,7 @@ export class MouseHandler extends InputHandler {
 
     if (button === null) return;
 
-    this.pendingInputs.push(new MouseButtonInput(button, false));
+    this.#enqueueInput(new MouseButtonInput(button, false));
   };
 
   #mouseLeave = (event: MouseEvent) => {};
@@ -72,7 +72,7 @@ export class MouseHandler extends InputHandler {
     const rect = (event.target as HTMLCanvasElement).getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    this.pendingInputs.push(new MousePositionAbsoluteInput(new Vec2(x, y)));
+    this.#enqueueInput(new MousePositionAbsoluteInput(new Vec2(x, y)));
   };
 
   #enqueueInput(input: IInput) {

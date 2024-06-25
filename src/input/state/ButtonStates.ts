@@ -11,14 +11,16 @@ export class ButtonStates<TButton> {
     return this.#buttons.has(button);
   }
 
-  setPressed(button: TButton, pressed: boolean) {
-    if (this.isPressed(button) === pressed) return;
+  setPressed(button: TButton, pressed: boolean): boolean {
+    if (this.isPressed(button) === pressed) return false;
 
     if (pressed) {
       this.#buttons.add(button);
     } else {
       this.#buttons.delete(button);
     }
+
+    return true;
   }
 
   get hasAnyButtonPressed() {

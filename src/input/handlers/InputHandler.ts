@@ -2,7 +2,6 @@ import { Bindable } from "../../bindables/Bindable";
 import type { GameHost } from "../../platform/GameHost";
 import type { IDisposable } from "../../types/IDisposable";
 import type { IInput } from "../stateChanges/IInput";
-import type { InputStateChangeEvent } from "../stateChanges/events/InputStateChangeEvent";
 
 export abstract class InputHandler implements IDisposable {
 

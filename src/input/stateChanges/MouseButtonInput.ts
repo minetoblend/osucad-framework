@@ -1,3 +1,4 @@
+import type { ButtonStates } from "../state/ButtonStates";
 import type { InputState } from "../state/InputState";
 import type { MouseButton } from "../state/MouseButton";
 import { ButtonInput } from "./ButtonInput";
@@ -10,7 +11,7 @@ export class MouseButtonInput extends ButtonInput<MouseButton> {
     super(button, isPressed);
   }
   
-  apply(state: InputState): void {
-    state.mouse.setPressed(this.button, this.isPressed);
+  protected override getButtonStates(state: InputState): ButtonStates<MouseButton> {
+      return state.mouse.buttons;
   }
 }

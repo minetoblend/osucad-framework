@@ -3,14 +3,19 @@ import type { Drawable } from "../graphics/drawables/Drawable";
 import { Container } from "../graphics/drawables/containers/Container";
 import type { Vec2 } from "../math";
 import { WebGameHost } from "../platform/WebGameHost";
+import { MouseButtonEventManager } from "./MouseButtonEventManager";
 import { HoverEvent } from "./events/HoverEvent";
 import { HoverLostEvent } from "./events/HoverLostEvent";
 import { MouseMoveEvent } from "./events/MouseMoveEvent";
 import type { UIEvent } from "./events/UIEvent";
 import type { InputHandler } from "./handlers/InputHandler";
 import { InputState } from "./state/InputState";
+import { MouseButton } from "./state/MouseButton";
+import { MouseState } from "./state/MouseState";
 import type { IInput } from "./stateChanges/IInput";
 import type { IInputStateChangeHandler } from "./stateChanges/IInputStateChangeHandler";
+import { MouseButtonInput } from "./stateChanges/MouseButtonInput";
+import { ButtonStateChangeEvent } from "./stateChanges/events/ButtonStateChangeEvent";
 import type { InputStateChangeEvent } from "./stateChanges/events/InputStateChangeEvent";
 import { MousePositionChangeEvent } from "./stateChanges/events/MousePositionChangeEvent";
 
@@ -26,6 +31,27 @@ export abstract class InputManager
     super();
 
     this.relativeSizeAxes = Axes.Both;
+
+    for(const mouseButton of [
+      MouseButton.Left,
+      MouseButton.Middle,
+      MouseButton.Right
+    ]) {
+      const manager = this.createMouseButtonEventManager(mouseButton);
+
+      manager.inputManager = this;
+      manager.getInputQueue = () => this.positionalInputQueue;
+
+      this.#mouseButtonEventManagers[mouseButton] = manager;
+    }
+  }
+
+  createMouseButtonEventManager(button: MouseButton) {
+    if(button === MouseButton.Left) {
+      return new MouseLeftButtonEventManager(button);
+    }
+
+    return new MouseMinorButtonEventManager(button);
   }
 
   override onLoad() {
@@ -74,6 +100,14 @@ export abstract class InputManager
       case MousePositionChangeEvent:
         this.handleMousePositionChange(event as MousePositionChangeEvent);
         break;
+      case ButtonStateChangeEvent:
+        const buttonEvent = event as ButtonStateChangeEvent<any>;
+        if(buttonEvent.input instanceof MouseButtonInput) {
+          this.handleMouseButtonStateChange(buttonEvent as ButtonStateChangeEvent<MouseButton>);
+        }
+        break;
+      default:
+        console.warn("Unhandled input state change event", event);
     }
   }
 
@@ -82,8 +116,8 @@ export abstract class InputManager
 
     this.#handleMouseMove(state, event.lastPosition);
 
-    // for (const manager of thismouseButtonEventManagers)
-    //   manager.handlePositionChange(state, e.lastPosition);
+    for (const manager of Object.values(this.#mouseButtonEventManagers))
+      manager.handlePositionChange(state, event.lastPosition);
 
     this.#updateHoverEvents(state);
   }
@@ -119,7 +153,6 @@ export abstract class InputManager
           this.#lastHoverHandledDrawables.splice(index, 1);
         }
 
-        
         if (d.isHovered) {
           if (d == lastHoverHandledDrawable) {
             this.#hoverHandledDrawable = lastHoverHandledDrawable;
@@ -146,6 +179,15 @@ export abstract class InputManager
 
     this.#hoverEventsUpdated = true;
   }
+  
+  handleMouseButtonStateChange(
+    event: ButtonStateChangeEvent<MouseButton>
+  ) {
+    const handler = this.#mouseButtonEventManagers[event.button];
+    handler?.handleButtonStateChange(this.currentState, event.kind);
+  }
+
+  #mouseButtonEventManagers: Record<MouseButton, MouseButtonEventManager> = {} as any;
 
   #lastMouseMove: MouseMoveEvent | null = null;
   #hoverEventsUpdated = false;
@@ -193,6 +235,26 @@ export abstract class InputManager
       return true;
     }
 
+    return false;
+  }
+}
+
+class MouseLeftButtonEventManager extends MouseButtonEventManager {
+  override get enableClick(): boolean {
+    return true;
+  }
+
+  override get enableDrag(): boolean {
+    return true;
+  }
+}
+
+class MouseMinorButtonEventManager extends MouseButtonEventManager {
+  override get enableClick(): boolean {
+    return false;
+  }
+
+  override get enableDrag(): boolean {
     return false;
   }
 }

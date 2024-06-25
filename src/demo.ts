@@ -2,8 +2,7 @@ import { Game } from "./Game";
 import { Anchor } from "./graphics/drawables/Anchor";
 import { Axes } from "./graphics/drawables/Axes";
 import { Box } from "./graphics/shapes/Box";
-import type { HoverEvent } from "./input/events/HoverEvent";
-import type { UIEvent } from "./input/events/UIEvent";
+import type { MouseDownEvent } from "./input/events/MouseDownEvent";
 import { WebGameHost } from "./platform/WebGameHost";
 import "./style.css";
 
