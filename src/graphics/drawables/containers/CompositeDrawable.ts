@@ -308,8 +308,6 @@ export class CompositeDrawable extends Drawable {
   makeChildAlive(child: Drawable) {
     debugAssert(!child.isAlive && child.loadState >= LoadState.Ready);
 
-    console.log(this)
-
     if (child.requestsNonPositionalInputSubTree) {
       for (
         let ancestor: CompositeDrawable | null = this;
@@ -326,10 +324,6 @@ export class CompositeDrawable extends Drawable {
         ancestor = ancestor.parent
       ) {
         ancestor.requestsPositionalInputSubTree = true;
-        console.log(
-          "ancestor.requestsPositionalInputSubTree",
-          ancestor.requestsPositionalInputSubTree
-        );
       }
     }
 

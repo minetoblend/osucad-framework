@@ -3,4 +3,9 @@ import type { InputState } from "../state/InputState";
 
 export class UIEvent {
   constructor(readonly state: InputState, readonly handler: keyof IInputReceiver) {}
+
+  get screenSpaceMousePosition() {
+    return this.state.mouse.position;
+  }
+
 }

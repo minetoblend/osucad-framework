@@ -1,14 +1,17 @@
 import type { ButtonStates } from "../state/ButtonStates";
 import type { InputState } from "../state/InputState";
 import type { MouseButton } from "../state/MouseButton";
-import { ButtonInput } from "./ButtonInput";
+import { ButtonInput, ButtonInputEntry } from "./ButtonInput";
 
 export class MouseButtonInput extends ButtonInput<MouseButton> {
   constructor(
-    button: MouseButton,
-    isPressed: boolean
+    entries: ButtonInputEntry<MouseButton>[],
   ) {
-    super(button, isPressed);
+    super(entries);
+  }
+
+  static create(button: MouseButton, isPressed: boolean): MouseButtonInput {
+    return new MouseButtonInput([new ButtonInputEntry(button, isPressed)]);
   }
   
   protected override getButtonStates(state: InputState): ButtonStates<MouseButton> {

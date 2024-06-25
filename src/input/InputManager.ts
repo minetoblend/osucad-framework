@@ -2,7 +2,9 @@ import { Axes } from "../graphics/drawables/Axes";
 import type { Drawable } from "../graphics/drawables/Drawable";
 import { Container } from "../graphics/drawables/containers/Container";
 import type { Vec2 } from "../math";
+import type { GameHost } from "../platform/GameHost";
 import { WebGameHost } from "../platform/WebGameHost";
+import { debugAssert } from "../utils/debugAssert";
 import { MouseButtonEventManager } from "./MouseButtonEventManager";
 import { HoverEvent } from "./events/HoverEvent";
 import { HoverLostEvent } from "./events/HoverLostEvent";
@@ -11,7 +13,6 @@ import type { UIEvent } from "./events/UIEvent";
 import type { InputHandler } from "./handlers/InputHandler";
 import { InputState } from "./state/InputState";
 import { MouseButton } from "./state/MouseButton";
-import { MouseState } from "./state/MouseState";
 import type { IInput } from "./stateChanges/IInput";
 import type { IInputStateChangeHandler } from "./stateChanges/IInputStateChangeHandler";
 import { MouseButtonInput } from "./stateChanges/MouseButtonInput";
@@ -25,7 +26,7 @@ export abstract class InputManager
 {
   currentState = new InputState();
 
-  abstract readonly inputHandlers: ReadonlyArray<InputHandler>;
+  abstract inputHandlers: ReadonlyArray<InputHandler>;
 
   constructor() {
     super();
@@ -54,13 +55,15 @@ export abstract class InputManager
     return new MouseMinorButtonEventManager(button);
   }
 
+  host!: GameHost;
+
   override onLoad() {
     super.onLoad();
 
-    const host = this.dependencies.resolve(WebGameHost);
+    this.host = this.dependencies.resolve(WebGameHost);
 
     for (const handler of this.inputHandlers) {
-      handler.initialize(host);
+      handler.initialize(this.host);
     }
   }
 
@@ -78,6 +81,21 @@ export abstract class InputManager
 
     for (const result of pendingInputs) {
       result.apply(this.currentState, this);
+    }
+
+    if(this.currentState.mouse.isPositionValid) {
+      debugAssert(this.highFrequencyDrawables.length === 0)
+      for(const d of this.positionalInputQueue) {
+        if(d.requiresHighFrequencyMousePosition) 
+          this.highFrequencyDrawables.push(d);
+      }
+
+      if(this.highFrequencyDrawables.length > 0) {
+        this.#lastMouseMove ??= new MouseMoveEvent(this.currentState)
+        this.propagateBlockableEvent(this.highFrequencyDrawables, this.#lastMouseMove);
+      }
+
+      this.highFrequencyDrawables.length = 0;
     }
 
     if (!this.#hoverEventsUpdated) {
@@ -227,6 +245,8 @@ export abstract class InputManager
   ): boolean {
     return false;
   }
+
+  private readonly highFrequencyDrawables: Drawable[] = [];
 
   propagateBlockableEvent(drawables: Drawable[], e: UIEvent): boolean {
     for (const d of drawables) {

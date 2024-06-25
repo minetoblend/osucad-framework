@@ -20,6 +20,7 @@ import type { MouseDownEvent } from "../../input/events/MouseDownEvent";
 import type { MouseMoveEvent } from "../../input/events/MouseMoveEvent";
 import type { MouseUpEvent } from "../../input/events/MouseUpEvent";
 import type { UIEvent } from "../../input/events/UIEvent";
+import { Rectangle } from "../../math/Rectangle";
 import { Vec2, type IVec2 } from "../../math/Vec2";
 import { Color, Filter, PIXIContainer, type ColorSource } from "../../pixi";
 import type { IDisposable } from "../../types/IDisposable";
@@ -443,6 +444,15 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     return this.drawSize.add(this.margin.total);
   }
 
+  get layoutRectangle(): Rectangle {
+    return new Rectangle(
+      -this.margin.left,
+      -this.margin.top,
+      this.drawSize.x,
+      this.drawSize.y
+    );
+  }
+    
   get requiredParentSizeToFit(): Vec2 {
     const v = this.layoutSize;
 
@@ -796,6 +806,10 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     return Vec2.from(this.drawNode.toLocal(screenSpacePosition));
   }
 
+  toScreenSpace(localSpacePosition: Vec2): Vec2 {
+    return Vec2.from(this.drawNode.toGlobal(localSpacePosition));
+  }
+
   contains(screenSpacePosition: Vec2): boolean {
     const pos = this.toLocalSpace(screenSpacePosition);
 
@@ -843,7 +857,11 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   }
 
   triggerEvent(e: UIEvent): boolean {
-    return this[e.handler]?.(e as any) ?? false;
+    return this[e.handler]?.(e as any) ?? this.handle(e);
+  }
+
+  get requiresHighFrequencyMousePosition() {
+    return false;
   }
 
   handle(e: UIEvent) {

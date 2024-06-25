@@ -6,7 +6,7 @@ import { ButtonStateChangeEvent } from "./events/ButtonStateChangeEvent";
 import { ButtonStateChangeKind } from "./events/ButtonStateChangeKind";
 
 export abstract class ButtonInput<TButton> implements IInput {
-  constructor(public button: TButton, public isPressed: boolean) {}
+  constructor(public readonly entries: ButtonInputEntry<TButton>[]) {}
 
   protected abstract getButtonStates(state: InputState): ButtonStates<TButton>;
 
@@ -21,15 +21,21 @@ export abstract class ButtonInput<TButton> implements IInput {
   apply(state: InputState, handler: IInputStateChangeHandler): void {
     var buttonStates = this.getButtonStates(state);
 
-    if (buttonStates.setPressed(this.button, this.isPressed)) {
-      var buttonStateChange = this.createEvent(
-        state,
-        this.button,
-        this.isPressed
-          ? ButtonStateChangeKind.Pressed
-          : ButtonStateChangeKind.Released
-      );
-      handler.handleInputStateChange(buttonStateChange);
+    for (const entry of this.entries) {
+      if (buttonStates.setPressed(entry.button, entry.isPressed)) {
+        var buttonStateChange = this.createEvent(
+          state,
+          entry.button,
+          entry.isPressed
+            ? ButtonStateChangeKind.Pressed
+            : ButtonStateChangeKind.Released
+        );
+        handler.handleInputStateChange(buttonStateChange);
+      }
     }
   }
+}
+
+export class ButtonInputEntry<TButton> {
+  constructor(public button: TButton, public isPressed: boolean) {}
 }

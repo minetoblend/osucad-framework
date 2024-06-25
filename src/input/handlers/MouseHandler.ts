@@ -55,7 +55,7 @@ export class MouseHandler extends InputHandler {
 
     if (button === null) return;
 
-    this.#enqueueInput(new MouseButtonInput(button, true));
+    this.#enqueueInput(MouseButtonInput.create(button, true));
   };
 
   #mouseUp = (event: MouseEvent) => {
@@ -63,7 +63,7 @@ export class MouseHandler extends InputHandler {
 
     if (button === null) return;
 
-    this.#enqueueInput(new MouseButtonInput(button, false));
+    this.#enqueueInput(MouseButtonInput.create(button, false));
   };
 
   #mouseLeave = (event: MouseEvent) => {};
