@@ -41,6 +41,8 @@ describe('drawable layout', () => {
       ]
     })
 
+    parent.load(new DependencyContainer())
+
     expect(child1.drawSize).toEqual({ x: 50, y: 50 })
     expect(child2.drawSize).toEqual({ x: 25, y: 50 })
     expect(child3.drawSize).toEqual({ x: 50, y: 50 })
@@ -80,6 +82,8 @@ describe('drawable layout', () => {
         })
       ]
     })
+
+    a.load(new DependencyContainer())
 
     expect(a.drawSize).toEqual({ x: 100, y: 100 })
     expect(b.drawSize).toEqual({ x: 50, y: 100 })
@@ -135,6 +139,8 @@ describe('drawable layout', () => {
         }),
       ]
     })
+
+    parent.load(new DependencyContainer())
 
     expect(child1.drawPosition).toEqual({ x: 50, y: 50 })
     expect(child2.drawPosition).toEqual({ x: 25, y: 50 })

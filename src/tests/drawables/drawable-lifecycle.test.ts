@@ -95,6 +95,6 @@ describe("drawable lifecycle", () => {
   it('throws if trying to update when not loaded', () => {
     const drawable = new Container()
 
-    expect(() => drawable.updateSubTree()).toThrow()
+    expect(drawable.updateSubTree()).toBe(false)
   })
 });

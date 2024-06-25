@@ -7,6 +7,7 @@ import {
   DependencyContainer,
   type ReadonlyDependencyContainer,
 } from "../../di/DependencyContainer";
+import { HandleInputCache } from "../../input/HandleInputCache";
 import type { IInputReceiver } from "../../input/IInputReceiver";
 import type { InputManager } from "../../input/InputManager";
 import type { ClickEvent } from "../../input/events/ClickEvent";
@@ -474,6 +475,21 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   //#region lifecycle
 
+  isAlive = false;
+
+  get shouldBeAlive() {
+    return true
+  }
+  
+  get removeWhenNotAlive() {
+    return this.parent === null; // TODO: || this.time.current > this.lifetimeStart;
+  }
+
+  get disposeOnDeathRemoval() {
+    // TODO: return this.removeCompletedTransforms
+    return true;
+  }
+
   #loadState: LoadState = LoadState.NotLoaded;
 
   get loadState() {
@@ -486,7 +502,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     this.parent?.["removeInternal"]?.(this, dispose);
   }
 
-  #completeLoading() {
+  #loadComplete() {
     this.#loadState = LoadState.Loaded;
     this.onLoadComplete();
   }
@@ -495,6 +511,15 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     try {
       pushDrawableScope(this);
       this.#loadState = LoadState.Loading;
+
+      this.requestsNonPositionalInput =
+        HandleInputCache.requestsNonPositionalInput(this);
+      this.requestsPositionalInput =
+        HandleInputCache.requestsPositionalInput(this);
+
+      this.requestsNonPositionalInputSubTree = this.requestsNonPositionalInput;
+      this.requestsPositionalInputSubTree = this.requestsPositionalInput;
+
       this.#injectDependencies(dependencies);
       this.onLoad();
       this.#loadState = LoadState.Ready;
@@ -575,6 +600,8 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   //#region parent
 
+  childId = 0;
+
   #parent: CompositeDrawable | null = null;
 
   get parent() {
@@ -635,14 +662,15 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   //#region update & invalidation
 
-  updateSubTree() {
-    debugAssert(
-      this.loadState >= LoadState.Ready,
-      `Cannot update ${this.name} before ready`
-    );
+  updateSubTree(): boolean {
+    if(this.isDisposed) {
+      throw new Error("Cannot update disposed drawable");
+    }
+
+    if (this.loadState < LoadState.Ready) return false;
 
     if (this.loadState === LoadState.Ready) {
-      this.#completeLoading();
+      this.#loadComplete();
     }
 
     if (!this.#transformBacking.isValid) {
@@ -651,6 +679,8 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     }
 
     this.update();
+
+    return true;
   }
 
   update() {}
@@ -742,12 +772,20 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   //#region input
 
+  requestsNonPositionalInput: boolean = false;
+
+  requestsPositionalInput: boolean = false;
+
+  requestsNonPositionalInputSubTree: boolean = false;
+
+  requestsPositionalInputSubTree: boolean = false;
+
   get handlePositionalInput() {
-    return true;
+    return this.requestsPositionalInput;
   }
 
   get propagatePositionalInputSubTree() {
-    return true;
+    return this.requestsPositionalInputSubTree;
   }
 
   receivePositionalInputAt(screenSpacePosition: Vec2): boolean {
@@ -789,11 +827,11 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   }
 
   get handleNonPositionalInput() {
-    return true;
+    return this.requestsNonPositionalInput;
   }
 
   get propagateNonPositionalInputSubTree() {
-    return true;
+    return this.requestsNonPositionalInputSubTree;
   }
 
   buildNonPositionalInputQueue(queue: Drawable[], allowBlocking = true) {
@@ -805,48 +843,30 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   }
 
   triggerEvent(e: UIEvent): boolean {
-    return this[e.handler](e as any);
+    return this[e.handler]?.(e as any) ?? false;
   }
 
   handle(e: UIEvent) {
     return false;
   }
 
-  onMouseDown(e: MouseDownEvent): boolean {
-    return this.handle(e);
-  }
+  onMouseDown?(e: MouseDownEvent): boolean;
 
-  onMouseUp(e: MouseUpEvent): boolean {
-    return this.handle(e);
-  }
+  onMouseUp?(e: MouseUpEvent): boolean;
 
-  onClick(e: ClickEvent): boolean {
-    return this.handle(e);
-  }
+  onClick?(e: ClickEvent): boolean;
 
-  onDrag(e: DragEvent): boolean {
-    return this.handle(e);
-  }
+  onDrag?(e: DragEvent): boolean;
 
-  onDragStart(e: DragStartEvent): boolean {
-    return this.handle(e);
-  }
+  onDragStart?(e: DragStartEvent): boolean;
 
-  onDragEnd(e: DragEndEvent): boolean {
-    return this.handle(e);
-  }
+  onDragEnd?(e: DragEndEvent): boolean;
 
-  onMouseMove(e: MouseMoveEvent): boolean {
-    return this.handle(e);
-  }
+  onMouseMove?(e: MouseMoveEvent): boolean;
 
-  onHover(e: HoverEvent): boolean {
-    return this.handle(e);
-  }
+  onHover?(e: HoverEvent): boolean;
 
-  onHoverLost(e: HoverLostEvent): boolean {
-    return this.handle(e);
-  }
+  onHoverLost?(e: HoverLostEvent): boolean;
 
   get dragBlocksClick() {
     return true;

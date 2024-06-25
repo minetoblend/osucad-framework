@@ -45,6 +45,8 @@ describe('composite drawable layout', () => {
       ]
     });
 
+    parent.load(new DependencyContainer())
+
     child.updateDrawNodeTransform();
 
     expect(child.drawNodePosition).toEqual({ x: 10, y: 20 });

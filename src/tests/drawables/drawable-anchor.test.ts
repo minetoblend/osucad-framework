@@ -1,3 +1,4 @@
+import { DependencyContainer } from "../../di/DependencyContainer";
 import { Anchor } from "../../graphics/drawables/Anchor";
 import { Container } from "../../graphics/drawables/containers/Container";
 
@@ -34,6 +35,8 @@ describe("drawable anchor & origin", () => {
         })),
       ],
     });
+
+    parent.load(new DependencyContainer());
 
     expect(child.anchorPosition).toEqual({ x: 0, y: 0 });
     expect(child2.anchorPosition).toEqual({ x: 100, y: 0 });
@@ -84,6 +87,8 @@ describe("drawable anchor & origin", () => {
         })),
       ],
     });
+
+    parent.load(new DependencyContainer())
 
     expect(child.originPosition).toEqual({ x: 0, y: 0 });
     expect(child2.originPosition).toEqual({ x: 50, y: 0 });

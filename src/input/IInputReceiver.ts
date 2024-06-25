@@ -9,13 +9,13 @@ import type { MouseMoveEvent } from "./events/MouseMoveEvent";
 import type { MouseUpEvent } from "./events/MouseUpEvent";
 
 export interface IInputReceiver {
-  onMouseMove(e: MouseMoveEvent): boolean;
-  onHover(e: HoverEvent): boolean;
-  onMouseDown(e: MouseDownEvent): boolean;
-  onMouseUp(e: MouseUpEvent): boolean;
-  onClick(e: ClickEvent): boolean;
-  onHoverLost(e: HoverLostEvent): boolean;
-  onDragStart(e: DragStartEvent): boolean;
-  onDrag(e: DragEvent): boolean;
-  onDragEnd(e: DragEndEvent): boolean;
+  onMouseMove?(e: MouseMoveEvent): boolean;
+  onHover?(e: HoverEvent): boolean;
+  onMouseDown?(e: MouseDownEvent): boolean;
+  onMouseUp?(e: MouseUpEvent): boolean;
+  onClick?(e: ClickEvent): boolean;
+  onHoverLost?(e: HoverLostEvent): boolean;
+  onDragStart?(e: DragStartEvent): boolean;
+  onDrag?(e: DragEvent): boolean;
+  onDragEnd?(e: DragEndEvent): boolean;
 }
