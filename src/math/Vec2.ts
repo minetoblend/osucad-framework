@@ -34,6 +34,10 @@ export class Vec2 implements ILerp<Vec2> {
     return new Vec2(this.x * f, this.y * f);
   }
 
+  scale(f: number): Vec2 {
+    return new Vec2(this.x * f, this.y * f);
+  }
+
   div(v: IVec2): Vec2 {
     return new Vec2(this.x / v.x, this.y / v.y);
   }
