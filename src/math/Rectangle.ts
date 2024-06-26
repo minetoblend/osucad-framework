@@ -16,4 +16,36 @@ export class Rectangle {
   get center(): Vec2 {
     return new Vec2(this.x + this.width / 2, this.y + this.height / 2);
   }
+
+  get left(): number {
+    return this.x;
+  }
+
+  get right(): number {
+    return this.x + this.width;
+  }
+
+  get top(): number {
+    return this.y;
+  }
+
+  get bottom(): number {
+    return this.y + this.height;
+  }
+
+  get topLeft(): Vec2 {
+    return new Vec2(this.left, this.top);
+  }
+
+  get topRight(): Vec2 {
+    return new Vec2(this.right, this.top);
+  }
+
+  get bottomLeft(): Vec2 {
+    return new Vec2(this.left, this.bottom);
+  }
+
+  get bottomRight(): Vec2 {
+    return new Vec2(this.right, this.bottom);
+  }
 }

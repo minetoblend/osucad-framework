@@ -34,6 +34,7 @@ import { LayoutComputed } from "./LayoutComputed";
 import { LayoutMember } from "./LayoutMember";
 import { MarginPadding, type MarginPaddingOptions } from "./MarginPadding";
 import type { CompositeDrawable } from "../containers/CompositeDrawable";
+import { Quad } from "../../math/Quad";
 
 export interface DrawableOptions {
   position?: IVec2;
@@ -61,6 +62,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     this.addLayout(this.#transformBacking);
     this.addLayout(this.#drawSizeBacking);
     this.addLayout(this.#colorBacking);
+    this.addLayout(this.#requiredParentSizeToFitBacking);
   }
 
   apply(options: DrawableOptions): this {
@@ -524,16 +526,42 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     );
   }
 
+  get boundingBox(): Rectangle {
+    return this.rectToParentSpace(this.layoutRectangle).AABB;
+  }
+
+  #requiredParentSizeToFitBacking = new LayoutComputed(() => {
+    const ap = this.anchorPosition;
+    const rap = this.relativeAnchorPosition;
+
+    const ratio1 = new Vec2(
+      rap.x <= 0 ? 0 : 1 / rap.x,
+      rap.y <= 0 ? 0 : 1 / rap.y
+    );
+
+    const ratio2 = new Vec2(
+      rap.x >= 1 ? 0 : 1 / (1 - rap.x),
+      rap.y >= 1 ? 0 : 1 / (1 - rap.y)
+    );
+
+    const bbox = this.boundingBox;
+
+    const topLeftOffset = ap.sub(bbox.topLeft);
+    const topLeftSize1 = topLeftOffset.mul(ratio1);
+    const topLeftSize2 = topLeftOffset.mulF(-1).mul(ratio2);
+
+    const bottomRightOffset = ap.sub(bbox.bottomRight);
+    const bottomRightSize1 = bottomRightOffset.mul(ratio1);
+    const bottomRightSize2 = bottomRightOffset.mulF(-1).mul(ratio2);
+
+    return topLeftSize1
+      .componentMax(topLeftSize2)
+      .componentMax(bottomRightSize1)
+      .componentMax(bottomRightSize2);
+  }, Invalidation.RequiredParentSizeToFit);
+
   get requiredParentSizeToFit(): Vec2 {
-    const v = this.layoutSize;
-
-    if (this.relativeSizeAxes & Axes.X) {
-      v.x = 0;
-    } else if (this.relativeSizeAxes & Axes.Y) {
-      v.y = 0;
-    }
-
-    return v;
+    return this.#requiredParentSizeToFitBacking.value;
   }
 
   get #relativeToAbsoluteFactor(): Vec2 {
@@ -914,6 +942,15 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   toScreenSpace(localSpacePosition: Vec2): Vec2 {
     return Vec2.from(this.drawNode.toGlobal(localSpacePosition));
+  }
+
+  rectToParentSpace(rect: Rectangle): Quad {
+    return Quad.fromRectangle(rect).transform(
+      this.drawNode.worldTransform
+        .clone()
+        .invert()
+        .append(this.parent!.drawNode.worldTransform)
+    );
   }
 
   contains(screenSpacePosition: Vec2): boolean {

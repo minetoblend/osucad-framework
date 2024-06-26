@@ -1,9 +1,9 @@
 import { Game } from "./Game";
 import { Box } from "./graphics/shapes/Box";
+import { WebGameHost } from "./platform/WebGameHost";
 import { ManualInputManager } from "./input/ManualInputManager";
 import type { MouseDownEvent } from "./input/events/MouseDownEvent";
 import { Vec2 } from "./math";
-import { WebGameHost } from "./platform/WebGameHost";
 import "./style.css";
 
 const host = new WebGameHost("demo");
@@ -17,11 +17,11 @@ class DemoGame extends Game {
     this.add(
       (inputManager = new ManualInputManager().apply({
         children: [
-          child = new MyBox().apply({
+          (child = new MyBox().apply({
             label: "Box 1",
             position: { x: 100, y: 100 },
             size: { x: 100, y: 100 },
-          }),
+          })),
         ],
       }))
     );
