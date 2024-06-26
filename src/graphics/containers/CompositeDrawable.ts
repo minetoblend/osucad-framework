@@ -453,7 +453,7 @@ export class CompositeDrawable extends Drawable {
     super.height = value;
   }
 
-  override get size() {
+  override get size(): Vec2 {
     if (
       !this.#isComputingChildrenSizeDependencies &&
       this.autoSizeAxes != Axes.None
@@ -462,7 +462,7 @@ export class CompositeDrawable extends Drawable {
     return super.size;
   }
 
-  override set size(value: Vec2) {
+  override set size(value: IVec2) {
     if (this.autoSizeAxes & Axes.Both)
       throw new Error(
         "Cannot set size on a CompositeDrawable with autoSizeAxes"

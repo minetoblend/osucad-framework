@@ -5,6 +5,8 @@ import { ManualInputManager } from "./input/ManualInputManager";
 import type { MouseDownEvent } from "./input/events/MouseDownEvent";
 import { Vec2 } from "./math";
 import "./style.css";
+import { Container } from "./graphics/containers/Container";
+import { Axes } from "./graphics/drawables/Axes";
 
 const host = new WebGameHost("demo");
 
@@ -12,41 +14,38 @@ class DemoGame extends Game {
   constructor() {
     super();
 
-    let inputManager: ManualInputManager;
-    let child: Box;
-    this.add(
-      (inputManager = new ManualInputManager().apply({
+this.add(
+  Container.create({
+    autoSizeAxes: Axes.Both,
+    children: [
+      new Box().apply({
+        relativeSizeAxes: Axes.Both,
+        tint: 0xff0000
+      }),
+      Container.create({
+        autoSizeAxes: Axes.Both,
+        padding: 25,
         children: [
-          (child = new MyBox().apply({
-            label: "Box 1",
-            position: { x: 100, y: 100 },
-            size: { x: 100, y: 100 },
-          })),
-        ],
-      }))
-    );
-
-    inputManager.showVisualCursorGuide = true;
-    inputManager.useParentInput = false;
-
-    setTimeout(() => {
-      inputManager.moveMouseToDrawable(child);
-
-      setTimeout(() => {
-        inputManager.moveMouseTo(new Vec2(300, 200));
-      }, 1000);
-    }, 1000);
+          new MyBox().apply({
+            width: 100,
+            height: 100,
+          }),
+        ]
+      })
+    ],
+  })
+);
   }
 }
 
 class MyBox extends Box {
   override onHover() {
-    this.alpha = 0.8;
+    this.width = 120;
     return true;
   }
 
   override onHoverLost() {
-    this.alpha = 1;
+    this.width = 100;
     return true;
   }
 
