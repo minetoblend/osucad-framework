@@ -35,6 +35,8 @@ import { LayoutMember } from "./LayoutMember";
 import { MarginPadding, type MarginPaddingOptions } from "./MarginPadding";
 import type { CompositeDrawable } from "../containers/CompositeDrawable";
 import { Quad } from "../../math/Quad";
+import { almostEquals } from "../../utils/almostEquals";
+import { Matrix } from "pixi.js";
 
 export interface DrawableOptions {
   position?: IVec2;
@@ -352,6 +354,8 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   //#region layout
 
+  onSizingChanged() {}
+
   #relativeSizeAxes: Axes = Axes.None;
 
   get relativeSizeAxes() {
@@ -367,6 +371,10 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     if (this.height === 0) this.height = 1;
 
     this.invalidate(Invalidation.DrawSize);
+
+    this.#updateBypassAutoSizeAxes();
+
+    this.onSizingChanged();
   }
 
   #relativePositionAxes: Axes = Axes.None;
@@ -376,7 +384,23 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   }
 
   set relativePositionAxes(value: Axes) {
+    if (this.#relativePositionAxes === value) return;
+
+    const conversion = this.#relativeToAbsoluteFactor;
+
+    if ((value & Axes.X) > (this.#relativePositionAxes & Axes.X))
+      this.x = almostEquals(conversion.x, 0) ? 0 : this.x / conversion.x;
+    else if ((this.#relativePositionAxes & Axes.X) > (value & Axes.X))
+      this.x *= conversion.x;
+
+    if ((value & Axes.Y) > (this.#relativePositionAxes & Axes.Y))
+      this.y = almostEquals(conversion.y, 0) ? 0 : this.y / conversion.y;
+    else if ((this.#relativePositionAxes & Axes.Y) > (value & Axes.Y))
+      this.y *= conversion.y;
+
     this.#relativePositionAxes = value;
+
+    this.#updateBypassAutoSizeAxes();
   }
 
   protected applyRelativeAxes(axes: Axes, v: Readonly<Vec2>): Readonly<Vec2> {
@@ -397,7 +421,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
       y *= conversion.y;
     }
 
-    return new Vec2(x, y).readonly();
+    return new Vec2(x, y);
   }
 
   #anchor: Anchor = Anchor.TopLeft;
@@ -699,16 +723,34 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     );
   }
 
-  get bypassAutoSizeAxes(): Axes {
-    let axes = Axes.None;
-    if (this.relativeSizeAxes & Axes.X) {
-      axes |= Axes.X;
-    }
-    if (this.relativeSizeAxes & Axes.Y) {
-      axes |= Axes.Y;
-    }
+  #bypassAutoSizeAxes: Axes = Axes.None;
 
-    return axes;
+  #bypassAutoSizeAdditionalAxes: Axes = Axes.None;
+
+  get bypassAutoSizeAxes(): Axes {
+    return this.#bypassAutoSizeAxes;
+  }
+
+  set bypassAutoSizeAxes(value: Axes) {
+    this.#bypassAutoSizeAdditionalAxes = value;
+    this.#updateBypassAutoSizeAxes();
+  }
+
+  #updateBypassAutoSizeAxes() {
+    const value =
+      this.relativePositionAxes |
+      this.relativeSizeAxes |
+      this.#bypassAutoSizeAdditionalAxes;
+
+    if (this.#bypassAutoSizeAxes !== value) {
+      var changedAxes = this.#bypassAutoSizeAxes ^ value;
+      this.#bypassAutoSizeAxes = value;
+      if ((this.parent?.autoSizeAxes ?? 0) & changedAxes)
+        this.parent?.invalidate(
+          Invalidation.RequiredParentSizeToFit,
+          InvalidationSource.Child
+        );
+    }
   }
 
   onDispose(callback: () => void): void {
@@ -805,6 +847,14 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
       return true;
     }
 
+    this.update();
+
+    return true;
+  }
+
+  updateSubTreeTransforms(): boolean {
+    if (!this.isPresent) return false;
+
     if (!this.#transformBacking.isValid) {
       this.updateDrawNodeTransform();
       this.#transformBacking.validate();
@@ -814,8 +864,6 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
       this.updateDrawNodeColor();
       this.#colorBacking.validate();
     }
-
-    this.update();
 
     return true;
   }
@@ -899,6 +947,23 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     return Invalidation.DrawSize;
   }
 
+  get localTransform() {
+    const transform = new Matrix()
+    let pos = this.drawPosition.add(this.anchorPosition);
+
+    if (this.parent) {
+      pos = pos.add(this.parent.childOffset);
+    }
+
+    transform.translate(pos.x, pos.y);
+    transform.scale(this.scale.x, this.scale.y);
+    transform.rotate(this.rotation);
+
+    transform.translate(-this.originPosition.x, -this.originPosition.y);
+
+    return transform;
+  }
+
   onInvalidate(
     invalidation: Invalidation,
     source: InvalidationSource
@@ -945,12 +1010,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   }
 
   rectToParentSpace(rect: Rectangle): Quad {
-    return Quad.fromRectangle(rect).transform(
-      this.drawNode.worldTransform
-        .clone()
-        .invert()
-        .append(this.parent!.drawNode.worldTransform)
-    );
+    return Quad.fromRectangle(rect).transform(this.localTransform);
   }
 
   contains(screenSpacePosition: Vec2): boolean {

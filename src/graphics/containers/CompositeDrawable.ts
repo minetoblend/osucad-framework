@@ -1,4 +1,4 @@
-import { Vec2 } from "../../math/Vec2";
+import { Vec2, type IVec2 } from "../../math/Vec2";
 import { PIXIContainer } from "../../pixi";
 import { debugAssert } from "../../utils/debugAssert";
 import { Axes } from "../drawables/Axes";
@@ -10,13 +10,24 @@ import {
   type DrawableOptions,
 } from "../drawables/Drawable";
 import { LayoutMember } from "../drawables/LayoutMember";
-import { MarginPadding, type MarginPaddingOptions } from "../drawables/MarginPadding";
+import {
+  MarginPadding,
+  type MarginPaddingOptions,
+} from "../drawables/MarginPadding";
+import gsap from "gsap";
 
 export interface CompositeDrawableOptions extends DrawableOptions {
   padding?: MarginPaddingOptions;
+  autoSizeAxes?: Axes;
 }
 
 export class CompositeDrawable extends Drawable {
+
+  constructor() {
+    super()
+    this.addLayout(this.#childrenSizeDependencies)
+  }
+
   override createDrawNode(): PIXIContainer {
     return new PIXIContainer();
   }
@@ -122,6 +133,17 @@ export class CompositeDrawable extends Drawable {
     return this.childSize;
   }
 
+  override get relativeSizeAxes(): Axes {
+    return super.relativeSizeAxes;
+  }
+
+  override set relativeSizeAxes(value: Axes) {
+    if (value & this.autoSizeAxes) {
+      throw new Error("Cannot set relativeSizeAxes to include auto-size axes");
+    }
+    super.relativeSizeAxes = value;
+  }
+
   override onInvalidate(
     invalidation: Invalidation,
     source: InvalidationSource
@@ -181,9 +203,31 @@ export class CompositeDrawable extends Drawable {
     return this.#autoSizeAxes;
   }
 
+  protected set autoSizeAxes(value: Axes) {
+    if (value == this.#autoSizeAxes) return;
+
+    if (value & this.relativeSizeAxes) {
+      throw new Error("Cannot set autoSizeAxes to include relative size axes");
+    }
+
+    this.#autoSizeAxes = value;
+
+    if (value === Axes.None) {
+      this.#childrenSizeDependencies.validate();
+    } else {
+      this.#childrenSizeDependencies.invalidate();
+    }
+
+    this.onSizingChanged();
+  }
+
+  autoSizeDuration = 0;
+
+  autoSizeEasing: gsap.EaseString | gsap.EaseFunction = "linear";
+
   #childrenSizeDependencies = new LayoutMember(
     Invalidation.RequiredParentSizeToFit |
-      Invalidation.Presence |
+      Invalidation.Presence,
       InvalidationSource.Child
   );
 
@@ -223,12 +267,18 @@ export class CompositeDrawable extends Drawable {
 
     this.updateAfterChildren();
 
-    /*
-     * TODO:
-     * updateChildrenSizeDependencies();
-     * this.updateAfterAutoSize();
-     */
+    this.#updateChildrenSizeDependencies();
+    this.updateAfterAutoSize();
 
+    return true;
+  }
+
+  override updateSubTreeTransforms(): boolean {
+    if (!super.updateSubTreeTransforms()) return false;
+
+    for (const child of this.aliveInternalChildren) {
+      child.updateSubTreeTransforms();
+    }
     return true;
   }
 
@@ -240,6 +290,8 @@ export class CompositeDrawable extends Drawable {
   updateAfterChildrenLife() {}
 
   updateAfterChildren() {}
+
+  updateAfterAutoSize() {}
 
   updateChildrenLife(): boolean {
     if (this.loadState < LoadState.Ready) return false;
@@ -363,6 +415,158 @@ export class CompositeDrawable extends Drawable {
     this.invalidate(Invalidation.Presence, InvalidationSource.Child);
 
     return removed;
+  }
+
+  #isComputingChildrenSizeDependencies = false;
+
+  override get width() {
+    if (
+      !this.#isComputingChildrenSizeDependencies &&
+      this.autoSizeAxes & Axes.X
+    )
+      this.#updateChildrenSizeDependencies();
+    return super.width;
+  }
+
+  override set width(value: number) {
+    if (this.autoSizeAxes & Axes.X)
+      throw new Error(
+        "Cannot set width on a CompositeDrawable with autoSizeAxes.X"
+      );
+    super.width = value;
+  }
+
+  override get height() {
+    if (
+      !this.#isComputingChildrenSizeDependencies &&
+      this.autoSizeAxes & Axes.Y
+    )
+      this.#updateChildrenSizeDependencies();
+    return super.height;
+  }
+
+  override set height(value: number) {
+    if (this.autoSizeAxes & Axes.Y)
+      throw new Error(
+        "Cannot set height on a CompositeDrawable with autoSizeAxes.Y"
+      );
+    super.height = value;
+  }
+
+  override get size() {
+    if (
+      !this.#isComputingChildrenSizeDependencies &&
+      this.autoSizeAxes != Axes.None
+    )
+      this.#updateChildrenSizeDependencies();
+    return super.size;
+  }
+
+  override set size(value: Vec2) {
+    if (this.autoSizeAxes & Axes.Both)
+      throw new Error(
+        "Cannot set size on a CompositeDrawable with autoSizeAxes"
+      );
+    super.size = value;
+  }
+
+  #computeAutoSize() {
+    
+    const originalPadding = this.padding;
+    const originalMargin = this.margin;
+
+    try {
+      if (this.autoSizeAxes == Axes.None) return this.drawSize;
+
+      const maxBoundSize = new Vec2();
+
+      this.padding = 0;
+      this.margin = 0;
+
+      for (const c of this.aliveInternalChildren) {
+        if (!c.isPresent) continue;
+
+        const cBound = c.requiredParentSizeToFit;
+
+        if (!(c.bypassAutoSizeAxes & Axes.X))
+          maxBoundSize.x = Math.max(maxBoundSize.x, cBound.x);
+
+        if (!(c.bypassAutoSizeAxes & Axes.Y))
+          maxBoundSize.y = Math.max(maxBoundSize.y, cBound.y);
+      }
+
+      if (!(this.autoSizeAxes & Axes.X)) maxBoundSize.x = this.drawSize.x;
+      if (!(this.autoSizeAxes & Axes.Y)) maxBoundSize.y = this.drawSize.y;
+
+      return maxBoundSize;
+    } finally {
+      this.padding = originalPadding;
+      this.margin = originalMargin;
+    }
+  }
+
+  #updateAutoSize() {
+    if (this.autoSizeAxes === Axes.None) return;
+
+    const b = this.#computeAutoSize().add(this.padding.total);
+
+    this.#autoSizeResizeTo(
+      {
+        x: this.autoSizeAxes & Axes.X ? b.x : super.width,
+        y: this.autoSizeAxes & Axes.Y ? b.y : super.height,
+      },
+      this.autoSizeDuration,
+      this.autoSizeEasing
+    );
+
+    // TODO: onAutoSize?.emit();
+  }
+
+  #updateChildrenSizeDependencies() {
+    this.#isComputingChildrenSizeDependencies = true;
+
+    try {
+      if (!this.#childrenSizeDependencies.isValid) {
+        this.#updateAutoSize();
+        this.#childrenSizeDependencies.validate();
+      }
+    } finally {
+      this.#isComputingChildrenSizeDependencies = false;
+    }
+  }
+
+  #autoSizeResizeTo(
+    size: IVec2,
+    duration: number,
+    easing: gsap.EaseString | gsap.EaseFunction
+  ) {
+    gsap.killTweensOf(this, "x,y,width");
+
+    if (duration === 0) {
+      this.baseWidth = size.x;
+      this.baseHeight = size.y;
+    } else {
+      gsap.to(this, {
+        baseWidth: size.x,
+        baseHeight: size.y,
+      });
+    }
+  }
+
+  private get baseWidth() {
+    return super.width;
+  }
+
+  private set baseWidth(value: number) {
+    super.width = value;
+  }
+
+  private get baseHeight() {
+    return super.height;
+  }
+
+  private set baseHeight(value: number) {
+    super.height = value;
   }
 }
 

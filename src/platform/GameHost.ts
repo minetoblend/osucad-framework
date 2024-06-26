@@ -54,6 +54,7 @@ export abstract class GameHost {
     this.clock.processFrame();
 
     this.root.updateSubTree();
+    this.root.updateSubTreeTransforms();
   }
 
   protected render() {
