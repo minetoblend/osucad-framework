@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@webgpu/types": "^0.1.43",
-    "animejs": "^3.2.2",
+    "gsap": "^3.12.5",
     "pixi.js": "^8.2.0"
   }
 }

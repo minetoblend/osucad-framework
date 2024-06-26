@@ -1,6 +1,6 @@
-import anime, { type EasingOptions } from "animejs";
 import type { Drawable } from "./drawables/Drawable";
 import type { IVec2 } from "../math";
+import gsap from 'gsap'
 
 export interface AnimationMixins {
   fadeTo(options: FadeOptions): void;
@@ -12,7 +12,7 @@ export interface AnimationMixins {
 
 export interface AnimationOptions {
   duration?: number;
-  easing?: EasingOptions;
+  easing?: gsap.EaseFunction | gsap.EaseString;
 }
 
 export interface FadeOptions extends AnimationOptions {
@@ -40,13 +40,12 @@ export type MoveToOptions = AnimationOptions &
 
 export const animationMixins: Partial<Drawable> = {
   fadeTo(options: FadeOptions) {
-    console.log(options)
-    anime({
-      targets: this,
+    gsap.to(this, {
       alpha: options.alpha,
       duration: options.duration ?? 0,
-      easing: options.easing ?? "linear",
-    });
+      ease: options.easing ?? "linear",
+    })
+    
   },
   fadeOut(options: AnimationOptions) {
     this.fadeTo({ ...options, alpha: 0 });
@@ -56,16 +55,14 @@ export const animationMixins: Partial<Drawable> = {
   },
   moveTo(options: MoveToOptions) {
     if ("position" in options) {
-      anime({
-        targets: this,
+      gsap.to(this, {
         x: options.position.x,
         y: options.position.y,
         duration: options.duration ?? 0,
         easing: options.easing ?? "linear",
       });
     } else {
-      anime({
-        targets: this,
+      gsap.to(this, {
         x: options.x,
         y: options.y,
         duration: options.duration ?? 0,
@@ -75,15 +72,13 @@ export const animationMixins: Partial<Drawable> = {
   },
   rotateTo(options: RotateToOptions) {
     if ("rotation" in options) {
-      anime({
-        targets: this,
+      gsap.to(this, {
         rotation: options.rotation,
         duration: options.duration ?? 0,
         easing: options.easing ?? "linear",
       });
     } else {
-      anime({
-        targets: this,
+      gsap.to(this, {
         rotation: (options.angleDegress * Math.PI) / 180,
         duration: options.duration ?? 0,
         easing: options.easing ?? "linear",
