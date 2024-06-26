@@ -47,6 +47,7 @@ export interface DrawableOptions {
   height?: number;
   rotation?: number;
   alpha?: number;
+  color?: ColorSource;
   tint?: ColorSource;
   relativeSizeAxes?: Axes;
   relativePositionAxes?: Axes;
@@ -294,8 +295,24 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   // region tint & alpha
 
+  #color: Color = new Color(0xffffff);
+
+  get color(): Color {
+    return this.#color;
+  }
+
+  set color(value: ColorSource) {
+    debugAssert(
+      Color.isColorLike(value),
+      "color must be a valid color-like value"
+    );
+
+    this.#color.setValue(value);
+    this.invalidate(Invalidation.Color);
+  }
+
   get tint() {
-    return this.drawNode.tint;
+    return this.#color.toHex();
   }
 
   set tint(value: ColorSource) {
@@ -304,7 +321,11 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
       "tint must be a valid color-like value"
     );
 
-    this.drawNode.tint = value;
+    const alpha = this.#color.alpha;
+    this.#color.setValue(value);
+    this.#color.setAlpha(alpha);
+
+    this.invalidate(Invalidation.Color);
   }
 
   #alpha: number = 1;
@@ -892,7 +913,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   }
 
   updateDrawNodeColor() {
-    this.drawNode.alpha = this.alpha;
+    this.drawNode.alpha = this.alpha * this.#color.alpha;
     this.drawNode.tint = this.tint;
   }
 
@@ -950,7 +971,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   }
 
   get localTransform() {
-    const transform = new Matrix()
+    const transform = new Matrix();
     let pos = this.drawPosition.add(this.anchorPosition);
 
     if (this.parent) {
@@ -1102,7 +1123,11 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   //#endregion
 }
 
-export function loadDrawable(drawable: Drawable, clock: IFrameBasedClock, dependencies: ReadonlyDependencyContainer) {
+export function loadDrawable(
+  drawable: Drawable,
+  clock: IFrameBasedClock,
+  dependencies: ReadonlyDependencyContainer
+) {
   drawable[LOAD](clock, dependencies);
 }
 
