@@ -43,7 +43,6 @@ export abstract class VisibilityContainer extends Container {
   abstract popOut(): void;
 
   updateState = (state: Visibility) => {
-    console.log("updateState", state);
     switch (state) {
       case Visibility.Visible:
         this.popIn();
