@@ -27,6 +27,7 @@
     }
   },
   "devDependencies": {
+    "@types/animejs": "^3.1.12",
     "@vitest/browser": "^1.6.0",
     "@vitest/coverage-v8": "^1.6.0",
     "tsup": "^8.1.0",
@@ -37,6 +38,7 @@
   },
   "dependencies": {
     "@webgpu/types": "^0.1.43",
+    "animejs": "^3.2.2",
     "pixi.js": "^8.2.0"
   }
 }
