@@ -182,8 +182,9 @@ export class CompositeDrawable extends Drawable {
   }
 
   #childrenSizeDependencies = new LayoutMember(
-    Invalidation.RequiredParentSizeToFit /* | Invalidation.Presence*/,
-    InvalidationSource.Child
+    Invalidation.RequiredParentSizeToFit |
+      Invalidation.Presence |
+      InvalidationSource.Child
   );
 
   invalidateChildrenSizeDependencies(
@@ -212,8 +213,7 @@ export class CompositeDrawable extends Drawable {
 
     this.updateChildrenLife();
 
-    if (/* TODO: !this.isPresent  || */ !this.requiresChildrenUpdate)
-      return false;
+    if (!this.isPresent || !this.requiresChildrenUpdate) return false;
 
     this.updateAfterChildrenLife();
 
@@ -334,7 +334,7 @@ export class CompositeDrawable extends Drawable {
 
     this.drawNode.addChild(child.drawNode);
 
-    // this.invalidate(Invalidation.Presence, InvalidationSource.Child);
+    this.invalidate(Invalidation.Presence, InvalidationSource.Child);
   }
 
   makeChildDead(child: Drawable): boolean {
@@ -360,7 +360,7 @@ export class CompositeDrawable extends Drawable {
       removed = true;
     }
 
-    // Invalidate(Invalidation.Presence, InvalidationSource.Child);
+    this.invalidate(Invalidation.Presence, InvalidationSource.Child);
 
     return removed;
   }

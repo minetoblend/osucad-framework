@@ -26,6 +26,7 @@ import { Color, Filter, PIXIContainer, type ColorSource } from "../../pixi";
 import type { IFrameBasedClock } from "../../timing/IFrameBasedClock";
 import type { IDisposable } from "../../types/IDisposable";
 import { debugAssert } from "../../utils/debugAssert";
+import { animationMixins } from "../AnimationMixins";
 import { Anchor } from "./Anchor";
 import { Axes } from "./Axes";
 import { InvalidationState } from "./InvalidationState";
@@ -53,10 +54,13 @@ export interface DrawableOptions {
   filters?: Filter[];
 }
 
+export interface Drawable extends OsucadFrameworkMixins.Drawable {}
+
 export abstract class Drawable implements IDisposable, IInputReceiver {
   constructor() {
     this.addLayout(this.#transformBacking);
     this.addLayout(this.#drawSizeBacking);
+    this.addLayout(this.#colorBacking);
   }
 
   apply(options: DrawableOptions): this {
@@ -68,6 +72,13 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   get name() {
     return this.constructor.name;
+  }
+
+  public static mixin(source: Record<string, any>): void {
+    Object.defineProperties(
+      Drawable.prototype,
+      Object.getOwnPropertyDescriptors(source)
+    );
   }
 
   //#region drawNode
@@ -202,10 +213,20 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
     if (this.#scale.equals(value)) return;
 
+    const wasPresent = this.isPresent;
+
     this.#scale.x = value.x;
     this.#scale.y = value.y;
 
-    this.invalidate(Invalidation.Transform);
+    if (this.isPresent !== wasPresent) {
+      this.invalidate(Invalidation.Transform | Invalidation.Presence);
+    } else {
+      this.invalidate(Invalidation.Transform);
+    }
+  }
+
+  get drawScale() {
+    return this.scale;
   }
 
   get scaleX() {
@@ -215,9 +236,15 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   set scaleX(value: number) {
     if (this.#scale.x === value) return;
 
+    const wasPresent = this.isPresent;
+
     this.#scale.x = value;
 
-    this.invalidate(Invalidation.Transform);
+    if (this.isPresent !== wasPresent) {
+      this.invalidate(Invalidation.Transform | Invalidation.Presence);
+    } else {
+      this.invalidate(Invalidation.Transform);
+    }
   }
 
   get scaleY() {
@@ -227,9 +254,15 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   set scaleY(value: number) {
     if (this.#scale.y === value) return;
 
+    const wasPresent = this.isPresent;
+
     this.#scale.y = value;
 
-    this.invalidate(Invalidation.Transform);
+    if (this.isPresent !== wasPresent) {
+      this.invalidate(Invalidation.Transform | Invalidation.Presence);
+    } else {
+      this.invalidate(Invalidation.Transform);
+    }
   }
 
   //#endregion
@@ -275,7 +308,42 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   }
 
   set alpha(value: number) {
+    if (this.#alpha === value) return;
+
+    const wasPresent = this.isPresent;
+
     this.#alpha = value;
+
+    if (this.isPresent !== wasPresent) {
+      this.invalidate(Invalidation.Presence | Invalidation.Color);
+    } else {
+      this.invalidate(Invalidation.Color);
+    }
+  }
+
+  get isPresent() {
+    return (
+      this.alwaysPresent ||
+      (this.alpha > 0.0001 && this.drawScale.x !== 0 && this.drawScale.y !== 0)
+    );
+  }
+
+  #alwaysPresent: boolean = false;
+
+  get alwaysPresent() {
+    return this.#alwaysPresent;
+  }
+
+  set alwaysPresent(value: boolean) {
+    if (this.#alwaysPresent === value) return;
+
+    const wasPresent = this.isPresent;
+
+    this.#alwaysPresent = value;
+
+    if (this.isPresent !== wasPresent) {
+      this.invalidate(Invalidation.Presence);
+    }
   }
 
   //#endregion
@@ -434,7 +502,9 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   #drawSizeBacking = new LayoutComputed(
     () => this.applyRelativeAxes(this.relativeSizeAxes, this.size),
-    Invalidation.Transform | Invalidation.RequiredParentSizeToFit
+    Invalidation.Transform |
+      Invalidation.RequiredParentSizeToFit |
+      Invalidation.Presence
   );
 
   get drawSize(): Vec2 {
@@ -703,9 +773,18 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
       this.#loadComplete();
     }
 
+    if (!this.isPresent) {
+      return true;
+    }
+
     if (!this.#transformBacking.isValid) {
       this.updateDrawNodeTransform();
       this.#transformBacking.validate();
+    }
+
+    if (!this.#colorBacking.isValid) {
+      this.updateDrawNodeColor();
+      this.#colorBacking.validate();
     }
 
     this.update();
@@ -716,8 +795,10 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   update() {}
 
   #transformBacking = new LayoutMember(
-    Invalidation.Transform | Invalidation.DrawSize
+    Invalidation.Transform | Invalidation.DrawSize | Invalidation.Presence
   );
+
+  #colorBacking = new LayoutMember(Invalidation.Color);
 
   updateDrawNodeTransform() {
     let pos = this.drawPosition.add(this.anchorPosition);
@@ -730,6 +811,11 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     this.drawNode.pivot.copyFrom(this.originPosition);
     this.drawNode.scale.copyFrom(this.scale);
     this.drawNode.rotation = this.rotation;
+  }
+
+  updateDrawNodeColor() {
+    this.drawNode.alpha = this.alpha;
+    this.drawNode.tint = this.tint;
   }
 
   #invalidationState = new InvalidationState(Invalidation.All);
@@ -815,7 +901,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   }
 
   get propagatePositionalInputSubTree() {
-    return this.requestsPositionalInputSubTree;
+    return this.isPresent && this.requestsPositionalInputSubTree;
   }
 
   receivePositionalInputAt(screenSpacePosition: Vec2): boolean {
@@ -865,7 +951,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   }
 
   get propagateNonPositionalInputSubTree() {
-    return this.requestsNonPositionalInputSubTree;
+    return this.isPresent && this.requestsNonPositionalInputSubTree;
   }
 
   buildNonPositionalInputQueue(queue: Drawable[], allowBlocking = true) {
@@ -928,11 +1014,12 @@ export const enum Invalidation {
   Transform = 1,
   DrawSize = 1 << 1,
   Color = 1 << 2,
-  Parent = 1 << 3,
+  Presence = 1 << 3,
+  Parent = 1 << 4,
 
   Layout = Transform | DrawSize,
   RequiredParentSizeToFit = Transform | DrawSize,
-  All = Layout | Color,
+  All = Transform | RequiredParentSizeToFit | Color | Presence,
   None = 0,
 }
 
@@ -942,3 +1029,5 @@ export const enum InvalidationSource {
   Child = 1 << 2,
   Default = Self | Parent,
 }
+
+Drawable.mixin(animationMixins);
