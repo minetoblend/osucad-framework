@@ -2,6 +2,7 @@ import { DependencyContainer } from "../../di/DependencyContainer";
 import { Axes } from "../../graphics/drawables/Axes";
 import { Container } from "../../graphics/containers/Container";
 import { FramedClock } from "../../timing/FramedClock";
+import { loadDrawable } from "../../graphics/drawables/Drawable";
 
 describe("drawable layout", () => {
   it("relatively sizes itself", () => {
@@ -41,7 +42,7 @@ describe("drawable layout", () => {
       ],
     });
 
-    parent.load(new FramedClock(), new DependencyContainer());
+    loadDrawable(parent, new FramedClock(), new DependencyContainer());
 
     expect(child1.drawSize).toEqual({ x: 50, y: 50 });
     expect(child2.drawSize).toEqual({ x: 25, y: 50 });
@@ -83,7 +84,7 @@ describe("drawable layout", () => {
       ],
     });
 
-    a.load(new FramedClock(), new DependencyContainer());
+    loadDrawable(a, new FramedClock(), new DependencyContainer());
 
     expect(a.drawSize).toEqual({ x: 100, y: 100 });
     expect(b.drawSize).toEqual({ x: 50, y: 100 });
@@ -139,7 +140,7 @@ describe("drawable layout", () => {
       ],
     });
 
-    parent.load(new FramedClock(), new DependencyContainer());
+    loadDrawable(parent, new FramedClock(), new DependencyContainer());
 
     expect(child1.drawPosition).toEqual({ x: 50, y: 50 });
     expect(child2.drawPosition).toEqual({ x: 25, y: 50 });
@@ -162,7 +163,8 @@ describe("drawable layout", () => {
       height: 100,
     });
 
-    drawable.load(new FramedClock(), new DependencyContainer());
+    loadDrawable(drawable, new FramedClock(), new DependencyContainer())
+    
     drawable.updateSubTree();
     drawable.updateSubTreeTransforms();
 

@@ -2,6 +2,7 @@ import { FrameworkEnvironment } from "../FrameworkEnvironment";
 import type { Game } from "../Game";
 import { DependencyContainer } from "../di/DependencyContainer";
 import type { Container } from "../graphics/containers/Container";
+import { loadDrawable } from "../graphics/drawables/Drawable";
 import { UserInputManager } from "../input/UserInputManager";
 import { Vec2 } from "../math";
 import { Renderer } from "../renderers/Renderer";
@@ -135,7 +136,7 @@ export abstract class GameHost {
 
     this.dependencies.provide(game);
     game.host = this;
-    root.load((this.clock = new FramedClock()), this.dependencies);
+    loadDrawable(root, (this.clock = new FramedClock()), this.dependencies);
 
     this.root = root;
   }

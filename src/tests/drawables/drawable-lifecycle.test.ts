@@ -1,5 +1,5 @@
 import { DependencyContainer } from "../../di/DependencyContainer";
-import { LoadState } from "../../graphics/drawables/Drawable";
+import { LoadState, loadDrawable } from "../../graphics/drawables/Drawable";
 import { Container } from "../../graphics/containers/Container";
 import { FramedClock } from "../../timing/FramedClock";
 
@@ -15,7 +15,7 @@ describe("drawable lifecycle", () => {
 
     expect(drawable.loadState).toBe(LoadState.NotLoaded);
 
-    drawable.load(new FramedClock(), new DependencyContainer());
+    loadDrawable(drawable, new FramedClock(), new DependencyContainer());
 
     expect(drawable.loadState).toBe(LoadState.Ready);
 
@@ -34,7 +34,7 @@ describe("drawable lifecycle", () => {
     expect(parent.loadState).toBe(LoadState.NotLoaded);
     expect(child.loadState).toBe(LoadState.NotLoaded);
 
-    parent.load(new FramedClock(), new DependencyContainer());
+    loadDrawable(parent, new FramedClock(), new DependencyContainer());
 
     expect(parent.loadState).toBe(LoadState.Ready);
     expect(child.loadState).toBe(LoadState.Ready);
@@ -49,7 +49,7 @@ describe("drawable lifecycle", () => {
     const parent = Container.create();
     const child = Container.create();
 
-    parent.load(new FramedClock(), new DependencyContainer());
+    loadDrawable(parent, new FramedClock(), new DependencyContainer());
 
     parent.add(child);
 
@@ -72,7 +72,7 @@ describe("drawable lifecycle", () => {
 
     const parent = new TestContainer();
 
-    parent.load(new FramedClock(), new DependencyContainer());
+    loadDrawable(parent, new FramedClock(), new DependencyContainer());
 
     expect(parent.loadState).toBe(LoadState.Ready);
     expect(child!.loadState).toBe(LoadState.Ready);

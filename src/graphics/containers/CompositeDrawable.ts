@@ -7,6 +7,7 @@ import {
   Invalidation,
   InvalidationSource,
   LoadState,
+  loadDrawable,
   type DrawableOptions,
 } from "../drawables/Drawable";
 import { LayoutMember } from "../drawables/LayoutMember";
@@ -68,7 +69,7 @@ export class CompositeDrawable extends Drawable {
   #loadChild(child: Drawable) {
     if (this.isDisposed) return;
 
-    child.load(this.clock, this.dependencies);
+    loadDrawable(child, this.clock, this.dependencies);
     child.parent = this;
   }
 
@@ -471,7 +472,6 @@ export class CompositeDrawable extends Drawable {
   }
 
   #computeAutoSize() {
-    
     const originalPadding = this.padding;
     const originalMargin = this.margin;
 

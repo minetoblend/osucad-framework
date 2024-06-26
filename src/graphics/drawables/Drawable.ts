@@ -57,6 +57,8 @@ export interface DrawableOptions {
   filters?: Filter[];
 }
 
+export const LOAD = Symbol("load");
+
 export interface Drawable extends OsucadFrameworkMixins.Drawable {}
 
 export abstract class Drawable implements IDisposable, IInputReceiver {
@@ -640,7 +642,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     this.onLoadComplete();
   }
 
-  load(clock: IFrameBasedClock, dependencies: ReadonlyDependencyContainer) {
+  [LOAD](clock: IFrameBasedClock, dependencies: ReadonlyDependencyContainer) {
     try {
       this.updateClock(clock);
 
@@ -1098,6 +1100,10 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   isDragged = false;
 
   //#endregion
+}
+
+export function loadDrawable(drawable: Drawable, clock: IFrameBasedClock, dependencies: ReadonlyDependencyContainer) {
+  drawable[LOAD](clock, dependencies);
 }
 
 export const enum LoadState {

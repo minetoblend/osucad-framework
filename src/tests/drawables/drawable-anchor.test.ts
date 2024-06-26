@@ -2,6 +2,7 @@ import { DependencyContainer } from "../../di/DependencyContainer";
 import { Anchor } from "../../graphics/drawables/Anchor";
 import { Container } from "../../graphics/containers/Container";
 import { FramedClock } from "../../timing/FramedClock";
+import { loadDrawable } from "../../graphics/drawables/Drawable";
 
 describe("drawable anchor & origin", () => {
   it("correctly applies anchor", () => {
@@ -37,8 +38,8 @@ describe("drawable anchor & origin", () => {
       ],
     });
 
-    parent.load(new FramedClock(), new DependencyContainer());
-
+    loadDrawable(parent, new FramedClock(), new DependencyContainer())
+    
     expect(child.anchorPosition).toEqual({ x: 0, y: 0 });
     expect(child2.anchorPosition).toEqual({ x: 100, y: 0 });
     expect(child3.anchorPosition).toEqual({ x: 0, y: 100 });
@@ -89,7 +90,7 @@ describe("drawable anchor & origin", () => {
       ],
     });
 
-    parent.load(new FramedClock(), new DependencyContainer())
+    loadDrawable(parent, new FramedClock(), new DependencyContainer())
 
     expect(child.originPosition).toEqual({ x: 0, y: 0 });
     expect(child2.originPosition).toEqual({ x: 50, y: 0 });
