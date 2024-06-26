@@ -57,7 +57,7 @@ export class CompositeDrawable extends Drawable {
   #loadChild(child: Drawable) {
     if (this.isDisposed) return;
 
-    child.load(this.dependencies);
+    child.load(this.clock, this.dependencies);
     child.parent = this;
   }
 

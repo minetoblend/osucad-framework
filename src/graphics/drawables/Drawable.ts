@@ -23,6 +23,7 @@ import type { UIEvent } from "../../input/events/UIEvent";
 import { Rectangle } from "../../math/Rectangle";
 import { Vec2, type IVec2 } from "../../math/Vec2";
 import { Color, Filter, PIXIContainer, type ColorSource } from "../../pixi";
+import type { IFrameBasedClock } from "../../timing/IFrameBasedClock";
 import type { IDisposable } from "../../types/IDisposable";
 import { debugAssert } from "../../utils/debugAssert";
 import { Anchor } from "./Anchor";
@@ -452,7 +453,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
       this.drawSize.y
     );
   }
-    
+
   get requiredParentSizeToFit(): Vec2 {
     const v = this.layoutSize;
 
@@ -488,9 +489,9 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   isAlive = false;
 
   get shouldBeAlive() {
-    return true
+    return true;
   }
-  
+
   get removeWhenNotAlive() {
     return this.parent === null; // TODO: || this.time.current > this.lifetimeStart;
   }
@@ -517,8 +518,10 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     this.onLoadComplete();
   }
 
-  load(dependencies: ReadonlyDependencyContainer) {
+  load(clock: IFrameBasedClock, dependencies: ReadonlyDependencyContainer) {
     try {
+      this.updateClock(clock);
+
       pushDrawableScope(this);
       this.#loadState = LoadState.Loading;
 
@@ -536,6 +539,23 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     } finally {
       popDrawableScope();
     }
+  }
+
+  #clock!: IFrameBasedClock;
+  #customClock?: IFrameBasedClock;
+
+  get clock() {
+    if (!this.#clock) throw new Error("Drawable is not loaded");
+    return this.#clock;
+  }
+
+  set clock(value: IFrameBasedClock) {
+    this.#customClock = value;
+    this.updateClock(value);
+  }
+
+  updateClock(clock: IFrameBasedClock) {
+    this.#clock = this.#customClock ?? clock;
   }
 
   onLoad() {}
@@ -673,7 +693,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   //#region update & invalidation
 
   updateSubTree(): boolean {
-    if(this.isDisposed) {
+    if (this.isDisposed) {
       throw new Error("Cannot update disposed drawable");
     }
 
