@@ -1,12 +1,10 @@
 import { Game } from "./Game";
-import { Anchor } from "./graphics/drawables/Anchor";
-import { Axes } from "./graphics/drawables/Axes";
 import { Box } from "./graphics/shapes/Box";
-import { WebGameHost } from "./platform/WebGameHost";
 import { ManualInputManager } from "./input/ManualInputManager";
 import type { MouseDownEvent } from "./input/events/MouseDownEvent";
-import "./style.css";
 import { Vec2 } from "./math";
+import { WebGameHost } from "./platform/WebGameHost";
+import "./style.css";
 
 const host = new WebGameHost("demo");
 
@@ -43,12 +41,12 @@ class DemoGame extends Game {
 
 class MyBox extends Box {
   override onHover() {
-    this.tint = 0xaaaaaa;
+    this.alpha = 0.8;
     return true;
   }
 
   override onHoverLost() {
-    this.tint = 0xffffff;
+    this.alpha = 1;
     return true;
   }
 

@@ -1,5 +1,6 @@
 export {
   Drawable,
+  LoadState,
   type DrawableOptions,
   Invalidation,
   InvalidationSource,
@@ -7,11 +8,11 @@ export {
 export {
   CompositeDrawable,
   type CompositeDrawableOptions,
-} from "./graphics/drawables/containers/CompositeDrawable";
+} from "./graphics/containers/CompositeDrawable";
 export {
   Container,
   type ContainerOptions,
-} from "./graphics/drawables/containers/Container";
+} from "./graphics/containers/Container";
 export { Axes, axesToString } from "./graphics/drawables/Axes";
 export {
   MarginPadding,

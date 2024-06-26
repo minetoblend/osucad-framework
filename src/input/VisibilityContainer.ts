@@ -1,6 +1,5 @@
 import { Bindable } from "../bindables/Bindable";
-import { Container } from "../graphics/drawables/containers/Container";
-import type { MouseMoveEvent } from "./events/MouseMoveEvent";
+import { Container } from "../graphics/containers/Container";
 
 export abstract class VisibilityContainer extends Container {
   readonly state = new Bindable<Visibility>(Visibility.Hidden);

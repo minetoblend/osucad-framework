@@ -1,6 +1,6 @@
 import { Axes } from "../graphics/drawables/Axes";
 import type { Drawable } from "../graphics/drawables/Drawable";
-import { Container } from "../graphics/drawables/containers/Container";
+import { Container } from "../graphics/containers/Container";
 import type { Vec2 } from "../math";
 import type { GameHost } from "../platform/GameHost";
 import { WebGameHost } from "../platform/WebGameHost";

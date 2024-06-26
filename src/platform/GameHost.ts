@@ -1,13 +1,12 @@
 import { FrameworkEnvironment } from "../FrameworkEnvironment";
 import type { Game } from "../Game";
 import { DependencyContainer } from "../di/DependencyContainer";
-import type { Container } from "../graphics/drawables/containers/Container";
+import type { Container } from "../graphics/containers/Container";
 import { UserInputManager } from "../input/UserInputManager";
 import { Vec2 } from "../math";
 import { Renderer } from "../renderers/Renderer";
 import { FramedClock } from "../timing/FramedClock";
 import type { IFrameBasedClock } from "../timing/IFrameBasedClock";
-import { StopwatchClock } from "../timing/StopwatchClock";
 
 export interface GameHostOptions {
   friendlyGameName?: string;
@@ -69,10 +68,6 @@ export abstract class GameHost {
     if (this.executionState !== ExecutionState.Idle) {
       throw new Error("GameHost is already running");
     }
-
-    this.root = game;
-
-    game.host = this;
 
     window.addEventListener("error", (event) => {
       this.onUnhandledError(event.error);
@@ -137,10 +132,9 @@ export abstract class GameHost {
       child: game,
     });
 
-
     this.dependencies.provide(game);
     game.host = this;
-    root.load(this.clock = new FramedClock(), this.dependencies);
+    root.load((this.clock = new FramedClock()), this.dependencies);
 
     this.root = root;
   }

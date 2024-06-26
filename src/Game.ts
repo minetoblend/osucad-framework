@@ -2,7 +2,7 @@ import { Bindable } from "./bindables/Bindable";
 import { Anchor } from "./graphics/drawables/Anchor";
 import { Axes } from "./graphics/drawables/Axes";
 import type { Drawable } from "./graphics/drawables/Drawable";
-import { Container } from "./graphics/drawables/containers/Container";
+import { Container } from "./graphics/containers/Container";
 import type { GameHost } from "./platform/GameHost";
 
 export abstract class Game extends Container {
@@ -11,8 +11,8 @@ export abstract class Game extends Container {
 
     this.relativeSizeAxes = Axes.Both;
 
-    this.#content = super.addInternal(
-      Container.create({
+    super.addInternal(
+      this.#content = Container.create({
         relativeSizeAxes: Axes.Both,
         anchor: Anchor.Center,
         origin: Anchor.Center,
@@ -20,7 +20,6 @@ export abstract class Game extends Container {
     );
   }
 
-  // @ts-expect-error - unused param.
   override addInternal<T extends Drawable>(child: T): T {
     throw new Error(
       `Cannot call addInternal on ${this.name}, use add() instead`

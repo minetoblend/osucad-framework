@@ -1,16 +1,16 @@
-import { Vec2 } from "../../../math/Vec2";
-import { PIXIContainer } from "../../../pixi";
-import { debugAssert } from "../../../utils/debugAssert";
-import { Axes } from "../Axes";
+import { Vec2 } from "../../math/Vec2";
+import { PIXIContainer } from "../../pixi";
+import { debugAssert } from "../../utils/debugAssert";
+import { Axes } from "../drawables/Axes";
 import {
   Drawable,
   Invalidation,
   InvalidationSource,
   LoadState,
   type DrawableOptions,
-} from "../Drawable";
-import { LayoutMember } from "../LayoutMember";
-import { MarginPadding, type MarginPaddingOptions } from "../MarginPadding";
+} from "../drawables/Drawable";
+import { LayoutMember } from "../drawables/LayoutMember";
+import { MarginPadding, type MarginPaddingOptions } from "../drawables/MarginPadding";
 
 export interface CompositeDrawableOptions extends DrawableOptions {
   padding?: MarginPaddingOptions;

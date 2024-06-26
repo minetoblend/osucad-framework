@@ -1,6 +1,7 @@
 import { DependencyContainer } from "../../di/DependencyContainer";
 import { Axes } from "../../graphics/drawables/Axes";
-import { Container } from "../../graphics/drawables/containers/Container";
+import { Container } from "../../graphics/containers/Container";
+import { FramedClock } from "../../timing/FramedClock";
 
 describe('composite drawable layout', () => {
   it('correctly calculates child offset', () => {
@@ -45,7 +46,7 @@ describe('composite drawable layout', () => {
       ]
     });
 
-    parent.load(new DependencyContainer())
+    parent.load(new FramedClock(), new DependencyContainer())
 
     child.updateDrawNodeTransform();
 
@@ -75,7 +76,7 @@ describe('composite drawable layout', () => {
       ]
     });
 
-    parent.load(new DependencyContainer());
+    parent.load(new FramedClock(), new DependencyContainer());
 
     parent.updateSubTree();
 

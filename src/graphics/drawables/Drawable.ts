@@ -33,7 +33,7 @@ import { InvalidationState } from "./InvalidationState";
 import { LayoutComputed } from "./LayoutComputed";
 import { LayoutMember } from "./LayoutMember";
 import { MarginPadding, type MarginPaddingOptions } from "./MarginPadding";
-import type { CompositeDrawable } from "./containers/CompositeDrawable";
+import type { CompositeDrawable } from "../containers/CompositeDrawable";
 
 export interface DrawableOptions {
   position?: IVec2;

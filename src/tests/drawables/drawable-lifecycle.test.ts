@@ -1,100 +1,101 @@
 import { DependencyContainer } from "../../di/DependencyContainer";
 import { LoadState } from "../../graphics/drawables/Drawable";
-import { Container } from "../../graphics/drawables/containers/Container";
+import { Container } from "../../graphics/containers/Container";
+import { FramedClock } from "../../timing/FramedClock";
 
 describe("drawable lifecycle", () => {
-  it('loads a drawable', () => {
+  it("loads a drawable", () => {
     class TestDrawable extends Container {
       override onLoad() {
-        expect(this.loadState).toBe(LoadState.Loading)
+        expect(this.loadState).toBe(LoadState.Loading);
       }
     }
-    
-    const drawable = new TestDrawable()
 
-    expect(drawable.loadState).toBe(LoadState.NotLoaded)
+    const drawable = new TestDrawable();
 
-    drawable.load(new DependencyContainer())
+    expect(drawable.loadState).toBe(LoadState.NotLoaded);
 
-    expect(drawable.loadState).toBe(LoadState.Ready)
+    drawable.load(new FramedClock(), new DependencyContainer());
 
-    drawable.updateSubTree()
+    expect(drawable.loadState).toBe(LoadState.Ready);
 
-    expect(drawable.loadState).toBe(LoadState.Loaded)
-  })
+    drawable.updateSubTree();
 
-  it('loads children', () => {
+    expect(drawable.loadState).toBe(LoadState.Loaded);
+  });
+
+  it("loads children", () => {
     let child: Container;
 
     const parent = Container.create({
-      child: child = Container.create()
-    })
+      child: (child = Container.create()),
+    });
 
-    expect(parent.loadState).toBe(LoadState.NotLoaded)
-    expect(child.loadState).toBe(LoadState.NotLoaded)
+    expect(parent.loadState).toBe(LoadState.NotLoaded);
+    expect(child.loadState).toBe(LoadState.NotLoaded);
 
-    parent.load(new DependencyContainer())
+    parent.load(new FramedClock(), new DependencyContainer());
 
-    expect(parent.loadState).toBe(LoadState.Ready)
-    expect(child.loadState).toBe(LoadState.Ready)
+    expect(parent.loadState).toBe(LoadState.Ready);
+    expect(child.loadState).toBe(LoadState.Ready);
 
-    parent.updateSubTree()
+    parent.updateSubTree();
 
-    expect(parent.loadState).toBe(LoadState.Loaded)
-    expect(child.loadState).toBe(LoadState.Loaded)
-  })
+    expect(parent.loadState).toBe(LoadState.Loaded);
+    expect(child.loadState).toBe(LoadState.Loaded);
+  });
 
-  it('loads a child when added if already loaded', () => {
-    const parent = Container.create()
-    const child = Container.create()
+  it("loads a child when added if already loaded", () => {
+    const parent = Container.create();
+    const child = Container.create();
 
-    parent.load(new DependencyContainer())
+    parent.load(new FramedClock(), new DependencyContainer());
 
-    parent.add(child)
+    parent.add(child);
 
-    expect(parent.loadState).toBe(LoadState.Ready)
-    expect(child.loadState).toBe(LoadState.Ready)
+    expect(parent.loadState).toBe(LoadState.Ready);
+    expect(child.loadState).toBe(LoadState.Ready);
 
-    parent.updateSubTree()
+    parent.updateSubTree();
 
-    expect(parent.loadState).toBe(LoadState.Loaded)
-    expect(child.loadState).toBe(LoadState.Loaded)
-  })
+    expect(parent.loadState).toBe(LoadState.Loaded);
+    expect(child.loadState).toBe(LoadState.Loaded);
+  });
 
-  it('loads a child when added during loading', () => {
+  it("loads a child when added during loading", () => {
     let child: Container;
     class TestContainer extends Container {
       override onLoad() {
-        child = this.add(Container.create())
+        this.add((child = Container.create()));
       }
     }
 
-    const parent = new TestContainer()
+    const parent = new TestContainer();
 
-    parent.load(new DependencyContainer())
+    parent.load(new FramedClock(), new DependencyContainer());
 
-    expect(parent.loadState).toBe(LoadState.Ready)
-    expect(child!.loadState).toBe(LoadState.Ready)
+    expect(parent.loadState).toBe(LoadState.Ready);
+    expect(child!.loadState).toBe(LoadState.Ready);
 
-    parent.updateSubTree()
+    parent.updateSubTree();
 
-    expect(parent.loadState).toBe(LoadState.Loaded)
-    expect(child!.loadState).toBe(LoadState.Loaded)
-  })
+    expect(parent.loadState).toBe(LoadState.Loaded);
+    expect(child!.loadState).toBe(LoadState.Loaded);
+  });
 
-  it('does not load a child when added if not loaded', () => {
-    const parent = Container.create()
-    const child = Container.create()
+  it("does not load a child when added if not loaded", () => {
+    const parent = Container.create();
+    const child = Container.create();
 
-    parent.add(child)
+    parent.add(child);
 
-    expect(parent.loadState).toBe(LoadState.NotLoaded)
-    expect(child.loadState).toBe(LoadState.NotLoaded)
-  })
+    expect(parent.loadState).toBe(LoadState.NotLoaded);
+    expect(child.loadState).toBe(LoadState.NotLoaded);
+  });
 
-  it('throws if trying to update when not loaded', () => {
-    const drawable = new Container()
+  it("throws if trying to update when not loaded", () => {
+    const drawable = new Container();
 
-    expect(drawable.updateSubTree()).toBe(false)
-  })
+    expect(drawable.updateSubTree()).toBe(false);
+  });
 });

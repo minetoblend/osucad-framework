@@ -2,7 +2,7 @@ import {
   CompositeDrawable,
   type CompositeDrawableOptions,
 } from "./CompositeDrawable";
-import type { Drawable } from "../Drawable";
+import type { Drawable } from "../drawables/Drawable";
 
 export interface ContainerOptions extends CompositeDrawableOptions {
   children?: Drawable[];
@@ -44,7 +44,7 @@ export class Container extends CompositeDrawable {
     return this.content.children;
   }
 
-  add<T extends Drawable>(child: T): T {
+  add<T extends Drawable>(child: T): T | undefined {
     if (this.content === this) {
       return this.addInternal(child);
     } else {

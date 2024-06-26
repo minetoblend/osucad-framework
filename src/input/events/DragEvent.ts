@@ -7,7 +7,7 @@ export class DragEvent extends UIEvent {
   constructor(
     state: InputState,
     readonly button: MouseButton,
-    readonly screenSpaceMousePosition: Vec2 | null = null,
+    readonly screenSpaceMouseDownPosition: Vec2 | null = null,
     screenSpaceLastMousePosition: Vec2 | null = null
   ) {
     super(state, "onDrag");

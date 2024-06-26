@@ -1,5 +1,5 @@
-import { Vec2, type IVec2 } from "../../../math/Vec2";
-import { Axes } from "../Axes";
+import { Vec2, type IVec2 } from "../../math/Vec2";
+import { Axes } from "../drawables/Axes";
 import { Container, type ContainerOptions } from "./Container";
 
 export interface DrawSizePreservingFillContainerOptions
@@ -19,8 +19,8 @@ export class DrawSizePreservingFillContainer extends Container {
 
     this.apply(options);
 
-    this.#content = this.addInternal(
-      Container.create({
+    this.addInternal(
+      this.#content = Container.create({
         relativeSizeAxes: Axes.Both,
       })
     );
