@@ -8,6 +8,8 @@ export {
   Text as PIXIText,
   BitmapText as PIXIBitmapText,
   TilingSprite as PIXITilingSprite,
+  type TextStyleOptions as PIXITextStyleOptions,
+  TextStyle as PIXITextStyle,
   type Renderer as PIXIRenderer,
   type ColorSource,
   Color,

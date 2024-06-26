@@ -1,7 +1,12 @@
-import { Drawable } from "../drawables/Drawable";
+import { Drawable, type DrawableOptions } from "../drawables/Drawable";
 import { PIXIContainer, PIXISprite, PIXITexture } from "../../pixi";
 
 export class Box extends Drawable {
+
+  constructor(options: DrawableOptions = {}) {
+    super();
+    this.apply(options);
+  }
 
   #sprite!: PIXISprite;
 
