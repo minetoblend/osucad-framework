@@ -124,8 +124,6 @@ export class PassThroughInputManager extends CustomInputManager {
         )
       ).apply(this.currentState, this);
 
-      console.log(mouseDiff)
-
     // TODO: Add the remaining events
   }
 
