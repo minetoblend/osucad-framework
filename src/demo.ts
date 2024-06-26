@@ -1,9 +1,7 @@
 import { Game } from "./Game";
 import { Box } from "./graphics/shapes/Box";
 import { WebGameHost } from "./platform/WebGameHost";
-import { ManualInputManager } from "./input/ManualInputManager";
 import type { MouseDownEvent } from "./input/events/MouseDownEvent";
-import { Vec2 } from "./math";
 import "./style.css";
 import { Container } from "./graphics/containers/Container";
 import { Axes } from "./graphics/drawables/Axes";
