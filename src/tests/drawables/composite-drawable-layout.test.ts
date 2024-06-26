@@ -79,12 +79,14 @@ describe('composite drawable layout', () => {
     parent.load(new FramedClock(), new DependencyContainer());
 
     parent.updateSubTree();
+    parent.updateSubTreeTransforms();
 
     expect(child.drawNodePosition).toEqual({ x: 10, y: 20 });
 
     parent.padding = { horizontal: 20, vertical: 30 };
 
     parent.updateSubTree();
+    parent.updateSubTreeTransforms();
 
     expect(child.drawSize).toEqual({ x: 50, y: 50 });
     expect(child.drawNodePosition).toEqual({ x: 20, y: 30 });

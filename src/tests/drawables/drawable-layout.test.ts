@@ -164,11 +164,13 @@ describe("drawable layout", () => {
 
     drawable.load(new FramedClock(), new DependencyContainer());
     drawable.updateSubTree();
+    drawable.updateSubTreeTransforms();
 
     expect(drawable.drawNodePosition).toEqual({ x: 50, y: 50 });
 
     drawable.x = 100;
     drawable.updateSubTree();
+    drawable.updateSubTreeTransforms();
 
     expect(drawable.drawNodePosition).toEqual({ x: 100, y: 50 });
   });
