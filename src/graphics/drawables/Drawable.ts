@@ -941,7 +941,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
     this.drawNode.position.copyFrom(pos);
     this.drawNode.pivot.copyFrom(this.originPosition);
-    this.drawNode.scale.copyFrom(this.scale);
+    this.drawNode.scale.copyFrom(this.drawScale);
     this.drawNode.rotation = this.rotation;
   }
 
