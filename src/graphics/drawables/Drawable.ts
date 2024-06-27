@@ -1,3 +1,4 @@
+import { Matrix } from "pixi.js";
 import { Action } from "../../bindables/Action";
 import {
   popDrawableScope,
@@ -20,23 +21,28 @@ import type { MouseDownEvent } from "../../input/events/MouseDownEvent";
 import type { MouseMoveEvent } from "../../input/events/MouseMoveEvent";
 import type { MouseUpEvent } from "../../input/events/MouseUpEvent";
 import type { UIEvent } from "../../input/events/UIEvent";
+import { Quad } from "../../math/Quad";
 import { Rectangle } from "../../math/Rectangle";
 import { Vec2, type IVec2 } from "../../math/Vec2";
-import { Color, Filter, PIXIContainer, type ColorSource } from "../../pixi";
+import {
+  Color,
+  Filter,
+  PIXIContainer,
+  type BLEND_MODES,
+  type ColorSource,
+} from "../../pixi";
 import type { IFrameBasedClock } from "../../timing/IFrameBasedClock";
 import type { IDisposable } from "../../types/IDisposable";
+import { almostEquals } from "../../utils/almostEquals";
 import { debugAssert } from "../../utils/debugAssert";
 import { animationMixins } from "../AnimationMixins";
+import type { CompositeDrawable } from "../containers/CompositeDrawable";
 import { Anchor } from "./Anchor";
 import { Axes } from "./Axes";
 import { InvalidationState } from "./InvalidationState";
 import { LayoutComputed } from "./LayoutComputed";
 import { LayoutMember } from "./LayoutMember";
 import { MarginPadding, type MarginPaddingOptions } from "./MarginPadding";
-import type { CompositeDrawable } from "../containers/CompositeDrawable";
-import { Quad } from "../../math/Quad";
-import { almostEquals } from "../../utils/almostEquals";
-import { Matrix } from "pixi.js";
 
 export interface DrawableOptions {
   position?: IVec2;
@@ -56,6 +62,7 @@ export interface DrawableOptions {
   margin?: MarginPadding | MarginPaddingOptions;
   label?: string;
   filters?: Filter[];
+  blendMode?: BLEND_MODES;
 }
 
 export const LOAD = Symbol("load");
@@ -308,6 +315,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     );
 
     this.#color.setValue(value);
+
     this.invalidate(Invalidation.Color);
   }
 
@@ -346,6 +354,14 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     } else {
       this.invalidate(Invalidation.Color);
     }
+  }
+
+  get blendMode() {
+    return this.drawNode.blendMode;
+  }
+
+  set blendMode(value: BLEND_MODES) {
+    this.drawNode.blendMode = value;
   }
 
   get isPresent() {

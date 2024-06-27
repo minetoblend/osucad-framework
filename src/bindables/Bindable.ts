@@ -23,7 +23,7 @@ export class Bindable<T> {
 
   set value(value: T) {
     this.#value = value;
-    this.#notifyListeners();
+    this.triggerChange();
   }
 
   #listeners = new Set<BindableListener<T>>();
@@ -52,7 +52,7 @@ export class Bindable<T> {
     this.#listeners.clear();
   }
 
-  #notifyListeners() {
+  triggerChange() {
     for (const listener of this.#listeners) {
       listener(this.value);
     }

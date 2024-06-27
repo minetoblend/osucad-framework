@@ -11,6 +11,7 @@ export class ClickableContainer extends Container {
 
   set action(value) {
     this.#action = value;
+    if(value) this.enabled.value = true;
   }
 
   public readonly enabled = new Bindable(false);
@@ -19,4 +20,5 @@ export class ClickableContainer extends Container {
     if (this.enabled.value) this.action?.();
     return true;
   }
+
 }

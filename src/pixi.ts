@@ -12,6 +12,7 @@ export {
   TextStyle as PIXITextStyle,
   type Renderer as PIXIRenderer,
   type ColorSource,
+  type BLEND_MODES,
   Color,
   isMobile,
   Filter,

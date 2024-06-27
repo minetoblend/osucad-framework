@@ -10,6 +10,12 @@ export interface ContainerOptions extends CompositeDrawableOptions {
 }
 
 export class Container extends CompositeDrawable {
+
+  constructor(options: ContainerOptions = {}) {
+    super();
+    this.apply(options);
+  }
+
   static create(options: ContainerOptions = {}): Container {
     return new Container().apply(options);
   }
