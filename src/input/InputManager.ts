@@ -1,8 +1,9 @@
+import { resolved } from "../di/decorators";
 import { Container } from "../graphics/containers/Container";
 import { Axes } from "../graphics/drawables/Axes";
 import type { Drawable } from "../graphics/drawables/Drawable";
+import { GAME_HOST } from "../injectionTokens";
 import type { Vec2 } from "../math";
-import { GAME_HOST } from "../platform";
 import type { GameHost } from "../platform/GameHost";
 import { debugAssert } from "../utils/debugAssert";
 import { MouseButtonEventManager } from "./MouseButtonEventManager";
@@ -55,12 +56,11 @@ export abstract class InputManager
     return new MouseMinorButtonEventManager(button);
   }
 
+  @resolved(GAME_HOST)
   host!: GameHost;
 
   override onLoad() {
     super.onLoad();
-
-    this.host = this.dependencies.resolve(GAME_HOST);
 
     for (const handler of this.inputHandlers) {
       handler.initialize(this.host);
