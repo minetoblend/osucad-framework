@@ -89,7 +89,7 @@ export abstract class MouseButtonEventManager extends ButtonEventManager<MouseBu
 
     if (this.enableDrag) {
       this.dragStarted = false;
-      this.#handleDragDrawableEnd();
+      this.#handleDragDrawableEnd(state);
     }
 
     this.mouseDownPosition = null;
