@@ -13,7 +13,7 @@ export class MouseHandler extends InputHandler {
         if (enabled) {
           host.renderer.canvas.addEventListener("mousedown", this.#mouseDown);
           host.renderer.canvas.addEventListener("mouseup", this.#mouseUp);
-          host.renderer.canvas.addEventListener("mousemove", this.#mouseMove);
+          host.renderer.canvas.addEventListener("pointermove", this.#mouseMove);
           host.renderer.canvas.addEventListener("mouseleave", this.#mouseLeave);
         } else {
           host.renderer.canvas.removeEventListener(
@@ -22,7 +22,7 @@ export class MouseHandler extends InputHandler {
           );
           host.renderer.canvas.removeEventListener("mouseup", this.#mouseUp);
           host.renderer.canvas.removeEventListener(
-            "mousemove",
+            "pointermove",
             this.#mouseMove
           );
           host.renderer.canvas.removeEventListener(
@@ -68,10 +68,17 @@ export class MouseHandler extends InputHandler {
 
   #mouseLeave = (event: MouseEvent) => {};
 
-  #mouseMove = (event: MouseEvent) => {
+  #mouseMove = (event: MouseEvent | PointerEvent) => {
     const rect = (event.target as HTMLCanvasElement).getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
+    
+    const index = this.pendingInputs.findIndex(it => it instanceof MousePositionAbsoluteInput);
+    if(index !== -1) {
+      // We only want to keep the most recent mouse position
+      this.pendingInputs.splice(index, 1);
+    }
+
     this.#enqueueInput(new MousePositionAbsoluteInput(new Vec2(x, y)));
   };
 
