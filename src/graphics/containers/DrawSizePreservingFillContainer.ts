@@ -15,23 +15,20 @@ export class DrawSizePreservingFillContainer extends Container {
   readonly #content: Container;
 
   constructor(options: DrawSizePreservingFillContainerOptions = {}) {
-    super();
+    super({
+      relativeSizeAxes: Axes.Both,
+    });
 
     this.apply(options);
 
     this.addInternal(
-      this.#content = Container.create({
+      (this.#content = new Container({
         relativeSizeAxes: Axes.Both,
-      })
+      }))
     );
-
-    this.relativeSizeAxes = Axes.Both;
   }
 
   override update() {
-    super.update();
-
-    // Vector2 drawSizeRatio = Vector2.Divide(Parent!.ChildSize, TargetDrawSize);
     const drawSizeRatio = this.parent!.childSize.div(this.targetDrawSize);
 
     switch (this.strategy) {
@@ -54,9 +51,20 @@ export class DrawSizePreservingFillContainer extends Container {
     }
 
     this.#content.size = {
-      x: this.#content.scale.x === 0 ? 0 : 1 / this.#content.scale.x,
-      y: this.#content.scale.y === 0 ? 0 : 1 / this.#content.scale.y,
-    }
+      x: drawSizeRatio.x === 0 ? 0 : 1 / drawSizeRatio.x,
+      y: drawSizeRatio.y === 0 ? 0 : 1 / drawSizeRatio.y,
+    };
+
+    this.#content.position = new Vec2(
+      (this.parent!.childSize.x - (this.#content.scale.x * this.#content.drawSize.x)) / 2,
+      (this.parent!.childSize.y - (this.#content.scale.y * this.#content.drawSize.y)) / 2
+    );
+
+    super.update();
+  }
+
+  override get content() {
+    return this.#content;
   }
 }
 
