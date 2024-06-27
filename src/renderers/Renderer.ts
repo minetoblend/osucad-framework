@@ -16,8 +16,24 @@ export class Renderer {
 
     this.#size = Vec2.from(size);
 
+    const canvas = document.createElement("canvas");
+    canvas.width = this.#size.x;
+    canvas.height = this.#size.y;
+
+    const context = canvas.getContext("webgl2", {
+      alpha: false,
+      antialias: environment.antialiasPreferred ?? true,
+      depth: true,
+      powerPreference: "high-performance",
+      desynchronized: true,
+      preserveDrawingBuffer: true,
+      stencil: true,
+    });
+
     this.#internalRenderer = await autoDetectRenderer({
-      preference: environment.webGpuSupported ? rendererPreference : "webgl",
+      canvas,
+      context,
+      preference: "webgl", // environment.webGpuSupported ? rendererPreference : "webgl",
       antialias: options.environment?.antialiasPreferred ?? true,
       width: this.#size.x,
       height: this.#size.y,
