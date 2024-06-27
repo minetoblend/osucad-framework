@@ -1,4 +1,4 @@
-export const enum Anchor {
+export enum Anchor {
   x0 = 1,
   x1 = 1 << 1,
   x2 = 1 << 2,

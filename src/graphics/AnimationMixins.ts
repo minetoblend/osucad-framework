@@ -59,6 +59,7 @@ export const animationMixins: Partial<Drawable> = {
     this.fadeTo({ ...options, alpha: 0 });
   },
   fadeIn(options: AnimationOptions) {
+    this.alpha = 0;
     this.fadeTo({ ...options, alpha: 1 });
   },
   moveTo(options: MoveToOptions) {

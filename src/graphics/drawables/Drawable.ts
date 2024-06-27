@@ -8,6 +8,7 @@ import {
   DependencyContainer,
   type ReadonlyDependencyContainer,
 } from "../../di/DependencyContainer";
+import { getDependencyLoaders, getInjections } from "../../di/decorators";
 import { HandleInputCache } from "../../input/HandleInputCache";
 import type { IInputReceiver } from "../../input/IInputReceiver";
 import type { InputManager } from "../../input/InputManager";
@@ -43,7 +44,6 @@ import { InvalidationState } from "./InvalidationState";
 import { LayoutComputed } from "./LayoutComputed";
 import { LayoutMember } from "./LayoutMember";
 import { MarginPadding, type MarginPaddingOptions } from "./MarginPadding";
-import { getDependencyLoaders, getInjections } from "../../di/decorators";
 
 export interface DrawableOptions {
   position?: IVec2;
@@ -669,7 +669,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     return this.#loadState;
   }
 
-  dependencies!: ReadonlyDependencyContainer;
+  dependencies!: DependencyContainer;
 
   removeFromParent(dispose = true) {
     this.parent?.["removeInternal"]?.(this, dispose);
@@ -1164,14 +1164,14 @@ export function loadDrawable(
   drawable[LOAD](clock, dependencies);
 }
 
-export const enum LoadState {
+export enum LoadState {
   NotLoaded,
   Loading,
   Ready,
   Loaded,
 }
 
-export const enum Invalidation {
+export enum Invalidation {
   Transform = 1,
   DrawSize = 1 << 1,
   Color = 1 << 2,
