@@ -43,6 +43,7 @@ import { InvalidationState } from "./InvalidationState";
 import { LayoutComputed } from "./LayoutComputed";
 import { LayoutMember } from "./LayoutMember";
 import { MarginPadding, type MarginPaddingOptions } from "./MarginPadding";
+import { getDependencyLoaders, getInjections } from "../../di/decorators";
 
 export interface DrawableOptions {
   position?: IVec2;
@@ -696,6 +697,11 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
       this.#injectDependencies(dependencies);
       this.onLoad();
+      const dependencyLoaders = getDependencyLoaders(this);
+      for (const key of dependencyLoaders) {
+        (this as any)[key]();
+      }  
+
       this.#loadState = LoadState.Ready;
     } finally {
       popDrawableScope();
@@ -725,6 +731,17 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   #injectDependencies(dependencies: ReadonlyDependencyContainer) {
     this.dependencies = new DependencyContainer(dependencies);
+
+    const injections = getInjections(this);
+    for (const { key, type, optional } of injections) {
+      Reflect.set(
+        this,
+        key,
+        optional
+          ? this.dependencies.resolveOptional(type)
+          : this.dependencies.resolve(type),
+      );
+    }
   }
 
   #isDisposed: boolean = false;

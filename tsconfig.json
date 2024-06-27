@@ -23,6 +23,7 @@
     "verbatimModuleSyntax": true,
     "noImplicitAny": true,
     "noImplicitThis": true,
+    "experimentalDecorators": true,
     
     "types": ["vitest/globals"]
   },
