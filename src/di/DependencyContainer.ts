@@ -13,6 +13,7 @@ export class DependencyContainer implements ReadonlyDependencyContainer {
   }
 
   resolveOptional<T>(key: new (...args: any[]) => T): T;
+  resolveOptional<T>(key: InjectionToken<T>): T;
   resolveOptional<T>(key: any): T | undefined {
     if (this.dependencies.has(key)) {
       return this.dependencies.get(key);
@@ -22,6 +23,7 @@ export class DependencyContainer implements ReadonlyDependencyContainer {
   }
 
   resolve<T>(key: new (...args: any[]) => T): T;
+  resolve<T>(key: InjectionToken<T>): T;
   resolve<T>(key: any): T {
     const value = this.resolveOptional<T>(key);
 
@@ -37,4 +39,8 @@ export interface ReadonlyDependencyContainer {
   resolveOptional<T>(key: new (...args: any[]) => T): T;
 
   resolve<T>(key: new (...args: any[]) => T): T;
+  resolve<T>(key: InjectionToken<T>): T;
+}
+
+export interface InjectionToken<T> extends Symbol { 
 }

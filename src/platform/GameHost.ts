@@ -1,3 +1,4 @@
+import { GAME_HOST } from ".";
 import { FrameworkEnvironment } from "../FrameworkEnvironment";
 import type { Game } from "../Game";
 import { DependencyContainer } from "../di/DependencyContainer";
@@ -78,7 +79,7 @@ export abstract class GameHost {
       this.onUnhandledRejection(event);
     });
 
-    this.dependencies.provide(this);
+    this.dependencies.provide(GAME_HOST, this);
 
     this.#populateInputHandlers();
 

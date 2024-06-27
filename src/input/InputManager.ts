@@ -1,9 +1,9 @@
+import { Container } from "../graphics/containers/Container";
 import { Axes } from "../graphics/drawables/Axes";
 import type { Drawable } from "../graphics/drawables/Drawable";
-import { Container } from "../graphics/containers/Container";
 import type { Vec2 } from "../math";
+import { GAME_HOST } from "../platform";
 import type { GameHost } from "../platform/GameHost";
-import { WebGameHost } from "../platform/WebGameHost";
 import { debugAssert } from "../utils/debugAssert";
 import { MouseButtonEventManager } from "./MouseButtonEventManager";
 import { HoverEvent } from "./events/HoverEvent";
@@ -60,7 +60,7 @@ export abstract class InputManager
   override onLoad() {
     super.onLoad();
 
-    this.host = this.dependencies.resolve(WebGameHost);
+    this.host = this.dependencies.resolve(GAME_HOST);
 
     for (const handler of this.inputHandlers) {
       handler.initialize(this.host);

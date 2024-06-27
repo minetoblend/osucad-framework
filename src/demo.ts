@@ -1,10 +1,6 @@
-import { Game } from "./Game";
-import { Box } from "./graphics/shapes/Box";
-import { WebGameHost } from "./platform/WebGameHost";
-import type { MouseDownEvent } from "./input/events/MouseDownEvent";
+import { Game, Box, WebGameHost, MouseDownEvent, Container, Axes } from ".";
+
 import "./style.css";
-import { Container } from "./graphics/containers/Container";
-import { Axes } from "./graphics/drawables/Axes";
 
 const host = new WebGameHost("demo");
 
