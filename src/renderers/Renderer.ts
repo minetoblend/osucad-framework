@@ -12,7 +12,7 @@ export interface RendererOptions {
 export class Renderer {
   async init(options: RendererOptions) {
     const { autoDetectRenderer } = await import("pixi.js");
-    const { size, environment, rendererPreference } = options;
+    const { size, environment } = options;
 
     this.#size = Vec2.from(size);
 
