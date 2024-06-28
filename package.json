@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && tsup",
+    "build:watch": "tsup --watch",
     "preview": "vite preview",
     "test": "vitest",
     "test:watch": "vitest --watch",
