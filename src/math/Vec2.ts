@@ -129,6 +129,49 @@ export class Vec2 implements ILerp<Vec2> {
       this.y + (target.y - this.y) * t
     );
   }
+  
+  static add(a: IVec2, b: IVec2): Vec2 {
+    return new Vec2(a.x + b.x, a.y + b.y);
+  }
+
+  static sub(a: IVec2, b: IVec2): Vec2 {
+    return new Vec2(a.x - b.x, a.y - b.y);
+  }
+
+  static mul(a: IVec2, b: IVec2): Vec2 {
+    return new Vec2(a.x * b.x, a.y * b.y);
+  }
+
+  static div(a: IVec2, b: IVec2): Vec2 {
+    return new Vec2(a.x / b.x, a.y / b.y);
+  }
+
+  static equals(a: IVec2, b: IVec2): boolean {
+    return a.x === b.x && a.y === b.y;
+  }
+
+  static distance(a: IVec2, b: IVec2): number {
+    return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
+  }
+
+  static distanceSq(a: IVec2, b: IVec2): number {
+    return (a.x - b.x) ** 2 + (a.y - b.y) ** 2;
+  }
+
+  static lerp(a: IVec2, b: IVec2, t: number): Vec2 {
+    return new Vec2(
+      a.x + (b.x - a.x) * t,
+      a.y + (b.y - a.y) * t
+    );
+  }
+
+  static closerThan(a: IVec2, b: IVec2, threshold: number): boolean {
+    return Vec2.distanceSq(a, b) < threshold * threshold;
+  }
+
+  static closerThanSq(a: IVec2, b: IVec2, threshold: number): boolean {
+    return Vec2.distanceSq(a, b) < threshold * threshold;
+  }
 }
 
 export interface IVec2 {
