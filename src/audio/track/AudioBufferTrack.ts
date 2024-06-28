@@ -25,6 +25,11 @@ export class AudioBufferTrack extends Track {
   override seek(position: number): boolean {
     if (position < 0 || position > this.length) return false;
 
+    if(!this.isRunning) {
+      this.#offset = position;
+      return true;
+    }
+
     this.stop();
     this.#offset = position;
     this.start();
