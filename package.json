@@ -30,16 +30,17 @@
     "@types/animejs": "^3.1.12",
     "@vitest/browser": "^1.6.0",
     "@vitest/coverage-v8": "^1.6.0",
+    "pixi.js": "^8.2.0",
     "tsup": "^8.1.0",
     "typescript": "^5.2.2",
     "vite": "^5.3.1",
     "vitest": "^1.6.0",
-    "webdriverio": "^8.39.0",
-    "pixi.js": "^8.2.0"
+    "webdriverio": "^8.39.0"
   },
   "dependencies": {
     "@webgpu/types": "^0.1.43",
-    "gsap": "^3.12.5"
+    "gsap": "^3.12.5",
+    "reflect-metadata": "^0.1.13"
   },
   "peerDependencies": {
     "pixi.js": "^8.2.0"
