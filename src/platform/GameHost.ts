@@ -1,6 +1,6 @@
-
 import { FrameworkEnvironment } from "../FrameworkEnvironment";
 import type { Game } from "../Game";
+import { AudioManager } from "../audio/AudioManager";
 import { DependencyContainer } from "../di/DependencyContainer";
 import type { Container } from "../graphics/containers/Container";
 import { loadDrawable } from "../graphics/drawables/Drawable";
@@ -16,13 +16,21 @@ export interface GameHostOptions {
 }
 
 export abstract class GameHost {
-  #renderer?: Renderer;
-
   get renderer(): Renderer {
     if (!this.#renderer) throw new Error("Renderer not initialized");
 
     return this.#renderer;
   }
+
+  #renderer?: Renderer;
+
+  get audioManager(): AudioManager {
+    if (!this.#audioManager) throw new Error("AudioManager not initialized");
+
+    return this.#audioManager;
+  }
+
+  #audioManager?: AudioManager;
 
   clock!: IFrameBasedClock;
 
@@ -48,7 +56,7 @@ export abstract class GameHost {
 
     this.#frameCount++;
 
-    this.renderer!.size = this.getWindowSize();
+    this.renderer.size = this.getWindowSize();
 
     this.root.size = this.getWindowSize();
 
@@ -61,7 +69,7 @@ export abstract class GameHost {
   }
 
   protected render() {
-    this.renderer!.render(this.root!);
+    this.renderer.render(this.root!);
   }
 
   async takeScreenshot(): Promise<Blob> {
@@ -88,11 +96,14 @@ export abstract class GameHost {
 
     this.#initializeInputHandlers();
 
-    this.dependencies.provide(this.renderer!);
+    this.#audioManager = new AudioManager();
+
+    this.dependencies.provide(this.renderer);
+    this.dependencies.provide(this.audioManager);
 
     this.#bootstrapSceneGraph(game);
 
-    container.appendChild(this.renderer!.canvas);
+    container.appendChild(this.renderer.canvas);
 
     this.executionState = ExecutionState.Running;
 

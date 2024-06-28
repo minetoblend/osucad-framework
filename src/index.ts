@@ -1,3 +1,4 @@
+export * from "./audio";
 export * from "./bindables";
 export * from "./di";
 export * from "./platform";
