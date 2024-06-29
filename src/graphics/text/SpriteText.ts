@@ -1,10 +1,12 @@
 import { PIXIBitmapText, PIXIContainer, PIXITextStyle, type PIXITextStyleOptions } from '../../pixi';
 import { Drawable, Invalidation, type DrawableOptions } from '../drawables/Drawable';
 import { LayoutMember } from '../drawables/LayoutMember';
+import type { FontDefinition } from './FontDefinition';
 
 export interface SpriteTextOptions extends DrawableOptions {
   text?: string;
   style?: PIXITextStyle | PIXITextStyleOptions;
+  font?: FontDefinition;
 }
 
 export class SpriteText extends Drawable {
@@ -15,6 +17,9 @@ export class SpriteText extends Drawable {
       this.#textStyle = new PIXITextStyle(options.style);
     } else {
       this.#textStyle = new PIXITextStyle();
+    }
+    if (options.font) {
+      this.#textStyle.fontFamily = options.font.font.fontFamily;
     }
   }
 
