@@ -1,4 +1,5 @@
 import { AudioChannel } from './AudioChannel';
+import { Sample } from './sample/Sample';
 import { AudioBufferTrack } from './track/AudioBufferTrack';
 
 export class AudioManager {
@@ -21,7 +22,7 @@ export class AudioManager {
   }
 
   createSample(channel: AudioChannel, buffer: AudioBuffer) {
-    return new AudioBufferTrack(this.context, channel, buffer);
+    return new Sample(this.context, channel, buffer);
   }
 
   createSampleFromUrl(channel: AudioChannel, url: string) {
