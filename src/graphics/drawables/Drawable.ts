@@ -56,6 +56,7 @@ export interface DrawableOptions {
   width?: number;
   height?: number;
   rotation?: number;
+  skew?: IVec2;
   alpha?: number;
   color?: ColorSource;
   tint?: ColorSource;
@@ -302,6 +303,21 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     this.invalidate(Invalidation.Transform);
   }
 
+  // endregion
+
+  // region skew
+  get skew() {
+    return this.#skew;
+  }
+
+  set skew(value: IVec2) {
+    if (this.#skew.equals(value)) return;
+
+    this.#skew = Vec2.from(value);
+    this.invalidate(Invalidation.Transform);
+  }
+
+  #skew: Vec2 = Vec2.zero();
   // endregion
 
   // region tint & alpha
@@ -1090,6 +1106,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     this.drawNode.position.copyFrom(pos);
     this.drawNode.pivot.copyFrom(this.originPosition);
     this.drawNode.scale.copyFrom(this.drawScale);
+    this.drawNode.skew.copyFrom(this.skew);
     this.drawNode.rotation = this.rotation;
   }
 
