@@ -30,9 +30,7 @@ export class ManualInputManager extends PassThroughInputManager {
     if (value === this.#showVisualCursorGuide) return;
 
     this.#showVisualCursorGuide = value;
-    this.#testCursor.state.value = value
-      ? Visibility.Visible
-      : Visibility.Hidden;
+    this.#testCursor.state.value = value ? Visibility.Visible : Visibility.Hidden;
   }
 
   readonly #testCursor: TestCursorContainer;
@@ -60,11 +58,7 @@ export class ManualInputManager extends PassThroughInputManager {
   }
 
   moveMouseToDrawable(drawable: Drawable, offset: Vec2 | null = null) {
-    this.moveMouseTo(
-      drawable
-        .toScreenSpace(drawable.layoutRectangle.center)
-        .add(offset ?? Vec2.zero()),
-    );
+    this.moveMouseTo(drawable.toScreenSpace(drawable.layoutRectangle.center).add(offset ?? Vec2.zero()));
   }
 
   moveMouseTo(position: Vec2) {

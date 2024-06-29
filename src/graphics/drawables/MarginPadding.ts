@@ -2,9 +2,7 @@ import { Vec2 } from '../../math/Vec2';
 import { lerp } from '../../math/lerp';
 import type { ILerp } from '../../types/ILerp';
 
-export type MarginPaddingOptions =
-  | number
-  | (MarginPaddingOptionsHorizontal & MarginPaddingOptionsVertical);
+export type MarginPaddingOptions = number | (MarginPaddingOptionsHorizontal & MarginPaddingOptionsVertical);
 
 export type MarginPaddingOptionsHorizontal =
   | {
@@ -80,17 +78,12 @@ export class MarginPadding implements ILerp<MarginPadding> {
 
   equals(other: MarginPadding): boolean {
     return (
-      this.left === other.left &&
-      this.right === other.right &&
-      this.top === other.top &&
-      this.bottom === other.bottom
+      this.left === other.left && this.right === other.right && this.top === other.top && this.bottom === other.bottom
     );
   }
 
   isZero(): boolean {
-    return (
-      this.left === 0 && this.right === 0 && this.top === 0 && this.bottom === 0
-    );
+    return this.left === 0 && this.right === 0 && this.top === 0 && this.bottom === 0;
   }
 
   toString(): string {

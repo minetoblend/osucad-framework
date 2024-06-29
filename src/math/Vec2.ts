@@ -127,10 +127,7 @@ export class Vec2 implements ILerp<Vec2> {
   }
 
   lerp(target: Vec2, t: number): Vec2 {
-    return new Vec2(
-      this.x + (target.x - this.x) * t,
-      this.y + (target.y - this.y) * t,
-    );
+    return new Vec2(this.x + (target.x - this.x) * t, this.y + (target.y - this.y) * t);
   }
 
   static add(a: IVec2, b: IVec2): Vec2 {

@@ -12,8 +12,7 @@ export class DragEvent extends UIEvent {
     screenSpaceLastMousePosition: Vec2 | null = null,
   ) {
     super(state, 'onDrag');
-    this.screenSpaceLastMousePosition =
-      screenSpaceLastMousePosition ?? state.mouse.position;
+    this.screenSpaceLastMousePosition = screenSpaceLastMousePosition ?? state.mouse.position;
   }
 
   readonly screenSpaceLastMousePosition: Vec2;
@@ -24,20 +23,14 @@ export class DragEvent extends UIEvent {
 
   localSpaceDelta(drawable: Drawable): Vec2 {
     const position = drawable.toLocalSpace(this.screenSpaceMousePosition);
-    const lastPosition = drawable.toLocalSpace(
-      this.screenSpaceLastMousePosition,
-    );
+    const lastPosition = drawable.toLocalSpace(this.screenSpaceLastMousePosition);
 
     return position.sub(lastPosition);
   }
 
   parentSpaceDelta(drawable: Drawable): Vec2 {
-    const position = drawable.parent!.toLocalSpace(
-      this.screenSpaceMousePosition,
-    );
-    const lastPosition = drawable.parent!.toLocalSpace(
-      this.screenSpaceLastMousePosition,
-    );
+    const position = drawable.parent!.toLocalSpace(this.screenSpaceMousePosition);
+    const lastPosition = drawable.parent!.toLocalSpace(this.screenSpaceLastMousePosition);
 
     return position.sub(lastPosition);
   }

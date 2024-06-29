@@ -1,7 +1,4 @@
-import {
-  CompositeDrawable,
-  type CompositeDrawableOptions,
-} from './CompositeDrawable';
+import { CompositeDrawable, type CompositeDrawableOptions } from './CompositeDrawable';
 import type { Drawable } from '../drawables/Drawable';
 
 export interface ContainerOptions extends CompositeDrawableOptions {

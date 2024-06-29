@@ -12,9 +12,7 @@ export class MouseButtonInput extends ButtonInput<MouseButton> {
     return new MouseButtonInput([new ButtonInputEntry(button, isPressed)]);
   }
 
-  protected override getButtonStates(
-    state: InputState,
-  ): ButtonStates<MouseButton> {
+  protected override getButtonStates(state: InputState): ButtonStates<MouseButton> {
     return state.mouse.buttons;
   }
 }

@@ -29,30 +29,10 @@ export class Quad {
   }
 
   get AABB() {
-    const minX = Math.min(
-      this.topLeft.x,
-      this.topRight.x,
-      this.bottomLeft.x,
-      this.bottomRight.x,
-    );
-    const minY = Math.min(
-      this.topLeft.y,
-      this.topRight.y,
-      this.bottomLeft.y,
-      this.bottomRight.y,
-    );
-    const maxX = Math.max(
-      this.topLeft.x,
-      this.topRight.x,
-      this.bottomLeft.x,
-      this.bottomRight.x,
-    );
-    const maxY = Math.max(
-      this.topLeft.y,
-      this.topRight.y,
-      this.bottomLeft.y,
-      this.bottomRight.y,
-    );
+    const minX = Math.min(this.topLeft.x, this.topRight.x, this.bottomLeft.x, this.bottomRight.x);
+    const minY = Math.min(this.topLeft.y, this.topRight.y, this.bottomLeft.y, this.bottomRight.y);
+    const maxX = Math.max(this.topLeft.x, this.topRight.x, this.bottomLeft.x, this.bottomRight.x);
+    const maxY = Math.max(this.topLeft.y, this.topRight.y, this.bottomLeft.y, this.bottomRight.y);
     return new Rectangle(minX, minY, maxX - minX, maxY - minY);
   }
 }

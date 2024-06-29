@@ -1,12 +1,7 @@
 import gsap from 'gsap';
 import { Action } from '../../bindables';
 import { Vec2, type IVec2 } from '../../math';
-import {
-  Drawable,
-  Invalidation,
-  InvalidationSource,
-  LayoutMember,
-} from '../drawables';
+import { Drawable, Invalidation, InvalidationSource, LayoutMember } from '../drawables';
 import { Container } from './Container';
 
 export abstract class FlowContainer extends Container {
@@ -65,19 +60,14 @@ export abstract class FlowContainer extends Container {
 
   readonly #layoutChildren = new Map<Drawable, number>();
 
-  protected override addInternal<T extends Drawable>(
-    drawable: T,
-  ): T | undefined {
+  protected override addInternal<T extends Drawable>(drawable: T): T | undefined {
     this.#layoutChildren.set(drawable, 0);
 
     this.invalidateLayout();
     return super.addInternal(drawable);
   }
 
-  protected override removeInternal(
-    drawable: Drawable,
-    disposeImmediately?: boolean,
-  ): boolean {
+  protected override removeInternal(drawable: Drawable, disposeImmediately?: boolean): boolean {
     this.#layoutChildren.delete(drawable);
 
     this.invalidateLayout();
@@ -166,10 +156,7 @@ export abstract class FlowContainer extends Container {
         if (targetX !== undefined && targetY !== undefined) break;
       }
 
-      const currentTargetPos = new Vec2(
-        targetX ?? drawable.position.x,
-        targetY ?? drawable.position.y,
-      );
+      const currentTargetPos = new Vec2(targetX ?? drawable.position.x, targetY ?? drawable.position.y);
 
       if (currentTargetPos.equals(pos)) continue;
 

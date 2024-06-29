@@ -1,13 +1,7 @@
 import { Matrix } from 'pixi.js';
 import { Action } from '../../bindables/Action';
-import {
-  popDrawableScope,
-  pushDrawableScope,
-} from '../../bindables/lifetimeScope';
-import {
-  DependencyContainer,
-  type ReadonlyDependencyContainer,
-} from '../../di/DependencyContainer';
+import { popDrawableScope, pushDrawableScope } from '../../bindables/lifetimeScope';
+import { DependencyContainer, type ReadonlyDependencyContainer } from '../../di/DependencyContainer';
 import { getDependencyLoaders, getInjections } from '../../di/decorators';
 import { HandleInputCache } from '../../input/HandleInputCache';
 import type { IInputReceiver } from '../../input/IInputReceiver';
@@ -25,13 +19,7 @@ import type { UIEvent } from '../../input/events/UIEvent';
 import { Quad } from '../../math/Quad';
 import { Rectangle } from '../../math/Rectangle';
 import { Vec2, type IVec2 } from '../../math/Vec2';
-import {
-  Color,
-  Filter,
-  PIXIContainer,
-  type BLEND_MODES,
-  type ColorSource,
-} from '../../pixi';
+import { Color, Filter, PIXIContainer, type BLEND_MODES, type ColorSource } from '../../pixi';
 import type { IFrameBasedClock } from '../../timing/IFrameBasedClock';
 import type { IDisposable } from '../../types/IDisposable';
 import { almostEquals } from '../../utils/almostEquals';
@@ -95,10 +83,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   }
 
   public static mixin(source: Record<string, any>): void {
-    Object.defineProperties(
-      Drawable.prototype,
-      Object.getOwnPropertyDescriptors(source),
-    );
+    Object.defineProperties(Drawable.prototype, Object.getOwnPropertyDescriptors(source));
   }
 
   //#region drawNode
@@ -330,10 +315,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   }
 
   set color(value: ColorSource) {
-    debugAssert(
-      Color.isColorLike(value),
-      'color must be a valid color-like value',
-    );
+    debugAssert(Color.isColorLike(value), 'color must be a valid color-like value');
 
     this.#color.setValue(value);
 
@@ -345,10 +327,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   }
 
   set tint(value: ColorSource) {
-    debugAssert(
-      Color.isColorLike(value),
-      'tint must be a valid color-like value',
-    );
+    debugAssert(Color.isColorLike(value), 'tint must be a valid color-like value');
 
     const alpha = this.#color.alpha;
     this.#color.setValue(value);
@@ -386,10 +365,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   }
 
   get isPresent() {
-    return (
-      this.alwaysPresent ||
-      (this.alpha > 0.0001 && this.drawScale.x !== 0 && this.drawScale.y !== 0)
-    );
+    return this.alwaysPresent || (this.alpha > 0.0001 && this.drawScale.x !== 0 && this.drawScale.y !== 0);
   }
 
   #alwaysPresent: boolean = false;
@@ -425,26 +401,17 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   set relativeSizeAxes(value: Axes) {
     if (this.#relativeSizeAxes === value) return;
 
-    if (
-      this.#fillMode != FillMode.Stretch &&
-      (value === Axes.Both || this.#relativeSizeAxes === Axes.Both)
-    )
+    if (this.#fillMode != FillMode.Stretch && (value === Axes.Both || this.#relativeSizeAxes === Axes.Both))
       this.invalidate(Invalidation.DrawSize);
     else {
       const conversion = this.#relativeToAbsoluteFactor;
       if ((value & Axes.X) > (this.#relativeSizeAxes & Axes.X))
-        this.width = almostEquals(conversion.x, 0)
-          ? 0
-          : this.width / conversion.x;
-      else if ((this.#relativeSizeAxes & Axes.X) > (value & Axes.X))
-        this.width *= conversion.x;
+        this.width = almostEquals(conversion.x, 0) ? 0 : this.width / conversion.x;
+      else if ((this.#relativeSizeAxes & Axes.X) > (value & Axes.X)) this.width *= conversion.x;
 
       if ((value & Axes.Y) > (this.#relativeSizeAxes & Axes.Y))
-        this.height = almostEquals(conversion.y, 0)
-          ? 0
-          : this.height / conversion.y;
-      else if ((this.#relativeSizeAxes & Axes.Y) > (value & Axes.Y))
-        this.height *= conversion.y;
+        this.height = almostEquals(conversion.y, 0) ? 0 : this.height / conversion.y;
+      else if ((this.#relativeSizeAxes & Axes.Y) > (value & Axes.Y)) this.height *= conversion.y;
     }
 
     this.#relativeSizeAxes = value;
@@ -472,24 +439,18 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
     if ((value & Axes.X) > (this.#relativePositionAxes & Axes.X))
       this.x = almostEquals(conversion.x, 0) ? 0 : this.x / conversion.x;
-    else if ((this.#relativePositionAxes & Axes.X) > (value & Axes.X))
-      this.x *= conversion.x;
+    else if ((this.#relativePositionAxes & Axes.X) > (value & Axes.X)) this.x *= conversion.x;
 
     if ((value & Axes.Y) > (this.#relativePositionAxes & Axes.Y))
       this.y = almostEquals(conversion.y, 0) ? 0 : this.y / conversion.y;
-    else if ((this.#relativePositionAxes & Axes.Y) > (value & Axes.Y))
-      this.y *= conversion.y;
+    else if ((this.#relativePositionAxes & Axes.Y) > (value & Axes.Y)) this.y *= conversion.y;
 
     this.#relativePositionAxes = value;
 
     this.#updateBypassAutoSizeAxes();
   }
 
-  protected applyRelativeAxes(
-    axes: Axes,
-    v: Readonly<Vec2>,
-    fillMode: FillMode,
-  ): Readonly<Vec2> {
+  protected applyRelativeAxes(axes: Axes, v: Readonly<Vec2>, fillMode: FillMode): Readonly<Vec2> {
     if (axes === Axes.None) {
       return v;
     }
@@ -508,10 +469,8 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     }
 
     if (this.relativeSizeAxes === Axes.Both && fillMode !== FillMode.Stretch) {
-      if (fillMode == FillMode.Fill)
-        x = y = Math.max(x, y * this.#fillAspectRatio);
-      else if (fillMode == FillMode.Fit)
-        x = y = Math.min(x, y * this.#fillAspectRatio);
+      if (fillMode == FillMode.Fill) x = y = Math.max(x, y * this.#fillAspectRatio);
+      else if (fillMode == FillMode.Fit) x = y = Math.min(x, y * this.#fillAspectRatio);
       y /= this.#fillAspectRatio;
     }
 
@@ -631,10 +590,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
     this.#fillAspectRatio = value;
 
-    if (
-      this.#fillMode != FillMode.Stretch &&
-      this.relativeSizeAxes == Axes.Both
-    ) {
+    if (this.#fillMode != FillMode.Stretch && this.relativeSizeAxes == Axes.Both) {
       this.invalidate(Invalidation.DrawSize);
     }
   }
@@ -644,11 +600,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   //#region computed layout properties
 
   get drawPosition(): Vec2 {
-    const position = this.applyRelativeAxes(
-      this.relativePositionAxes,
-      this.position,
-      FillMode.Stretch,
-    );
+    const position = this.applyRelativeAxes(this.relativePositionAxes, this.position, FillMode.Stretch);
 
     return position.add({
       x: this.margin.left,
@@ -657,11 +609,8 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   }
 
   #drawSizeBacking = new LayoutComputed(
-    () =>
-      this.applyRelativeAxes(this.relativeSizeAxes, this.size, this.fillMode),
-    Invalidation.Transform |
-      Invalidation.RequiredParentSizeToFit |
-      Invalidation.Presence,
+    () => this.applyRelativeAxes(this.relativeSizeAxes, this.size, this.fillMode),
+    Invalidation.Transform | Invalidation.RequiredParentSizeToFit | Invalidation.Presence,
   );
 
   get drawSize(): Vec2 {
@@ -673,12 +622,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   }
 
   get layoutRectangle(): Rectangle {
-    return new Rectangle(
-      -this.margin.left,
-      -this.margin.top,
-      this.drawSize.x,
-      this.drawSize.y,
-    );
+    return new Rectangle(-this.margin.left, -this.margin.top, this.drawSize.x, this.drawSize.y);
   }
 
   get boundingBox(): Rectangle {
@@ -689,15 +633,9 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     const ap = this.anchorPosition;
     const rap = this.relativeAnchorPosition;
 
-    const ratio1 = new Vec2(
-      rap.x <= 0 ? 0 : 1 / rap.x,
-      rap.y <= 0 ? 0 : 1 / rap.y,
-    );
+    const ratio1 = new Vec2(rap.x <= 0 ? 0 : 1 / rap.x, rap.y <= 0 ? 0 : 1 / rap.y);
 
-    const ratio2 = new Vec2(
-      rap.x >= 1 ? 0 : 1 / (1 - rap.x),
-      rap.y >= 1 ? 0 : 1 / (1 - rap.y),
-    );
+    const ratio2 = new Vec2(rap.x >= 1 ? 0 : 1 / (1 - rap.x), rap.y >= 1 ? 0 : 1 / (1 - rap.y));
 
     const bbox = this.boundingBox;
 
@@ -709,10 +647,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     const bottomRightSize1 = bottomRightOffset.mul(ratio1);
     const bottomRightSize2 = bottomRightOffset.mulF(-1).mul(ratio2);
 
-    return topLeftSize1
-      .componentMax(topLeftSize2)
-      .componentMax(bottomRightSize1)
-      .componentMax(bottomRightSize2);
+    return topLeftSize1.componentMax(topLeftSize2).componentMax(bottomRightSize1).componentMax(bottomRightSize2);
   }, Invalidation.RequiredParentSizeToFit);
 
   get requiredParentSizeToFit(): Vec2 {
@@ -770,13 +705,9 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   isAlive = false;
 
   get shouldBeAlive() {
-    if (this.lifetimeStart == -Infinity && this.lifetimeEnd === Infinity)
-      return true;
+    if (this.lifetimeStart == -Infinity && this.lifetimeEnd === Infinity) return true;
 
-    return (
-      this.time.current >= this.lifetimeStart &&
-      this.time.current < this.lifetimeEnd
-    );
+    return this.time.current >= this.lifetimeStart && this.time.current < this.lifetimeEnd;
   }
 
   get removeWhenNotAlive() {
@@ -812,10 +743,8 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
       pushDrawableScope(this);
       this.#loadState = LoadState.Loading;
 
-      this.requestsNonPositionalInput =
-        HandleInputCache.requestsNonPositionalInput(this);
-      this.requestsPositionalInput =
-        HandleInputCache.requestsPositionalInput(this);
+      this.requestsNonPositionalInput = HandleInputCache.requestsNonPositionalInput(this);
+      this.requestsPositionalInput = HandleInputCache.requestsPositionalInput(this);
 
       this.requestsNonPositionalInputSubTree = this.requestsNonPositionalInput;
       this.requestsPositionalInputSubTree = this.requestsPositionalInput;
@@ -862,11 +791,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     const tweens = gsap.getTweensOf(this);
 
     this.lifetimeEnd =
-      this.time.current +
-      tweens.reduce(
-        (max, t) => Math.max(max, (t.totalDuration() - t.time()) * 1000),
-        -Infinity,
-      );
+      this.time.current + tweens.reduce((max, t) => Math.max(max, (t.totalDuration() - t.time()) * 1000), -Infinity);
 
     console.log(this.lifetimeEnd - this.clock.currentTime);
 
@@ -897,13 +822,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
     const injections = getInjections(this);
     for (const { key, type, optional } of injections) {
-      Reflect.set(
-        this,
-        key,
-        optional
-          ? this.dependencies.resolveOptional(type)
-          : this.dependencies.resolve(type),
-      );
+      Reflect.set(this, key, optional ? this.dependencies.resolveOptional(type) : this.dependencies.resolve(type));
     }
   }
 
@@ -929,17 +848,10 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   #onDispose: (() => void)[] = [];
 
-  #invalidateParentSizeDependencies(
-    invalidation: Invalidation,
-    changedAxes: Axes,
-  ) {
+  #invalidateParentSizeDependencies(invalidation: Invalidation, changedAxes: Axes) {
     this.invalidate(invalidation, InvalidationSource.Self, false);
 
-    this.parent?.invalidateChildrenSizeDependencies(
-      invalidation,
-      changedAxes,
-      this,
-    );
+    this.parent?.invalidateChildrenSizeDependencies(invalidation, changedAxes, this);
   }
 
   #bypassAutoSizeAxes: Axes = Axes.None;
@@ -956,19 +868,13 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   }
 
   #updateBypassAutoSizeAxes() {
-    const value =
-      this.relativePositionAxes |
-      this.relativeSizeAxes |
-      this.#bypassAutoSizeAdditionalAxes;
+    const value = this.relativePositionAxes | this.relativeSizeAxes | this.#bypassAutoSizeAdditionalAxes;
 
     if (this.#bypassAutoSizeAxes !== value) {
       const changedAxes = this.#bypassAutoSizeAxes ^ value;
       this.#bypassAutoSizeAxes = value;
       if ((this.parent?.autoSizeAxes ?? 0) & changedAxes)
-        this.parent?.invalidate(
-          Invalidation.RequiredParentSizeToFit,
-          InvalidationSource.Child,
-        );
+        this.parent?.invalidate(Invalidation.RequiredParentSizeToFit, InvalidationSource.Child);
     }
   }
 
@@ -1001,9 +907,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     this.#parent = value;
   }
 
-  findClosestParent<T extends Drawable>(
-    predicate: (d: Drawable) => d is T,
-  ): T | null {
+  findClosestParent<T extends Drawable>(predicate: (d: Drawable) => d is T): T | null {
     let parent = this.parent;
 
     while (parent) {
@@ -1017,9 +921,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     return null;
   }
 
-  findClosestParentOfType<T extends Drawable>(
-    type: abstract new () => T,
-  ): T | null {
+  findClosestParentOfType<T extends Drawable>(type: abstract new () => T): T | null {
     let parent = this.parent;
 
     while (parent) {
@@ -1091,9 +993,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   update() {}
 
-  #transformBacking = new LayoutMember(
-    Invalidation.Transform | Invalidation.DrawSize | Invalidation.Presence,
-  );
+  #transformBacking = new LayoutMember(Invalidation.Transform | Invalidation.DrawSize | Invalidation.Presence);
 
   #colorBacking = new LayoutMember(Invalidation.Color);
 
@@ -1186,10 +1086,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     return transform;
   }
 
-  onInvalidate(
-    invalidation: Invalidation,
-    source: InvalidationSource,
-  ): boolean {
+  onInvalidate(invalidation: Invalidation, source: InvalidationSource): boolean {
     return false;
   }
 
@@ -1238,12 +1135,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   contains(screenSpacePosition: Vec2): boolean {
     const pos = this.toLocalSpace(screenSpacePosition);
 
-    return (
-      pos.x >= 0 &&
-      pos.x <= this.drawSize.x &&
-      pos.y >= 0 &&
-      pos.y <= this.drawSize.y
-    );
+    return pos.x >= 0 && pos.x <= this.drawSize.x && pos.y >= 0 && pos.y <= this.drawSize.y;
   }
 
   getContainingInputManager(): InputManager | null {
@@ -1255,10 +1147,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   buildPositionalInputQueue(screenSpacePos: Vec2, queue: Drawable[]): boolean {
     if (!this.propagatePositionalInputSubTree) return false;
 
-    if (
-      this.handlePositionalInput &&
-      this.receivePositionalInputAt(screenSpacePos)
-    ) {
+    if (this.handlePositionalInput && this.receivePositionalInputAt(screenSpacePos)) {
       queue.push(this);
     }
 
@@ -1324,11 +1213,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   //#endregion
 }
 
-export function loadDrawable(
-  drawable: Drawable,
-  clock: IFrameBasedClock,
-  dependencies: ReadonlyDependencyContainer,
-) {
+export function loadDrawable(drawable: Drawable, clock: IFrameBasedClock, dependencies: ReadonlyDependencyContainer) {
   drawable[LOAD](clock, dependencies);
 }
 

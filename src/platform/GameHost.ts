@@ -39,8 +39,7 @@ export abstract class GameHost {
   readonly dependencies = new DependencyContainer();
 
   protected constructor(gameName: string, options: GameHostOptions = {}) {
-    this.name =
-      options.friendlyGameName ?? `osucad framework running "${gameName}"`;
+    this.name = options.friendlyGameName ?? `osucad framework running "${gameName}"`;
   }
 
   protected root: Container | null = null;

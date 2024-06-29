@@ -17,11 +17,7 @@ export function getDependencyLoaders(target: any): (string | symbol)[] {
 export function resolved(type: any, optional = false): PropertyDecorator {
   return function (target: any, propertyKey: string | symbol) {
     const injections = getInjections(target);
-    Reflect.defineMetadata(
-      injectKey,
-      [...injections, { key: propertyKey, type, optional }],
-      target,
-    );
+    Reflect.defineMetadata(injectKey, [...injections, { key: propertyKey, type, optional }], target);
   };
 }
 

@@ -1,14 +1,5 @@
-import {
-  PIXIBitmapText,
-  PIXIContainer,
-  PIXITextStyle,
-  type PIXITextStyleOptions,
-} from '../../pixi';
-import {
-  Drawable,
-  Invalidation,
-  type DrawableOptions,
-} from '../drawables/Drawable';
+import { PIXIBitmapText, PIXIContainer, PIXITextStyle, type PIXITextStyleOptions } from '../../pixi';
+import { Drawable, Invalidation, type DrawableOptions } from '../drawables/Drawable';
 import { LayoutMember } from '../drawables/LayoutMember';
 
 export interface SpriteTextOptions extends DrawableOptions {

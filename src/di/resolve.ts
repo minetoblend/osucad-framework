@@ -8,10 +8,7 @@ export function resolve<T>(type: new (...args: any[]) => T): T {
     throw new Error('No scope found');
   }
 
-  debugAssert(
-    scope.loadState >= LoadState.Loading,
-    'Cannot resolve before load',
-  );
+  debugAssert(scope.loadState >= LoadState.Loading, 'Cannot resolve before load');
 
   return scope.dependencies.resolve(type);
 }

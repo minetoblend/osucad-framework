@@ -1,10 +1,6 @@
 import { PIXIGraphics } from '../../pixi';
 import { LayoutMember } from '../drawables';
-import {
-  Drawable,
-  Invalidation,
-  type DrawableOptions,
-} from '../drawables/Drawable';
+import { Drawable, Invalidation, type DrawableOptions } from '../drawables/Drawable';
 
 export interface RoundedBoxOptions extends DrawableOptions {
   cornerRadius?: number;

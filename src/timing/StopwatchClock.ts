@@ -31,10 +31,7 @@ export class StopwatchClock implements IAdjustableClock {
   }
 
   get #stopwatchCurrentTime() {
-    return (
-      (this.#stopwatchMilliseconds - this.#rateChangeUsed) * this.#rate +
-      this.#rateChangeAccumulated
-    );
+    return (this.#stopwatchMilliseconds - this.#rateChangeUsed) * this.#rate + this.#rateChangeAccumulated;
   }
 
   start() {
@@ -57,8 +54,7 @@ export class StopwatchClock implements IAdjustableClock {
     if (this.#rate === value) return;
 
     const stopwatchMilliseconds = performance.now();
-    this.#rateChangeAccumulated +=
-      (stopwatchMilliseconds - this.#rateChangeUsed) * this.#rate;
+    this.#rateChangeAccumulated += (stopwatchMilliseconds - this.#rateChangeUsed) * this.#rate;
     this.#rateChangeUsed = stopwatchMilliseconds;
 
     this.#rate = value;

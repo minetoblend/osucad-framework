@@ -8,10 +8,7 @@ const fps_calculation_interval = 250;
 export class FramedClock implements IFrameBasedClock {
   source!: IClock;
 
-  constructor(
-    source: IClock = new StopwatchClock(),
-    processSource: boolean = true,
-  ) {
+  constructor(source: IClock = new StopwatchClock(), processSource: boolean = true) {
     this.#processSource = processSource;
     this.changeSource(source);
   }
@@ -76,9 +73,8 @@ export class FramedClock implements IFrameBasedClock {
   }
 
   processFrame(): void {
-    this.#betweenFrameTimes[
-      this.#totalFramesProcessed % this.#betweenFrameTimes.length
-    ] = this.currentTime - this.lastFrameTime;
+    this.#betweenFrameTimes[this.#totalFramesProcessed % this.#betweenFrameTimes.length] =
+      this.currentTime - this.lastFrameTime;
     this.#totalFramesProcessed++;
 
     if (this.#processSource && isFrameBasedClock(this.source)) {
@@ -92,10 +88,7 @@ export class FramedClock implements IFrameBasedClock {
         this.#framesPerSecond = 0;
         this.jitter = 0;
       } else {
-        this.#framesPerSecond = Math.ceil(
-          (this.#framesSinceLastCalculation * 1000.0) /
-            this.#timeSinceLastCalculation,
-        );
+        this.#framesPerSecond = Math.ceil((this.#framesSinceLastCalculation * 1000.0) / this.#timeSinceLastCalculation);
 
         let sum = 0;
         let sumOfSquares = 0;
@@ -106,8 +99,7 @@ export class FramedClock implements IFrameBasedClock {
         }
 
         const avg = sum / this.#betweenFrameTimes.length;
-        const variance =
-          sumOfSquares / this.#betweenFrameTimes.length - avg * avg;
+        const variance = sumOfSquares / this.#betweenFrameTimes.length - avg * avg;
         this.jitter = Math.sqrt(variance);
       }
 

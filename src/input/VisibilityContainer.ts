@@ -11,8 +11,7 @@ export abstract class VisibilityContainer extends Container {
 
   override onLoadComplete() {
     this.state.addOnChangeListener(this.updateState, {
-      immediate:
-        this.state.value === Visibility.Visible || !this.#didInitialHide,
+      immediate: this.state.value === Visibility.Visible || !this.#didInitialHide,
     });
 
     super.onLoadComplete();
@@ -27,10 +26,7 @@ export abstract class VisibilityContainer extends Container {
   }
 
   toggleVisibility() {
-    this.state.value =
-      this.state.value == Visibility.Visible
-        ? Visibility.Hidden
-        : Visibility.Visible;
+    this.state.value = this.state.value == Visibility.Visible ? Visibility.Hidden : Visibility.Visible;
   }
 
   override get propagateNonPositionalInputSubTree() {

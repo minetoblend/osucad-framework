@@ -11,14 +11,10 @@ export class MousePositionAbsoluteInput implements IInput {
     const mouse = state.mouse;
 
     if (!mouse.isPositionValid || !this.position.equals(mouse.position)) {
-      const lastPosition = mouse.isPositionValid
-        ? mouse.position
-        : this.position;
+      const lastPosition = mouse.isPositionValid ? mouse.position : this.position;
       mouse.isPositionValid = true;
       mouse.position = this.position;
-      handler.handleInputStateChange(
-        new MousePositionChangeEvent(state, this, lastPosition),
-      );
+      handler.handleInputStateChange(new MousePositionChangeEvent(state, this, lastPosition));
     }
   }
 }

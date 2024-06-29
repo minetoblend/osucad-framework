@@ -35,10 +35,7 @@ export abstract class ButtonEventManager<TButton> {
     return handledBy != null;
   }
 
-  abstract handleButtonDown(
-    state: InputState,
-    targets: Drawable[],
-  ): Drawable | null;
+  abstract handleButtonDown(state: InputState, targets: Drawable[]): Drawable | null;
 
   #handleButtonUp(state: InputState) {
     if (this.buttonDownInputQueue === null) return;
@@ -52,10 +49,7 @@ export abstract class ButtonEventManager<TButton> {
 
   abstract handleButtonUp(state: InputState, targets: Drawable[]): void;
 
-  protected propagateButtonEvent(
-    drawables: Drawable[],
-    e: UIEvent,
-  ): Drawable | null {
+  protected propagateButtonEvent(drawables: Drawable[], e: UIEvent): Drawable | null {
     let handledBy: Drawable | null = null;
 
     for (const target of drawables) {

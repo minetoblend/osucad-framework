@@ -1,8 +1,4 @@
-import {
-  InvalidationSource,
-  type Drawable,
-  type Invalidation,
-} from './Drawable';
+import { InvalidationSource, type Drawable, type Invalidation } from './Drawable';
 import { LayoutMember } from './LayoutMember';
 
 export class LayoutComputed<T> extends LayoutMember {

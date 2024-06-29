@@ -105,8 +105,7 @@ export class FillFlowContainer extends FlowContainer {
       let c = children[i];
 
       if (
-        (c.relativeSizeAxes & this.autoSizeAxes & toAxes(this.direction)) !==
-          0 &&
+        (c.relativeSizeAxes & this.autoSizeAxes & toAxes(this.direction)) !== 0 &&
         (c.fillMode !== FillMode.Fit ||
           c.relativeSizeAxes !== Axes.Both ||
           c.size.x > this.relativeChildSize.x ||
@@ -128,14 +127,11 @@ export class FillFlowContainer extends FlowContainer {
         rowBeginOffset = this.#spacingFactor(c).x * size.x;
       }
 
-      const rowWidth =
-        rowBeginOffset + current.x + (1 - this.#spacingFactor(c).x) * size.x;
+      const rowWidth = rowBeginOffset + current.x + (1 - this.#spacingFactor(c).x) * size.x;
 
       if (
         this.#direction != FillDirection.Horizontal &&
-        (definitelyBigger(rowWidth, max.x) ||
-          this.#direction == FillDirection.Vertical ||
-          this.forceNewRow(c))
+        (definitelyBigger(rowWidth, max.x) || this.#direction == FillDirection.Vertical || this.forceNewRow(c))
       ) {
         current.x = 0;
         current.y += rowHeight;
@@ -149,8 +145,7 @@ export class FillFlowContainer extends FlowContainer {
       } else {
         layoutPositions[i] = current.clone();
 
-        rowOffsetsToMiddle[rowOffsetsToMiddle.length - 1] =
-          rowBeginOffset - rowWidth / 2;
+        rowOffsetsToMiddle[rowOffsetsToMiddle.length - 1] = rowBeginOffset - rowWidth / 2;
       }
 
       rowIndices[i] = rowOffsetsToMiddle.length - 1;
@@ -208,8 +203,7 @@ export class FillFlowContainer extends FlowContainer {
       }
 
       const layoutPosition = layoutPositions[i];
-      if (c.anchor & Anchor.x1)
-        layoutPosition.x += rowOffsetsToMiddle[rowIndices[i]];
+      if (c.anchor & Anchor.x1) layoutPosition.x += rowOffsetsToMiddle[rowIndices[i]];
       else if (c.anchor & Anchor.x2) layoutPosition.x = -layoutPosition.x;
 
       if (c.anchor & Anchor.y1) layoutPosition.y -= height / 2;

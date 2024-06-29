@@ -26,9 +26,7 @@ export abstract class ButtonInput<TButton> implements IInput {
         const buttonStateChange = this.createEvent(
           state,
           entry.button,
-          entry.isPressed
-            ? ButtonStateChangeKind.Pressed
-            : ButtonStateChangeKind.Released,
+          entry.isPressed ? ButtonStateChangeKind.Pressed : ButtonStateChangeKind.Released,
         );
         handler.handleInputStateChange(buttonStateChange);
       }

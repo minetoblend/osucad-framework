@@ -20,14 +20,12 @@ export class ClickableContainer extends Container {
   public readonly enabled = new Bindable(false);
 
   override onClick(e: ClickEvent): boolean {
-    if (this.enabled.value && this.trigger === ButtonTrigger.Click)
-      this.action?.();
+    if (this.enabled.value && this.trigger === ButtonTrigger.Click) this.action?.();
     return true;
   }
 
   override onMouseDown(e: MouseDownEvent): boolean {
-    if (this.enabled.value && this.trigger === ButtonTrigger.MouseDown)
-      this.action?.();
+    if (this.enabled.value && this.trigger === ButtonTrigger.MouseDown) this.action?.();
     return true;
   }
 }

@@ -35,9 +35,7 @@ export class ButtonStates<TButton> {
     return this.#buttons as ReadonlySet<TButton>;
   }
 
-  enumerateDifference(
-    lastButtons: ButtonStates<TButton>,
-  ): ButtonStateDifference<TButton> {
+  enumerateDifference(lastButtons: ButtonStates<TButton>): ButtonStateDifference<TButton> {
     if (!lastButtons.hasAnyButtonPressed) {
       // if no buttons pressed anywhere, use static to avoid alloc.
       return !this.hasAnyButtonPressed
@@ -45,8 +43,7 @@ export class ButtonStates<TButton> {
         : new ButtonStateDifference([], [...this.pressedButtons]);
     }
 
-    if (!this.hasAnyButtonPressed)
-      return new ButtonStateDifference([...lastButtons.pressedButtons], []);
+    if (!this.hasAnyButtonPressed) return new ButtonStateDifference([...lastButtons.pressedButtons], []);
 
     const released = new Set<TButton>();
     const pressed = new Set<TButton>();

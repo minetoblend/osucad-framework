@@ -4,10 +4,7 @@ export class LayoutMember {
   constructor(
     readonly invalidation: Invalidation,
     readonly source: InvalidationSource = InvalidationSource.Default,
-    readonly condition?: (
-      drawable: Drawable,
-      invalidation: Invalidation,
-    ) => boolean,
+    readonly condition?: (drawable: Drawable, invalidation: Invalidation) => boolean,
   ) {}
 
   parent?: Drawable;

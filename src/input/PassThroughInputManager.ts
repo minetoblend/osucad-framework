@@ -29,8 +29,7 @@ export class PassThroughInputManager extends CustomInputManager {
   #useParentInput: boolean = true;
 
   override get handleHoverEvents(): boolean {
-    if (this.useParentInput && this.#parentInputManager?.handleHoverEvents)
-      return true;
+    if (this.useParentInput && this.#parentInputManager?.handleHoverEvents) return true;
 
     return super.handleHoverEvents;
   }
@@ -58,31 +57,20 @@ export class PassThroughInputManager extends CustomInputManager {
     switch (event.constructor) {
       case MouseMoveEvent: {
         const e = event as MouseMoveEvent;
-        if (
-          !e.screenSpaceMousePosition.equals(this.currentState.mouse.position)
-        )
-          new MousePositionAbsoluteInput(e.screenSpaceMousePosition).apply(
-            this.currentState,
-            this,
-          );
+        if (!e.screenSpaceMousePosition.equals(this.currentState.mouse.position))
+          new MousePositionAbsoluteInput(e.screenSpaceMousePosition).apply(this.currentState, this);
         break;
       }
       case MouseDownEvent: {
         const e = event as MouseDownEvent;
         if (!this.currentState.mouse.isPressed(e.button))
-          MouseButtonInput.create(e.button, true).apply(
-            this.currentState,
-            this,
-          );
+          MouseButtonInput.create(e.button, true).apply(this.currentState, this);
         break;
       }
       case MouseUpEvent: {
         const e = event as MouseUpEvent;
         if (this.currentState.mouse.isPressed(e.button))
-          MouseButtonInput.create(e.button, false).apply(
-            this.currentState,
-            this,
-          );
+          MouseButtonInput.create(e.button, false).apply(this.currentState, this);
         break;
       }
       // TODO: ScrollEvent
@@ -112,22 +100,20 @@ export class PassThroughInputManager extends CustomInputManager {
   sync(useCachedParentInputManager = false) {
     if (!this.useParentInput) return;
 
-    if (!useCachedParentInputManager)
-      this.#parentInputManager = this.getContainingInputManager();
+    if (!useCachedParentInputManager) this.#parentInputManager = this.getContainingInputManager();
 
     this.syncInputState(this.#parentInputManager?.currentState);
   }
 
   protected syncInputState(state?: InputState) {
-    const mouseDiff = (
-      state?.mouse?.buttons ?? new ButtonStates<MouseButton>()
-    ).enumerateDifference(this.currentState.mouse.buttons);
+    const mouseDiff = (state?.mouse?.buttons ?? new ButtonStates<MouseButton>()).enumerateDifference(
+      this.currentState.mouse.buttons,
+    );
     if (mouseDiff.released.length > 0)
-      new MouseButtonInput(
-        mouseDiff.released.map(
-          (button) => new ButtonInputEntry<MouseButton>(button, false),
-        ),
-      ).apply(this.currentState, this);
+      new MouseButtonInput(mouseDiff.released.map((button) => new ButtonInputEntry<MouseButton>(button, false))).apply(
+        this.currentState,
+        this,
+      );
 
     // TODO: Add the remaining events
   }
