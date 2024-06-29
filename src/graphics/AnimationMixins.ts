@@ -68,14 +68,14 @@ export const animationMixins: Partial<Drawable> = {
         x: options.position.x,
         y: options.position.y,
         duration: (options.duration ?? 0) / 1000,
-        easing: options.easing ?? "linear",
+        ease: options.easing ?? "linear",
       });
     } else {
       gsap.to(this, {
         x: options.x,
         y: options.y,
         duration: (options.duration ?? 0) / 1000,
-        easing: options.easing ?? "linear",
+        ease: options.easing ?? "linear",
       });
     }
   },
@@ -84,13 +84,13 @@ export const animationMixins: Partial<Drawable> = {
       gsap.to(this, {
         rotation: options.rotation,
         duration: (options.duration ?? 0) / 1000,
-        easing: options.easing ?? "linear",
+        ease: options.easing ?? "linear",
       });
     } else {
       gsap.to(this, {
         rotation: (options.angleDegress * Math.PI) / 180,
         duration: (options.duration ?? 0) / 1000,
-        easing: options.easing ?? "linear",
+        ease: options.easing ?? "linear",
       });
     }
   },
