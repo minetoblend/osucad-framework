@@ -1,8 +1,8 @@
-import type { Texture } from "pixi.js";
-import { PIXIContainer, PIXISprite } from "../../pixi";
-import { Drawable, type DrawableOptions } from "./Drawable";
-import { Vec2 } from "../../math";
-import { Axes } from "./Axes";
+import type { Texture } from 'pixi.js';
+import { PIXIContainer, PIXISprite } from '../../pixi';
+import { Drawable, type DrawableOptions } from './Drawable';
+import { Vec2 } from '../../math';
+import { Axes } from './Axes';
 
 export interface DrawableSpriteOptions extends DrawableOptions {
   texture?: Texture;

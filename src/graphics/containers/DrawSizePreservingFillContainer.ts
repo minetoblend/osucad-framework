@@ -1,6 +1,6 @@
-import { Vec2, type IVec2 } from "../../math/Vec2";
-import { Axes } from "../drawables/Axes";
-import { Container, type ContainerOptions } from "./Container";
+import { Vec2, type IVec2 } from '../../math/Vec2';
+import { Axes } from '../drawables/Axes';
+import { Container, type ContainerOptions } from './Container';
 
 export interface DrawSizePreservingFillContainerOptions
   extends ContainerOptions {
@@ -24,7 +24,7 @@ export class DrawSizePreservingFillContainer extends Container {
     this.addInternal(
       (this.#content = new Container({
         relativeSizeAxes: Axes.Both,
-      }))
+      })),
     );
   }
 
@@ -34,12 +34,12 @@ export class DrawSizePreservingFillContainer extends Container {
     switch (this.strategy) {
       case DrawSizePreservationStrategy.Minimum:
         this.#content.scale = new Vec2(
-          Math.min(drawSizeRatio.x, drawSizeRatio.y)
+          Math.min(drawSizeRatio.x, drawSizeRatio.y),
         );
         break;
       case DrawSizePreservationStrategy.Maximum:
         this.#content.scale = new Vec2(
-          Math.max(drawSizeRatio.x, drawSizeRatio.y)
+          Math.max(drawSizeRatio.x, drawSizeRatio.y),
         );
         break;
       case DrawSizePreservationStrategy.Average:
@@ -56,8 +56,12 @@ export class DrawSizePreservingFillContainer extends Container {
     };
 
     this.#content.position = new Vec2(
-      (this.parent!.childSize.x - (this.#content.scale.x * this.#content.drawSize.x)) / 2,
-      (this.parent!.childSize.y - (this.#content.scale.y * this.#content.drawSize.y)) / 2
+      (this.parent!.childSize.x -
+        this.#content.scale.x * this.#content.drawSize.x) /
+        2,
+      (this.parent!.childSize.y -
+        this.#content.scale.y * this.#content.drawSize.y) /
+        2,
     );
 
     super.update();

@@ -1,8 +1,8 @@
-import { DependencyContainer } from "../../di/DependencyContainer";
-import { Axes } from "../../graphics/drawables/Axes";
-import { Container } from "../../graphics/containers/Container";
-import { FramedClock } from "../../timing/FramedClock";
-import { loadDrawable } from "../../graphics/drawables/Drawable";
+import { DependencyContainer } from '../../di/DependencyContainer';
+import { Axes } from '../../graphics/drawables/Axes';
+import { Container } from '../../graphics/containers/Container';
+import { FramedClock } from '../../timing/FramedClock';
+import { loadDrawable } from '../../graphics/drawables/Drawable';
 
 describe('composite drawable layout', () => {
   it('correctly calculates child offset', () => {
@@ -17,7 +17,7 @@ describe('composite drawable layout', () => {
     parent.padding = { horizontal: 20, vertical: 30 };
 
     expect(parent.childOffset).toEqual({ x: 20, y: 30 });
-  })
+  });
 
   it('correctly calculates child size', () => {
     const parent = Container.create({
@@ -31,7 +31,7 @@ describe('composite drawable layout', () => {
     parent.width = 200;
 
     expect(parent.childSize).toEqual({ x: 180, y: 60 });
-  })
+  });
 
   it('correctly positions children', () => {
     let child: Container;
@@ -40,14 +40,14 @@ describe('composite drawable layout', () => {
       height: 100,
       padding: { horizontal: 10, vertical: 20 },
       children: [
-        child = Container.create({
+        (child = Container.create({
           width: 50,
           height: 50,
-        })
-      ]
+        })),
+      ],
     });
 
-    loadDrawable(parent, new FramedClock(), new DependencyContainer())
+    loadDrawable(parent, new FramedClock(), new DependencyContainer());
 
     child.updateDrawNodeTransform();
 
@@ -58,7 +58,7 @@ describe('composite drawable layout', () => {
     child.updateDrawNodeTransform();
 
     expect(child.drawNodePosition).toEqual({ x: 20, y: 30 });
-  })
+  });
 
   it('automatically updates children on invalidation', () => {
     let child: Container;
@@ -67,14 +67,14 @@ describe('composite drawable layout', () => {
       width: 100,
       height: 100,
       padding: { horizontal: 10, vertical: 20 },
-      label: "parent",
+      label: 'parent',
       children: [
-        child = Container.create({
+        (child = Container.create({
           width: 50,
           height: 50,
-          label: "child",
-        })
-      ]
+          label: 'child',
+        })),
+      ],
     });
 
     loadDrawable(parent, new FramedClock(), new DependencyContainer());
@@ -107,5 +107,5 @@ describe('composite drawable layout', () => {
 
     expect(child.drawSize).toEqual({ x: 15, y: 20 });
     expect(child.drawNodePosition).toEqual({ x: 20, y: 30 });
-  })
-})
+  });
+});

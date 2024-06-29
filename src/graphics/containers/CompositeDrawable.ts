@@ -1,7 +1,7 @@
-import { Vec2, type IVec2 } from "../../math/Vec2";
-import { PIXIContainer } from "../../pixi";
-import { debugAssert } from "../../utils/debugAssert";
-import { Axes } from "../drawables/Axes";
+import { Vec2, type IVec2 } from '../../math/Vec2';
+import { PIXIContainer } from '../../pixi';
+import { debugAssert } from '../../utils/debugAssert';
+import { Axes } from '../drawables/Axes';
 import {
   Drawable,
   Invalidation,
@@ -9,13 +9,13 @@ import {
   LoadState,
   loadDrawable,
   type DrawableOptions,
-} from "../drawables/Drawable";
-import { LayoutMember } from "../drawables/LayoutMember";
+} from '../drawables/Drawable';
+import { LayoutMember } from '../drawables/LayoutMember';
 import {
   MarginPadding,
   type MarginPaddingOptions,
-} from "../drawables/MarginPadding";
-import gsap from "gsap";
+} from '../drawables/MarginPadding';
+import gsap from 'gsap';
 
 export interface CompositeDrawableOptions extends DrawableOptions {
   padding?: MarginPaddingOptions;
@@ -44,7 +44,7 @@ export class CompositeDrawable extends Drawable {
     }
 
     if (drawable.childId !== 0) {
-      throw new Error("May not add a drawable to multiple containers.");
+      throw new Error('May not add a drawable to multiple containers.');
     }
 
     drawable.childId = ++this.#currentChildId;
@@ -59,7 +59,7 @@ export class CompositeDrawable extends Drawable {
     if (this.autoSizeAxes !== Axes.None)
       this.invalidate(
         Invalidation.RequiredParentSizeToFit,
-        InvalidationSource.Child
+        InvalidationSource.Child,
       );
 
     return drawable;
@@ -87,7 +87,7 @@ export class CompositeDrawable extends Drawable {
 
   protected removeInternal(
     drawable: Drawable,
-    disposeImmediately: boolean = true
+    disposeImmediately: boolean = true,
   ): boolean {
     try {
       const index = this.internalChildren.indexOf(drawable);
@@ -99,7 +99,7 @@ export class CompositeDrawable extends Drawable {
         const aliveIndex = this.aliveInternalChildren.indexOf(drawable);
         debugAssert(
           aliveIndex >= 0,
-          "Drawable is alive but not in aliveInternalChildren"
+          'Drawable is alive but not in aliveInternalChildren',
         );
         this.aliveInternalChildren.splice(aliveIndex, 1);
 
@@ -113,7 +113,7 @@ export class CompositeDrawable extends Drawable {
       if (this.autoSizeAxes !== Axes.None) {
         this.invalidate(
           Invalidation.RequiredParentSizeToFit,
-          InvalidationSource.Child
+          InvalidationSource.Child,
         );
       }
 
@@ -139,9 +139,9 @@ export class CompositeDrawable extends Drawable {
     if (this.#relativeChildSize.equals(value)) return;
 
     if (!isFinite(value.x) || !isFinite(value.y))
-      throw new Error("relativeChildSize must be finite.");
+      throw new Error('relativeChildSize must be finite.');
     if (value.x === 0 || value.y === 0)
-      throw new Error("relativeChildSize must be non-zero.");
+      throw new Error('relativeChildSize must be non-zero.');
 
     this.#relativeChildSize = Vec2.from(value);
 
@@ -159,14 +159,14 @@ export class CompositeDrawable extends Drawable {
 
   override set relativeSizeAxes(value: Axes) {
     if (value & this.autoSizeAxes) {
-      throw new Error("Cannot set relativeSizeAxes to include auto-size axes");
+      throw new Error('Cannot set relativeSizeAxes to include auto-size axes');
     }
     super.relativeSizeAxes = value;
   }
 
   override onInvalidate(
     invalidation: Invalidation,
-    source: InvalidationSource
+    source: InvalidationSource,
   ): boolean {
     let anyInvalidated = super.onInvalidate(invalidation, source);
 
@@ -227,7 +227,7 @@ export class CompositeDrawable extends Drawable {
     if (value == this.#autoSizeAxes) return;
 
     if (value & this.relativeSizeAxes) {
-      throw new Error("Cannot set autoSizeAxes to include relative size axes");
+      throw new Error('Cannot set autoSizeAxes to include relative size axes');
     }
 
     this.#autoSizeAxes = value;
@@ -243,19 +243,19 @@ export class CompositeDrawable extends Drawable {
 
   autoSizeDuration = 0;
 
-  autoSizeEasing: gsap.EaseString | gsap.EaseFunction = "linear";
+  autoSizeEasing: gsap.EaseString | gsap.EaseFunction = 'linear';
 
   #childrenSizeDependencies = new LayoutMember(
     Invalidation.RequiredParentSizeToFit | Invalidation.Presence,
-    InvalidationSource.Child
+    InvalidationSource.Child,
   );
 
   invalidateChildrenSizeDependencies(
     invalidation: Invalidation,
     axes: Axes,
-    source: Drawable
+    source: Drawable,
   ) {
-    let wasValid = this.#childrenSizeDependencies.isValid;
+    const wasValid = this.#childrenSizeDependencies.isValid;
 
     // The invalidation still needs to occur as normal, since a derived CompositeDrawable may want to respond to children size invalidations.
     this.invalidate(invalidation, InvalidationSource.Child);
@@ -324,7 +324,7 @@ export class CompositeDrawable extends Drawable {
     let anyAliveChanged = false;
 
     for (let i = 0; i < this.internalChildren.length; i++) {
-      var state = this.#checkChildLife(this.internalChildren[i]);
+      const state = this.#checkChildLife(this.internalChildren[i]);
 
       anyAliveChanged ||= !!(
         state & ChildLifeStateChange.MadeAlive ||
@@ -365,7 +365,7 @@ export class CompositeDrawable extends Drawable {
 
   override buildPositionalInputQueue(
     screenSpacePos: Vec2,
-    queue: Drawable[]
+    queue: Drawable[],
   ): boolean {
     if (!super.buildPositionalInputQueue(screenSpacePos, queue)) return false;
 
@@ -413,7 +413,7 @@ export class CompositeDrawable extends Drawable {
       const index = this.aliveInternalChildren.indexOf(child);
       debugAssert(
         index !== -1,
-        "Child is alive but not in aliveInternalChildren"
+        'Child is alive but not in aliveInternalChildren',
       );
       this.aliveInternalChildren.splice(index, 1);
       child.isAlive = false;
@@ -450,7 +450,7 @@ export class CompositeDrawable extends Drawable {
   override set width(value: number) {
     if (this.autoSizeAxes & Axes.X)
       throw new Error(
-        "Cannot set width on a CompositeDrawable with autoSizeAxes.X"
+        'Cannot set width on a CompositeDrawable with autoSizeAxes.X',
       );
     super.width = value;
   }
@@ -467,7 +467,7 @@ export class CompositeDrawable extends Drawable {
   override set height(value: number) {
     if (this.autoSizeAxes & Axes.Y)
       throw new Error(
-        "Cannot set height on a CompositeDrawable with autoSizeAxes.Y"
+        'Cannot set height on a CompositeDrawable with autoSizeAxes.Y',
       );
     super.height = value;
   }
@@ -484,7 +484,7 @@ export class CompositeDrawable extends Drawable {
   override set size(value: IVec2) {
     if (this.autoSizeAxes & Axes.Both)
       throw new Error(
-        "Cannot set size on a CompositeDrawable with autoSizeAxes"
+        'Cannot set size on a CompositeDrawable with autoSizeAxes',
       );
     super.size = value;
   }
@@ -534,7 +534,7 @@ export class CompositeDrawable extends Drawable {
         y: this.autoSizeAxes & Axes.Y ? b.y : super.height,
       },
       this.autoSizeDuration,
-      this.autoSizeEasing
+      this.autoSizeEasing,
     );
 
     // TODO: onAutoSize?.emit();
@@ -556,9 +556,9 @@ export class CompositeDrawable extends Drawable {
   #autoSizeResizeTo(
     size: IVec2,
     duration: number,
-    easing: gsap.EaseString | gsap.EaseFunction
+    easing: gsap.EaseString | gsap.EaseFunction,
   ) {
-    gsap.killTweensOf(this, "x,y,width");
+    gsap.killTweensOf(this, 'x,y,width');
 
     if (duration === 0) {
       this.baseWidth = size.x;

@@ -1,3 +1,2 @@
-
-export { ExecutionState, GameHost, type GameHostOptions } from "./GameHost";
-export { WebGameHost } from "./WebGameHost";
+export { ExecutionState, GameHost, type GameHostOptions } from './GameHost';
+export { WebGameHost } from './WebGameHost';

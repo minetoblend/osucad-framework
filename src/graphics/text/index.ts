@@ -1,1 +1,1 @@
-export { SpriteText, type SpriteTextOptions } from './SpriteText'
+export { SpriteText, type SpriteTextOptions } from './SpriteText';

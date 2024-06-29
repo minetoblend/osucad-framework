@@ -1,15 +1,15 @@
-import { Axes } from "../graphics/drawables/Axes";
-import type { Drawable } from "../graphics/drawables/Drawable";
-import { Container } from "../graphics/containers/Container";
-import { Vec2 } from "../math";
-import { PassThroughInputManager } from "./PassThroughInputManager";
-import { TestCursorContainer } from "./TestCursorContainer";
-import { Visibility } from "./VisibilityContainer";
-import { ManualInputHandler } from "./handlers/ManualInputHandler";
-import type { MouseButton } from "./state/MouseButton";
-import type { IInput } from "./stateChanges/IInput";
-import { MouseButtonInput } from "./stateChanges/MouseButtonInput";
-import { MousePositionAbsoluteInput } from "./stateChanges/MousePositionAbsoluteInput";
+import { Axes } from '../graphics/drawables/Axes';
+import type { Drawable } from '../graphics/drawables/Drawable';
+import { Container } from '../graphics/containers/Container';
+import { Vec2 } from '../math';
+import { PassThroughInputManager } from './PassThroughInputManager';
+import { TestCursorContainer } from './TestCursorContainer';
+import { Visibility } from './VisibilityContainer';
+import { ManualInputHandler } from './handlers/ManualInputHandler';
+import type { MouseButton } from './state/MouseButton';
+import type { IInput } from './stateChanges/IInput';
+import { MouseButtonInput } from './stateChanges/MouseButtonInput';
+import { MousePositionAbsoluteInput } from './stateChanges/MousePositionAbsoluteInput';
 
 export class ManualInputManager extends PassThroughInputManager {
   readonly #handler: ManualInputHandler;
@@ -63,7 +63,7 @@ export class ManualInputManager extends PassThroughInputManager {
     this.moveMouseTo(
       drawable
         .toScreenSpace(drawable.layoutRectangle.center)
-        .add(offset ?? Vec2.zero())
+        .add(offset ?? Vec2.zero()),
     );
   }
 

@@ -36,7 +36,7 @@ export class ButtonStates<TButton> {
   }
 
   enumerateDifference(
-    lastButtons: ButtonStates<TButton>
+    lastButtons: ButtonStates<TButton>,
   ): ButtonStateDifference<TButton> {
     if (!lastButtons.hasAnyButtonPressed) {
       // if no buttons pressed anywhere, use static to avoid alloc.
@@ -66,7 +66,7 @@ export class ButtonStates<TButton> {
 export class ButtonStateDifference<TButton> {
   constructor(
     public readonly released: TButton[],
-    public readonly pressed: TButton[]
+    public readonly pressed: TButton[],
   ) {}
 
   get hasDifference() {

@@ -1,8 +1,8 @@
 import {
   CompositeDrawable,
   type CompositeDrawableOptions,
-} from "./CompositeDrawable";
-import type { Drawable } from "../drawables/Drawable";
+} from './CompositeDrawable';
+import type { Drawable } from '../drawables/Drawable';
 
 export interface ContainerOptions extends CompositeDrawableOptions {
   children?: Drawable[];
@@ -10,7 +10,6 @@ export interface ContainerOptions extends CompositeDrawableOptions {
 }
 
 export class Container extends CompositeDrawable {
-
   constructor(options: ContainerOptions = {}) {
     super();
     this.apply(options);
@@ -25,7 +24,7 @@ export class Container extends CompositeDrawable {
     super.apply(rest);
 
     if (child && children) {
-      throw new Error("Cannot set both child and children");
+      throw new Error('Cannot set both child and children');
     }
 
     if (child) {
@@ -79,7 +78,7 @@ export class Container extends CompositeDrawable {
 
   get child(): Drawable {
     if (this.children.length !== 1) {
-      throw new Error("Cannot get child when there are multiple children");
+      throw new Error('Cannot get child when there are multiple children');
     }
 
     return this.children[0];

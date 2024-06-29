@@ -1,7 +1,7 @@
-import type { FrameTimeInfo } from "./FrameTimeInfo";
-import type { IClock } from "./IClock";
-import { isFrameBasedClock, type IFrameBasedClock } from "./IFrameBasedClock";
-import { StopwatchClock } from "./StopwatchClock";
+import type { FrameTimeInfo } from './FrameTimeInfo';
+import type { IClock } from './IClock';
+import { isFrameBasedClock, type IFrameBasedClock } from './IFrameBasedClock';
+import { StopwatchClock } from './StopwatchClock';
 
 const fps_calculation_interval = 250;
 
@@ -10,7 +10,7 @@ export class FramedClock implements IFrameBasedClock {
 
   constructor(
     source: IClock = new StopwatchClock(),
-    processSource: boolean = true
+    processSource: boolean = true,
   ) {
     this.#processSource = processSource;
     this.changeSource(source);
@@ -94,7 +94,7 @@ export class FramedClock implements IFrameBasedClock {
       } else {
         this.#framesPerSecond = Math.ceil(
           (this.#framesSinceLastCalculation * 1000.0) /
-            this.#timeSinceLastCalculation
+            this.#timeSinceLastCalculation,
         );
 
         let sum = 0;

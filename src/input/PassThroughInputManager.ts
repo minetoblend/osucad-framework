@@ -1,17 +1,17 @@
-import type { Drawable } from "../graphics/drawables/Drawable";
-import type { Vec2 } from "../math";
-import { CustomInputManager } from "./CustomInputManager";
-import type { InputManager } from "./InputManager";
-import { MouseDownEvent } from "./events/MouseDownEvent";
-import { MouseMoveEvent } from "./events/MouseMoveEvent";
-import { MouseUpEvent } from "./events/MouseUpEvent";
-import type { UIEvent } from "./events/UIEvent";
-import { ButtonStates } from "./state/ButtonStates";
-import type { InputState } from "./state/InputState";
-import type { MouseButton } from "./state/MouseButton";
-import { ButtonInputEntry } from "./stateChanges/ButtonInput";
-import { MouseButtonInput } from "./stateChanges/MouseButtonInput";
-import { MousePositionAbsoluteInput } from "./stateChanges/MousePositionAbsoluteInput";
+import type { Drawable } from '../graphics/drawables/Drawable';
+import type { Vec2 } from '../math';
+import { CustomInputManager } from './CustomInputManager';
+import type { InputManager } from './InputManager';
+import { MouseDownEvent } from './events/MouseDownEvent';
+import { MouseMoveEvent } from './events/MouseMoveEvent';
+import { MouseUpEvent } from './events/MouseUpEvent';
+import type { UIEvent } from './events/UIEvent';
+import { ButtonStates } from './state/ButtonStates';
+import type { InputState } from './state/InputState';
+import type { MouseButton } from './state/MouseButton';
+import { ButtonInputEntry } from './stateChanges/ButtonInput';
+import { MouseButtonInput } from './stateChanges/MouseButtonInput';
+import { MousePositionAbsoluteInput } from './stateChanges/MousePositionAbsoluteInput';
 
 export class PassThroughInputManager extends CustomInputManager {
   get useParentInput(): boolean {
@@ -63,21 +63,26 @@ export class PassThroughInputManager extends CustomInputManager {
         )
           new MousePositionAbsoluteInput(e.screenSpaceMousePosition).apply(
             this.currentState,
-            this
+            this,
           );
         break;
       }
       case MouseDownEvent: {
         const e = event as MouseDownEvent;
-        if(!this.currentState.mouse.isPressed(e.button))
-          MouseButtonInput.create(e.button, true).apply(this.currentState, this);
+        if (!this.currentState.mouse.isPressed(e.button))
+          MouseButtonInput.create(e.button, true).apply(
+            this.currentState,
+            this,
+          );
         break;
       }
       case MouseUpEvent: {
-        
         const e = event as MouseUpEvent;
-        if(this.currentState.mouse.isPressed(e.button))
-          MouseButtonInput.create(e.button, false).apply(this.currentState, this);
+        if (this.currentState.mouse.isPressed(e.button))
+          MouseButtonInput.create(e.button, false).apply(
+            this.currentState,
+            this,
+          );
         break;
       }
       // TODO: ScrollEvent
@@ -114,14 +119,14 @@ export class PassThroughInputManager extends CustomInputManager {
   }
 
   protected syncInputState(state?: InputState) {
-    var mouseDiff = (
+    const mouseDiff = (
       state?.mouse?.buttons ?? new ButtonStates<MouseButton>()
     ).enumerateDifference(this.currentState.mouse.buttons);
     if (mouseDiff.released.length > 0)
       new MouseButtonInput(
         mouseDiff.released.map(
-          (button) => new ButtonInputEntry<MouseButton>(button, false)
-        )
+          (button) => new ButtonInputEntry<MouseButton>(button, false),
+        ),
       ).apply(this.currentState, this);
 
     // TODO: Add the remaining events

@@ -1,8 +1,7 @@
-import { Drawable, type DrawableOptions } from "../drawables/Drawable";
-import { PIXIContainer, PIXISprite, PIXITexture } from "../../pixi";
+import { Drawable, type DrawableOptions } from '../drawables/Drawable';
+import { PIXIContainer, PIXISprite, PIXITexture } from '../../pixi';
 
 export class Box extends Drawable {
-
   constructor(options: DrawableOptions = {}) {
     super();
     this.apply(options);
@@ -13,10 +12,10 @@ export class Box extends Drawable {
   override createDrawNode(): PIXIContainer {
     return new PIXIContainer({
       children: [
-        this.#sprite = new PIXISprite({
-          texture: PIXITexture.WHITE
-        })
-      ]
+        (this.#sprite = new PIXISprite({
+          texture: PIXITexture.WHITE,
+        })),
+      ],
     });
   }
 
@@ -25,5 +24,4 @@ export class Box extends Drawable {
     this.#sprite.width = this.drawSize.x;
     this.#sprite.height = this.drawSize.y;
   }
-
 }

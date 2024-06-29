@@ -1,5 +1,5 @@
-import { Bindable } from "../bindables/Bindable";
-import { Container } from "../graphics/containers/Container";
+import { Bindable } from '../bindables/Bindable';
+import { Container } from '../graphics/containers/Container';
 
 export abstract class VisibilityContainer extends Container {
   readonly state = new Bindable<Visibility>(Visibility.Hidden);
@@ -11,7 +11,8 @@ export abstract class VisibilityContainer extends Container {
 
   override onLoadComplete() {
     this.state.addOnChangeListener(this.updateState, {
-      immediate: this.state.value === Visibility.Visible || !this.#didInitialHide
+      immediate:
+        this.state.value === Visibility.Visible || !this.#didInitialHide,
     });
 
     super.onLoadComplete();
@@ -26,7 +27,10 @@ export abstract class VisibilityContainer extends Container {
   }
 
   toggleVisibility() {
-    this.state.value = this.state.value == Visibility.Visible ? Visibility.Hidden : Visibility.Visible;
+    this.state.value =
+      this.state.value == Visibility.Visible
+        ? Visibility.Hidden
+        : Visibility.Visible;
   }
 
   override get propagateNonPositionalInputSubTree() {
@@ -50,7 +54,7 @@ export abstract class VisibilityContainer extends Container {
         this.popOut();
         break;
     }
-  }
+  };
 }
 
 export const enum Visibility {

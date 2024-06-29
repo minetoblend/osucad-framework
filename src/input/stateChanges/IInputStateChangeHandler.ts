@@ -1,5 +1,5 @@
-import type { InputStateChangeEvent } from "./events/InputStateChangeEvent";
+import type { InputStateChangeEvent } from './events/InputStateChangeEvent';
 
 export interface IInputStateChangeHandler {
-  handleInputStateChange(event: InputStateChangeEvent): void
+  handleInputStateChange(event: InputStateChangeEvent): void;
 }

@@ -1,37 +1,37 @@
-import { Vec2 } from "../../math";
-import type { GameHost } from "../../platform/GameHost";
-import { MouseButton } from "../state/MouseButton";
-import type { IInput } from "../stateChanges/IInput";
-import { MouseButtonInput } from "../stateChanges/MouseButtonInput";
-import { MousePositionAbsoluteInput } from "../stateChanges/MousePositionAbsoluteInput";
-import { InputHandler } from "./InputHandler";
+import { Vec2 } from '../../math';
+import type { GameHost } from '../../platform/GameHost';
+import { MouseButton } from '../state/MouseButton';
+import type { IInput } from '../stateChanges/IInput';
+import { MouseButtonInput } from '../stateChanges/MouseButtonInput';
+import { MousePositionAbsoluteInput } from '../stateChanges/MousePositionAbsoluteInput';
+import { InputHandler } from './InputHandler';
 
 export class MouseHandler extends InputHandler {
   override initialize(host: GameHost): boolean {
     this.enabled.addOnChangeListener(
       (enabled) => {
         if (enabled) {
-          host.renderer.canvas.addEventListener("mousedown", this.#mouseDown);
-          host.renderer.canvas.addEventListener("mouseup", this.#mouseUp);
-          host.renderer.canvas.addEventListener("pointermove", this.#mouseMove);
-          host.renderer.canvas.addEventListener("mouseleave", this.#mouseLeave);
+          host.renderer.canvas.addEventListener('mousedown', this.#mouseDown);
+          host.renderer.canvas.addEventListener('mouseup', this.#mouseUp);
+          host.renderer.canvas.addEventListener('pointermove', this.#mouseMove);
+          host.renderer.canvas.addEventListener('mouseleave', this.#mouseLeave);
         } else {
           host.renderer.canvas.removeEventListener(
-            "mousedown",
-            this.#mouseDown
+            'mousedown',
+            this.#mouseDown,
           );
-          host.renderer.canvas.removeEventListener("mouseup", this.#mouseUp);
+          host.renderer.canvas.removeEventListener('mouseup', this.#mouseUp);
           host.renderer.canvas.removeEventListener(
-            "pointermove",
-            this.#mouseMove
+            'pointermove',
+            this.#mouseMove,
           );
           host.renderer.canvas.removeEventListener(
-            "mouseleave",
-            this.#mouseLeave
+            'mouseleave',
+            this.#mouseLeave,
           );
         }
       },
-      { immediate: true }
+      { immediate: true },
     );
 
     return true;
@@ -72,9 +72,11 @@ export class MouseHandler extends InputHandler {
     const rect = (event.target as HTMLCanvasElement).getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    
-    const index = this.pendingInputs.findIndex(it => it instanceof MousePositionAbsoluteInput);
-    if(index !== -1) {
+
+    const index = this.pendingInputs.findIndex(
+      (it) => it instanceof MousePositionAbsoluteInput,
+    );
+    if (index !== -1) {
       // We only want to keep the most recent mouse position
       this.pendingInputs.splice(index, 1);
     }

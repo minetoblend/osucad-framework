@@ -1,4 +1,4 @@
-import { isMobile } from "./pixi";
+import { isMobile } from './pixi';
 
 export class FrameworkEnvironment {
   get antialiasPreferred() {
@@ -14,6 +14,6 @@ export class FrameworkEnvironment {
   }
 
   get webGpuSupported() {
-    return "gpu" in navigator && "requestAdapter" in navigator.gpu;
+    return 'gpu' in navigator && 'requestAdapter' in navigator.gpu;
   }
 }

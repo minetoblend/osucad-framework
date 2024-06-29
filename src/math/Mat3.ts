@@ -1,4 +1,1 @@
-export class Mat3 {
-
-  
-}
+export class Mat3 {}

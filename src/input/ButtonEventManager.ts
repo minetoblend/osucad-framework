@@ -1,8 +1,8 @@
-import type { Drawable } from "../graphics/drawables/Drawable";
-import type { InputManager } from "./InputManager";
-import type { UIEvent } from "./events/UIEvent";
-import type { InputState } from "./state/InputState";
-import { ButtonStateChangeKind } from "./stateChanges/events/ButtonStateChangeKind";
+import type { Drawable } from '../graphics/drawables/Drawable';
+import type { InputManager } from './InputManager';
+import type { UIEvent } from './events/UIEvent';
+import type { InputState } from './state/InputState';
+import { ButtonStateChangeKind } from './stateChanges/events/ButtonStateChangeKind';
 
 export abstract class ButtonEventManager<TButton> {
   handleButtonStateChange(state: InputState, kind: ButtonStateChangeKind) {
@@ -37,7 +37,7 @@ export abstract class ButtonEventManager<TButton> {
 
   abstract handleButtonDown(
     state: InputState,
-    targets: Drawable[]
+    targets: Drawable[],
   ): Drawable | null;
 
   #handleButtonUp(state: InputState) {
@@ -45,7 +45,7 @@ export abstract class ButtonEventManager<TButton> {
 
     this.handleButtonUp(
       state,
-      this.buttonDownInputQueue.filter((d) => d.isRootedAt(this.inputManager))
+      this.buttonDownInputQueue.filter((d) => d.isRootedAt(this.inputManager)),
     );
     this.buttonDownInputQueue = null;
   }
@@ -54,7 +54,7 @@ export abstract class ButtonEventManager<TButton> {
 
   protected propagateButtonEvent(
     drawables: Drawable[],
-    e: UIEvent
+    e: UIEvent,
   ): Drawable | null {
     let handledBy: Drawable | null = null;
 

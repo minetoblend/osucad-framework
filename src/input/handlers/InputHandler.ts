@@ -1,10 +1,9 @@
-import { Bindable } from "../../bindables/Bindable";
-import type { GameHost } from "../../platform/GameHost";
-import type { IDisposable } from "../../types/IDisposable";
-import type { IInput } from "../stateChanges/IInput";
+import { Bindable } from '../../bindables/Bindable';
+import type { GameHost } from '../../platform/GameHost';
+import type { IDisposable } from '../../types/IDisposable';
+import type { IInput } from '../stateChanges/IInput';
 
 export abstract class InputHandler implements IDisposable {
-
   abstract initialize(host: GameHost): boolean;
 
   readonly enabled = new Bindable(true);

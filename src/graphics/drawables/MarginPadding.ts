@@ -1,6 +1,6 @@
-import { Vec2 } from "../../math/Vec2";
-import { lerp } from "../../math/lerp";
-import type { ILerp } from "../../types/ILerp";
+import { Vec2 } from '../../math/Vec2';
+import { lerp } from '../../math/lerp';
+import type { ILerp } from '../../types/ILerp';
 
 export type MarginPaddingOptions =
   | number
@@ -27,17 +27,17 @@ export class MarginPadding implements ILerp<MarginPadding> {
   readonly bottom: number;
 
   constructor(options?: MarginPaddingOptions) {
-    if (typeof options === "number") {
+    if (typeof options === 'number') {
       this.left = this.right = this.top = this.bottom = options;
     } else if (options) {
-      if ("horizontal" in options) {
+      if ('horizontal' in options) {
         this.left = this.right = options.horizontal;
       } else {
         this.left = options.left ?? 0;
         this.right = options.right ?? 0;
       }
 
-      if ("vertical" in options) {
+      if ('vertical' in options) {
         this.top = this.bottom = options.vertical;
       } else {
         this.top = options.top ?? 0;
@@ -88,7 +88,9 @@ export class MarginPadding implements ILerp<MarginPadding> {
   }
 
   isZero(): boolean {
-    return this.left === 0 && this.right === 0 && this.top === 0 && this.bottom === 0;
+    return (
+      this.left === 0 && this.right === 0 && this.top === 0 && this.bottom === 0
+    );
   }
 
   toString(): string {

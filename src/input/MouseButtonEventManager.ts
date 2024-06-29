@@ -1,15 +1,15 @@
-import { Invalidation, type Drawable } from "../graphics/drawables/Drawable";
-import type { Vec2 } from "../math";
-import { debugAssert } from "../utils/debugAssert";
-import { ButtonEventManager } from "./ButtonEventManager";
-import { ClickEvent } from "./events/ClickEvent";
-import { DragEndEvent } from "./events/DragEndEvent";
-import { DragEvent } from "./events/DragEvent";
-import { DragStartEvent } from "./events/DragStartEvent";
-import { MouseDownEvent } from "./events/MouseDownEvent";
-import { MouseUpEvent } from "./events/MouseUpEvent";
-import type { InputState } from "./state/InputState";
-import type { MouseButton } from "./state/MouseButton";
+import { Invalidation, type Drawable } from '../graphics/drawables/Drawable';
+import type { Vec2 } from '../math';
+import { debugAssert } from '../utils/debugAssert';
+import { ButtonEventManager } from './ButtonEventManager';
+import { ClickEvent } from './events/ClickEvent';
+import { DragEndEvent } from './events/DragEndEvent';
+import { DragEvent } from './events/DragEvent';
+import { DragStartEvent } from './events/DragStartEvent';
+import { MouseDownEvent } from './events/MouseDownEvent';
+import { MouseUpEvent } from './events/MouseUpEvent';
+import type { InputState } from './state/InputState';
+import type { MouseButton } from './state/MouseButton';
 
 export abstract class MouseButtonEventManager extends ButtonEventManager<MouseButton> {
   abstract get enableDrag(): boolean;
@@ -46,11 +46,11 @@ export abstract class MouseButtonEventManager extends ButtonEventManager<MouseBu
 
   override handleButtonDown(
     state: InputState,
-    targets: Drawable[]
+    targets: Drawable[],
   ): Drawable | null {
     debugAssert(
       state.mouse.isPressed(this.button),
-      "Mouse button must be pressed"
+      'Mouse button must be pressed',
     );
 
     if (state.mouse.isPositionValid)
@@ -58,7 +58,7 @@ export abstract class MouseButtonEventManager extends ButtonEventManager<MouseBu
 
     const handledBy = this.propagateButtonEvent(
       targets,
-      new MouseDownEvent(state, this.button, this.mouseDownPosition)
+      new MouseDownEvent(state, this.button, this.mouseDownPosition),
     );
 
     // TODO: Double click
@@ -69,13 +69,13 @@ export abstract class MouseButtonEventManager extends ButtonEventManager<MouseBu
   override handleButtonUp(state: InputState, targets: Drawable[] | null): void {
     debugAssert(
       !state.mouse.isPressed(this.button),
-      "Mouse button must be released"
+      'Mouse button must be released',
     );
 
     if (targets != null)
       this.propagateButtonEvent(
         targets,
-        new MouseUpEvent(state, this.button, this.mouseDownPosition)
+        new MouseUpEvent(state, this.button, this.mouseDownPosition),
       );
 
     if (this.enableClick && this.draggedDrawable?.dragBlocksClick !== true) {
@@ -102,12 +102,12 @@ export abstract class MouseButtonEventManager extends ButtonEventManager<MouseBu
 
     const queue = new Set(this.getInputQueue());
     const drawables = targets.filter(
-      (t) => queue.has(t) && t.receivePositionalInputAt(state.mouse.position)
+      (t) => queue.has(t) && t.receivePositionalInputAt(state.mouse.position),
     );
 
     const clicked = this.propagateButtonEvent(
       drawables,
-      new ClickEvent(state, this.button, this.mouseDownPosition)
+      new ClickEvent(state, this.button, this.mouseDownPosition),
     );
 
     if (clicked) {
@@ -125,27 +125,27 @@ export abstract class MouseButtonEventManager extends ButtonEventManager<MouseBu
 
     this.propagateButtonEvent(
       [this.draggedDrawable],
-      new DragEvent(state, this.button, this.mouseDownPosition, lastPosition)
+      new DragEvent(state, this.button, this.mouseDownPosition, lastPosition),
     );
   }
 
   #handleDragStart(state: InputState) {
-    debugAssert(this.draggedDrawable === null, "Dragged drawable must be null");
-    debugAssert(!this.dragStarted, "Drag must not be started");
+    debugAssert(this.draggedDrawable === null, 'Dragged drawable must be null');
+    debugAssert(!this.dragStarted, 'Drag must not be started');
     debugAssert(
       this.mouseDownPosition !== null,
-      "Mouse down position must not be null"
+      'Mouse down position must not be null',
     );
 
     this.dragStarted = true;
 
     const drawables = (this.buttonDownInputQueue ?? []).filter((d) =>
-      d.isRootedAt(this.inputManager)
+      d.isRootedAt(this.inputManager),
     );
 
     const draggable = this.propagateButtonEvent(
       drawables,
-      new DragStartEvent(state, this.button, this.mouseDownPosition)
+      new DragStartEvent(state, this.button, this.mouseDownPosition),
     );
     if (draggable != null) this.#handleDragDrawableBegin(draggable);
   }
@@ -158,7 +158,7 @@ export abstract class MouseButtonEventManager extends ButtonEventManager<MouseBu
 
   #draggedDrawableInvalidated = ([drawable, invalidation]: [
     Drawable,
-    Invalidation
+    Invalidation,
   ]) => {
     if (invalidation & Invalidation.Parent) {
       // end drag if no longer rooted.
@@ -173,7 +173,7 @@ export abstract class MouseButtonEventManager extends ButtonEventManager<MouseBu
     if (previousDragged == null) return;
 
     previousDragged.invalidated.removeListener(
-      this.#draggedDrawableInvalidated
+      this.#draggedDrawableInvalidated,
     );
     previousDragged.isDragged = false;
 
@@ -182,7 +182,7 @@ export abstract class MouseButtonEventManager extends ButtonEventManager<MouseBu
     if (state != null)
       this.propagateButtonEvent(
         [previousDragged],
-        new DragEndEvent(state, this.button, this.mouseDownPosition)
+        new DragEndEvent(state, this.button, this.mouseDownPosition),
       );
   }
 }

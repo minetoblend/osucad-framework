@@ -1,30 +1,30 @@
-import { FrameworkEnvironment } from "../FrameworkEnvironment";
-import type { Drawable } from "../graphics/drawables/Drawable";
-import { Vec2, type IVec2 } from "../math";
-import type { PIXIRenderer } from "../pixi";
+import { FrameworkEnvironment } from '../FrameworkEnvironment';
+import type { Drawable } from '../graphics/drawables/Drawable';
+import { Vec2, type IVec2 } from '../math';
+import type { PIXIRenderer } from '../pixi';
 
 export interface RendererOptions {
   size: IVec2;
   environment: FrameworkEnvironment;
-  rendererPreference?: "webgl" | "webgpu";
+  rendererPreference?: 'webgl' | 'webgpu';
 }
 
 export class Renderer {
   async init(options: RendererOptions) {
-    const { autoDetectRenderer } = await import("pixi.js");
+    const { autoDetectRenderer } = await import('pixi.js');
     const { size, environment } = options;
 
     this.#size = Vec2.from(size);
 
-    const canvas = document.createElement("canvas");
+    const canvas = document.createElement('canvas');
     canvas.width = this.#size.x;
     canvas.height = this.#size.y;
 
-    const context = canvas.getContext("webgl2", {
+    const context = canvas.getContext('webgl2', {
       alpha: false,
       antialias: environment.antialiasPreferred ?? true,
       depth: true,
-      powerPreference: "high-performance",
+      powerPreference: 'high-performance',
       desynchronized: true,
       preserveDrawingBuffer: true,
       stencil: true,
@@ -33,13 +33,13 @@ export class Renderer {
     this.#internalRenderer = await autoDetectRenderer({
       canvas,
       context,
-      preference: "webgl", // environment.webGpuSupported ? rendererPreference : "webgl",
+      preference: 'webgl', // environment.webGpuSupported ? rendererPreference : "webgl",
       antialias: options.environment?.antialiasPreferred ?? true,
       width: this.#size.x,
       height: this.#size.y,
       autoDensity: true,
       useBackBuffer: true,
-      powerPreference: "high-performance",
+      powerPreference: 'high-performance',
       hello: false,
       clearBeforeRender: true,
       depth: true,
@@ -50,7 +50,7 @@ export class Renderer {
 
   get internalRenderer() {
     if (!this.#internalRenderer) {
-      throw new Error("Renderer not initialized");
+      throw new Error('Renderer not initialized');
     }
     return this.#internalRenderer;
   }

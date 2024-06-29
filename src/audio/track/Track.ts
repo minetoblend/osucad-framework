@@ -1,9 +1,8 @@
-import { Action } from "../../bindables";
-import type { IDisposable } from "../../types";
-import type { ITrack } from "./ITrack";
+import { Action } from '../../bindables';
+import type { IDisposable } from '../../types';
+import type { ITrack } from './ITrack';
 
 export abstract class Track implements ITrack, IDisposable {
-
   completed = new Action();
 
   looping: boolean = false;

@@ -1,5 +1,5 @@
-import { AudioChannel } from "./AudioChannel";
-import { AudioBufferTrack } from "./track/AudioBufferTrack";
+import { AudioChannel } from './AudioChannel';
+import { AudioBufferTrack } from './track/AudioBufferTrack';
 
 export class AudioManager {
   constructor() {
@@ -14,7 +14,7 @@ export class AudioManager {
   }
 
   #resumed = new AbortController();
- 
+
   #channels = new Set<AudioChannel>();
 
   createChannel(): AudioChannel {
@@ -23,26 +23,17 @@ export class AudioManager {
     return channel;
   }
 
-
   #setupContextAutostart() {
-    document.addEventListener(
-      "keydown",
-      this.#resumeContext.bind(this),
-      {
-        signal: this.#resumed.signal,
-      }
-    );
-    document.addEventListener(
-      "mousedown",
-      this.#resumeContext.bind(this),
-      {
-        signal: this.#resumed.signal,
-      }
-    );
+    document.addEventListener('keydown', this.#resumeContext.bind(this), {
+      signal: this.#resumed.signal,
+    });
+    document.addEventListener('mousedown', this.#resumeContext.bind(this), {
+      signal: this.#resumed.signal,
+    });
   }
 
   #resumeContext() {
-    if (this.context.state === "running") return;
+    if (this.context.state === 'running') return;
 
     this.context.resume();
     this.#resumed.abort();

@@ -1,4 +1,4 @@
-import { Drawable, InvalidationSource, type Invalidation } from "./Drawable";
+import { Drawable, InvalidationSource, type Invalidation } from './Drawable';
 
 export class LayoutMember {
   constructor(
@@ -6,8 +6,8 @@ export class LayoutMember {
     readonly source: InvalidationSource = InvalidationSource.Default,
     readonly condition?: (
       drawable: Drawable,
-      invalidation: Invalidation
-    ) => boolean
+      invalidation: Invalidation,
+    ) => boolean,
   ) {}
 
   parent?: Drawable;

@@ -1,17 +1,26 @@
-import { PIXIBitmapText, PIXIContainer, PIXITextStyle, type PIXITextStyleOptions } from "../../pixi";
-import { Drawable, Invalidation, type DrawableOptions } from "../drawables/Drawable";
-import { LayoutMember } from "../drawables/LayoutMember";
+import {
+  PIXIBitmapText,
+  PIXIContainer,
+  PIXITextStyle,
+  type PIXITextStyleOptions,
+} from '../../pixi';
+import {
+  Drawable,
+  Invalidation,
+  type DrawableOptions,
+} from '../drawables/Drawable';
+import { LayoutMember } from '../drawables/LayoutMember';
 
 export interface SpriteTextOptions extends DrawableOptions {
   text?: string;
-  style?: PIXITextStyle | PIXITextStyleOptions
+  style?: PIXITextStyle | PIXITextStyleOptions;
 }
 
 export class SpriteText extends Drawable {
   constructor(options: SpriteTextOptions = {}) {
     super();
-    this.text = options.text ?? "";
-    if(options.style) {
+    this.text = options.text ?? '';
+    if (options.style) {
       this.#textStyle = new PIXITextStyle(options.style);
     } else {
       this.#textStyle = new PIXITextStyle();
@@ -45,7 +54,7 @@ export class SpriteText extends Drawable {
     this.#textBacking.invalidate();
   }
 
-  #text: string = "";
+  #text: string = '';
 
   get text() {
     return this.#text;

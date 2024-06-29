@@ -1,4 +1,4 @@
-import { Invalidation, InvalidationSource } from "./Drawable";
+import { Invalidation, InvalidationSource } from './Drawable';
 
 export class InvalidationState {
   constructor(initialState: Invalidation) {

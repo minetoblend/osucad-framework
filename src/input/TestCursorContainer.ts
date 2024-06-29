@@ -1,3 +1,3 @@
-import { CursorContainer } from "./CursorContainer";
+import { CursorContainer } from './CursorContainer';
 
 export class TestCursorContainer extends CursorContainer {}

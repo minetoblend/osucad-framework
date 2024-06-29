@@ -1,4 +1,4 @@
-import { getCurrentDrawablScope } from "./lifetimeScope";
+import { getCurrentDrawablScope } from './lifetimeScope';
 
 export class Action<T = void> {
   #listeners = new Set<(value: T) => void>();

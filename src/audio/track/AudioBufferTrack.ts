@@ -1,11 +1,11 @@
-import type { AudioChannel } from "../AudioChannel";
-import { Track } from "./Track";
+import type { AudioChannel } from '../AudioChannel';
+import { Track } from './Track';
 
 export class AudioBufferTrack extends Track {
   constructor(
     readonly context: AudioContext,
     readonly channel: AudioChannel,
-    readonly buffer: AudioBuffer
+    readonly buffer: AudioBuffer,
   ) {
     super();
   }
@@ -25,7 +25,7 @@ export class AudioBufferTrack extends Track {
   override seek(position: number): boolean {
     if (position < 0 || position > this.length) return false;
 
-    if(!this.isRunning) {
+    if (!this.isRunning) {
       this.#offset = position;
       return true;
     }
@@ -51,7 +51,7 @@ export class AudioBufferTrack extends Track {
     this.#offset = this.contextTimeMillis - this.#offset;
 
     this.#source.onended = (ev) => {
-      if(this.contextTimeMillis - this.#offset < this.length - 10) return;
+      if (this.contextTimeMillis - this.#offset < this.length - 10) return;
       this.#source = null;
       this.#offset = this.contextTimeMillis - this.#offset;
       this.raiseCompleted();
@@ -63,7 +63,7 @@ export class AudioBufferTrack extends Track {
 
     this.#source.stop();
     this.#source = null;
-    
+
     this.#offset = this.contextTimeMillis - this.#offset;
   }
 

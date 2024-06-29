@@ -1,8 +1,6 @@
-import { Vec2 } from "../../math";
-import { ButtonStates } from "./ButtonStates";
-import type { MouseButton } from "./MouseButton";
-
-
+import { Vec2 } from '../../math';
+import { ButtonStates } from './ButtonStates';
+import type { MouseButton } from './MouseButton';
 
 export class MouseState {
   readonly buttons = new ButtonStates<MouseButton>();

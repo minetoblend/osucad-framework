@@ -1,5 +1,5 @@
-import type { FrameTimeInfo } from "./FrameTimeInfo";
-import type { IClock } from "./IClock";
+import type { FrameTimeInfo } from './FrameTimeInfo';
+import type { IClock } from './IClock';
 
 export interface IFrameBasedClock extends IClock {
   get elapsedFrameTime(): number;

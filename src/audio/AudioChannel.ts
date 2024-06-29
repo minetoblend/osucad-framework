@@ -1,4 +1,4 @@
-import type { IDisposable } from "../types";
+import type { IDisposable } from '../types';
 
 export class AudioChannel implements IDisposable {
   constructor(readonly context: AudioContext) {

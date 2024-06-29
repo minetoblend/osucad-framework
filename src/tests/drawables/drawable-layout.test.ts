@@ -1,11 +1,11 @@
-import { DependencyContainer } from "../../di/DependencyContainer";
-import { Axes } from "../../graphics/drawables/Axes";
-import { Container } from "../../graphics/containers/Container";
-import { FramedClock } from "../../timing/FramedClock";
-import { loadDrawable } from "../../graphics/drawables/Drawable";
+import { DependencyContainer } from '../../di/DependencyContainer';
+import { Axes } from '../../graphics/drawables/Axes';
+import { Container } from '../../graphics/containers/Container';
+import { FramedClock } from '../../timing/FramedClock';
+import { loadDrawable } from '../../graphics/drawables/Drawable';
 
-describe("drawable layout", () => {
-  it("relatively sizes itself", () => {
+describe('drawable layout', () => {
+  it('relatively sizes itself', () => {
     let child1: Container;
     let child2: Container;
     let child3: Container;
@@ -14,30 +14,30 @@ describe("drawable layout", () => {
     const parent = Container.create({
       width: 100,
       height: 100,
-      label: "parent",
+      label: 'parent',
       children: [
         (child1 = Container.create({
           width: 50,
           height: 50,
-          label: "child1",
+          label: 'child1',
         })),
         (child2 = Container.create({
           relativeSizeAxes: Axes.X,
           width: 0.25,
           height: 50,
-          label: "child2",
+          label: 'child2',
         })),
         (child3 = Container.create({
           relativeSizeAxes: Axes.Y,
           width: 50,
           height: 0.5,
-          label: "child3",
+          label: 'child3',
         })),
         (child4 = Container.create({
           relativeSizeAxes: Axes.Both,
           width: 0.75,
           height: 1,
-          label: "child4",
+          label: 'child4',
         })),
       ],
     });
@@ -57,27 +57,28 @@ describe("drawable layout", () => {
     expect(child4.drawSize).toEqual({ x: 150, y: 100 });
   });
 
-  it("relatively sizes itself with a parent that has a relative size", () => {
+  it('relatively sizes itself with a parent that has a relative size', () => {
     let a: Container;
     let b: Container;
     let c: Container;
 
+    // eslint-disable-next-line prefer-const
     a = Container.create({
       width: 100,
       height: 100,
-      label: "a",
+      label: 'a',
       children: [
         (b = Container.create({
           relativeSizeAxes: Axes.X,
           width: 0.5,
           height: 100,
-          label: "b",
+          label: 'b',
           children: [
             (c = Container.create({
               relativeSizeAxes: Axes.X,
               width: 0.5,
               height: 100,
-              label: "c",
+              label: 'c',
             })),
           ],
         })),
@@ -103,7 +104,7 @@ describe("drawable layout", () => {
     expect(c.drawSize).toEqual({ x: 100, y: 100 });
   });
 
-  it("relatively positions itself", () => {
+  it('relatively positions itself', () => {
     let child1: Container;
     let child2: Container;
     let child3: Container;
@@ -112,30 +113,30 @@ describe("drawable layout", () => {
     const parent = Container.create({
       width: 100,
       height: 100,
-      label: "parent",
+      label: 'parent',
       children: [
         (child1 = Container.create({
           x: 50,
           y: 50,
-          label: "child1",
+          label: 'child1',
         })),
         (child2 = Container.create({
           relativePositionAxes: Axes.X,
           x: 0.25,
           y: 50,
-          label: "child2",
+          label: 'child2',
         })),
         (child3 = Container.create({
           relativePositionAxes: Axes.Y,
           x: 50,
           y: 0.5,
-          label: "child3",
+          label: 'child3',
         })),
         (child4 = Container.create({
           relativePositionAxes: Axes.Both,
           x: 0.75,
           y: 1,
-          label: "child4",
+          label: 'child4',
         })),
       ],
     });
@@ -155,7 +156,7 @@ describe("drawable layout", () => {
     expect(child4.drawPosition).toEqual({ x: 150, y: 100 });
   });
 
-  it("automatically updates draw node transform on invalidation", () => {
+  it('automatically updates draw node transform on invalidation', () => {
     const drawable = Container.create({
       x: 50,
       y: 50,
@@ -163,8 +164,8 @@ describe("drawable layout", () => {
       height: 100,
     });
 
-    loadDrawable(drawable, new FramedClock(), new DependencyContainer())
-    
+    loadDrawable(drawable, new FramedClock(), new DependencyContainer());
+
     drawable.updateSubTree();
     drawable.updateSubTreeTransforms();
 

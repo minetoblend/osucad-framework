@@ -1,34 +1,34 @@
-import { Game, Box, WebGameHost, MouseDownEvent, Container, Axes } from ".";
+import { Game, Box, WebGameHost, MouseDownEvent, Container, Axes } from '.';
 
-import "./style.css";
+import './style.css';
 
-const host = new WebGameHost("demo");
+const host = new WebGameHost('demo');
 
 class DemoGame extends Game {
   constructor() {
     super();
 
-this.add(
-  Container.create({
-    autoSizeAxes: Axes.Both,
-    children: [
-      new Box().apply({
-        relativeSizeAxes: Axes.Both,
-        tint: 0xff0000
-      }),
+    this.add(
       Container.create({
         autoSizeAxes: Axes.Both,
-        padding: 25,
         children: [
-          new MyBox().apply({
-            width: 100,
-            height: 100,
+          new Box().apply({
+            relativeSizeAxes: Axes.Both,
+            tint: 0xff0000,
           }),
-        ]
-      })
-    ],
-  })
-);
+          Container.create({
+            autoSizeAxes: Axes.Both,
+            padding: 25,
+            children: [
+              new MyBox().apply({
+                width: 100,
+                height: 100,
+              }),
+            ],
+          }),
+        ],
+      }),
+    );
   }
 }
 
@@ -44,17 +44,17 @@ class MyBox extends Box {
   }
 
   override onMouseDown(e: MouseDownEvent): boolean {
-    console.log("onMouseDown", this.label);
+    console.log('onMouseDown', this.label);
     return true;
   }
 
   override onMouseUp(e: MouseDownEvent): boolean {
-    console.log("onMouseUp", this.label);
+    console.log('onMouseUp', this.label);
     return true;
   }
 
   override onClick(e: MouseDownEvent): boolean {
-    console.log("onClick", this.label);
+    console.log('onClick', this.label);
     return true;
   }
 }

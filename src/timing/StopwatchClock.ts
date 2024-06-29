@@ -1,7 +1,6 @@
-import type { IAdjustableClock } from "./IAdjustableClock";
+import type { IAdjustableClock } from './IAdjustableClock';
 
 export class StopwatchClock implements IAdjustableClock {
-
   constructor(start = true) {
     if (start) {
       this.start();
@@ -15,7 +14,7 @@ export class StopwatchClock implements IAdjustableClock {
   #isRunning = false;
 
   get #stopwatchMilliseconds() {
-    if(!this.#isRunning) {
+    if (!this.#isRunning) {
       return 0;
     }
     return performance.now() - this.#startTime;

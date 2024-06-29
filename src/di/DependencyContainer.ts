@@ -4,7 +4,7 @@ export class DependencyContainer implements ReadonlyDependencyContainer {
   constructor(private readonly parent?: ReadonlyDependencyContainer) {}
 
   provide(keyOrValue: any, value?: any): void {
-    if (!value && "constructor" in keyOrValue) {
+    if (!value && 'constructor' in keyOrValue) {
       this.dependencies.set(keyOrValue.constructor, keyOrValue);
       return;
     }
@@ -42,5 +42,4 @@ export interface ReadonlyDependencyContainer {
   resolve<T>(key: InjectionToken<T>): T;
 }
 
-export interface InjectionToken<T> extends Symbol { 
-}
+export interface InjectionToken<T> extends symbol {}

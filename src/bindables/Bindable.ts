@@ -1,4 +1,4 @@
-import { getCurrentDrawablScope } from "./lifetimeScope";
+import { getCurrentDrawablScope } from './lifetimeScope';
 
 export type BindableListener<T> = (value: T) => void;
 
@@ -30,7 +30,7 @@ export class Bindable<T> {
 
   addOnChangeListener(
     listener: BindableListener<T>,
-    options: AddOnChangeListenerOptions = {}
+    options: AddOnChangeListenerOptions = {},
   ) {
     this.#listeners.add(() => listener(this.value));
     if (options.scoped === false) {

@@ -1,10 +1,10 @@
-import { Axes } from "../graphics/drawables/Axes";
-import type { Drawable } from "../graphics/drawables/Drawable";
-import { Container } from "../graphics/containers/Container";
-import { PIXIGraphics } from "../pixi";
-import { Visibility, VisibilityContainer } from "./VisibilityContainer";
-import type { MouseMoveEvent } from "./events/MouseMoveEvent";
-import type { Vec2 } from "../math";
+import { Axes } from '../graphics/drawables/Axes';
+import type { Drawable } from '../graphics/drawables/Drawable';
+import { Container } from '../graphics/containers/Container';
+import { PIXIGraphics } from '../pixi';
+import { Visibility, VisibilityContainer } from './VisibilityContainer';
+import type { MouseMoveEvent } from './events/MouseMoveEvent';
+import type { Vec2 } from '../math';
 
 export class CursorContainer extends VisibilityContainer {
   activeCursor: Drawable;
@@ -54,7 +54,7 @@ class Cursor extends Container {
     const g = new PIXIGraphics();
 
     g.circle(0, 0, 4).fill({ color: 0xffffff }).stroke({
-      color: "rgb(247, 99, 164)",
+      color: 'rgb(247, 99, 164)',
       width: 2,
       alignment: 1,
     });

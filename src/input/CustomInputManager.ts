@@ -1,5 +1,5 @@
-import { InputManager } from "./InputManager";
-import type { InputHandler } from "./handlers/InputHandler";
+import { InputManager } from './InputManager';
+import type { InputHandler } from './handlers/InputHandler';
 
 export class CustomInputManager extends InputManager {
   override inputHandlers: ReadonlyArray<InputHandler> = [];

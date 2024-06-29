@@ -1,16 +1,16 @@
-import { Vec2, type IVec2 } from "../../math";
-import { definitelyBigger } from "../../utils/definitelyBigger";
-import { Anchor, Axes, axesToString, type Drawable } from "../drawables";
-import { FillMode } from "../drawables/FillMode";
-import type { ContainerOptions } from "./Container";
-import { FlowContainer } from "./FlowContainer";
+import { Vec2, type IVec2 } from '../../math';
+import { definitelyBigger } from '../../utils/definitelyBigger';
+import { Anchor, Axes, axesToString, type Drawable } from '../drawables';
+import { FillMode } from '../drawables/FillMode';
+import type { ContainerOptions } from './Container';
+import { FlowContainer } from './FlowContainer';
 
 export interface IFillFlowContainerOptions extends ContainerOptions {
   direction?: FillDirection;
   spacing?: IVec2;
   maxSize?: IVec2;
   layoutDuration?: number;
-  layoutEasing?: gsap.EaseString | gsap.EaseFunction
+  layoutEasing?: gsap.EaseString | gsap.EaseFunction;
 }
 
 export class FillFlowContainer extends FlowContainer {
@@ -61,7 +61,7 @@ export class FillFlowContainer extends FlowContainer {
   }
 
   override computeLayoutPositions(): Vec2[] {
-    let max = this.maximumSize;
+    const max = this.maximumSize;
 
     if (max.x === 0 && max.y === 0) {
       const s = this.childSize;
@@ -81,7 +81,7 @@ export class FillFlowContainer extends FlowContainer {
 
     let rowHeight = 0;
     let rowBeginOffset = 0;
-    let current = Vec2.zero();
+    const current = Vec2.zero();
 
     let size = Vec2.zero();
 
@@ -97,7 +97,7 @@ export class FillFlowContainer extends FlowContainer {
           return Axes.Y;
 
         default:
-          throw new Error("Unknown FillDirection");
+          throw new Error('Unknown FillDirection');
       }
     }
 
@@ -114,12 +114,12 @@ export class FillFlowContainer extends FlowContainer {
           this.autoSizeAxes === Axes.Both)
       ) {
         throw new Error(
-          "Drawables inside a fill flow container may not have a relative size axis that the fill flow container is filling in and auto sizing for. " +
+          'Drawables inside a fill flow container may not have a relative size axis that the fill flow container is filling in and auto sizing for. ' +
             `The fill flow container is set to flow in the ${
               this.direction
             } direction and autosize in {AutoSizeAxes} axes and the child is set to relative size in ${axesToString(
-              c.relativeSizeAxes
-            )} axes.`
+              c.relativeSizeAxes,
+            )} axes.`,
         );
       }
 
@@ -128,7 +128,7 @@ export class FillFlowContainer extends FlowContainer {
         rowBeginOffset = this.#spacingFactor(c).x * size.x;
       }
 
-      let rowWidth =
+      const rowWidth =
         rowBeginOffset + current.x + (1 - this.#spacingFactor(c).x) * size.x;
 
       if (
@@ -157,7 +157,7 @@ export class FillFlowContainer extends FlowContainer {
       let stride = Vec2.zero();
 
       if (i < children.length - 1) {
-        stride = (new Vec2(1).sub(this.#spacingFactor(c))).mul(size);
+        stride = new Vec2(1).sub(this.#spacingFactor(c)).mul(size);
 
         c = children[i + 1];
         size = c.boundingBox.size;
@@ -171,18 +171,18 @@ export class FillFlowContainer extends FlowContainer {
       current.x += stride.x;
     }
 
-    let height = layoutPositions[children.length - 1].y;
+    const height = layoutPositions[children.length - 1].y;
 
-    let ourRelativeAnchor = children[0].relativeAnchorPosition.clone()
+    const ourRelativeAnchor = children[0].relativeAnchorPosition.clone();
 
     for (let i = 0; i < children.length; i++) {
-      var c = children[i];
+      const c = children[i];
 
       switch (this.direction) {
         case FillDirection.Vertical:
           if (c.relativeAnchorPosition.y !== ourRelativeAnchor.y) {
             throw new Error(
-              `All drawables in a FillFlowContainer must use the same RelativeAnchorPosition for the given FillDirection(${this.direction}) (${ourRelativeAnchor.y} != ${c.relativeAnchorPosition.y}). Consider using multiple instances of FillFlowContainer if this is intentional.`
+              `All drawables in a FillFlowContainer must use the same RelativeAnchorPosition for the given FillDirection(${this.direction}) (${ourRelativeAnchor.y} != ${c.relativeAnchorPosition.y}). Consider using multiple instances of FillFlowContainer if this is intentional.`,
             );
           }
 
@@ -191,7 +191,7 @@ export class FillFlowContainer extends FlowContainer {
         case FillDirection.Horizontal:
           if (c.relativeAnchorPosition.x !== ourRelativeAnchor.x) {
             throw new Error(
-              `All drawables in a FillFlowContainer must use the same RelativeAnchorPosition for the given FillDirection(${this.direction}) (${ourRelativeAnchor.x} != ${c.relativeAnchorPosition.x}). Consider using multiple instances of FillFlowContainer if this is intentional.`
+              `All drawables in a FillFlowContainer must use the same RelativeAnchorPosition for the given FillDirection(${this.direction}) (${ourRelativeAnchor.x} != ${c.relativeAnchorPosition.x}). Consider using multiple instances of FillFlowContainer if this is intentional.`,
             );
           }
 
@@ -200,7 +200,7 @@ export class FillFlowContainer extends FlowContainer {
         default:
           if (!c.relativeAnchorPosition.equals(ourRelativeAnchor)) {
             throw new Error(
-              `All drawables in a FillFlowContainer must use the same RelativeAnchorPosition for the given FillDirection(${this.direction}) (${ourRelativeAnchor} != ${c.relativeAnchorPosition}). Consider using multiple instances of FillFlowContainer if this is intentional.`
+              `All drawables in a FillFlowContainer must use the same RelativeAnchorPosition for the given FillDirection(${this.direction}) (${ourRelativeAnchor} != ${c.relativeAnchorPosition}). Consider using multiple instances of FillFlowContainer if this is intentional.`,
             );
           }
 

@@ -1,52 +1,52 @@
-import { Matrix } from "pixi.js";
-import { Action } from "../../bindables/Action";
+import { Matrix } from 'pixi.js';
+import { Action } from '../../bindables/Action';
 import {
   popDrawableScope,
   pushDrawableScope,
-} from "../../bindables/lifetimeScope";
+} from '../../bindables/lifetimeScope';
 import {
   DependencyContainer,
   type ReadonlyDependencyContainer,
-} from "../../di/DependencyContainer";
-import { getDependencyLoaders, getInjections } from "../../di/decorators";
-import { HandleInputCache } from "../../input/HandleInputCache";
-import type { IInputReceiver } from "../../input/IInputReceiver";
-import type { InputManager } from "../../input/InputManager";
-import type { ClickEvent } from "../../input/events/ClickEvent";
-import type { DragEndEvent } from "../../input/events/DragEndEvent";
-import type { DragEvent } from "../../input/events/DragEvent";
-import type { DragStartEvent } from "../../input/events/DragStartEvent";
-import type { HoverEvent } from "../../input/events/HoverEvent";
-import type { HoverLostEvent } from "../../input/events/HoverLostEvent";
-import type { MouseDownEvent } from "../../input/events/MouseDownEvent";
-import type { MouseMoveEvent } from "../../input/events/MouseMoveEvent";
-import type { MouseUpEvent } from "../../input/events/MouseUpEvent";
-import type { UIEvent } from "../../input/events/UIEvent";
-import { Quad } from "../../math/Quad";
-import { Rectangle } from "../../math/Rectangle";
-import { Vec2, type IVec2 } from "../../math/Vec2";
+} from '../../di/DependencyContainer';
+import { getDependencyLoaders, getInjections } from '../../di/decorators';
+import { HandleInputCache } from '../../input/HandleInputCache';
+import type { IInputReceiver } from '../../input/IInputReceiver';
+import type { InputManager } from '../../input/InputManager';
+import type { ClickEvent } from '../../input/events/ClickEvent';
+import type { DragEndEvent } from '../../input/events/DragEndEvent';
+import type { DragEvent } from '../../input/events/DragEvent';
+import type { DragStartEvent } from '../../input/events/DragStartEvent';
+import type { HoverEvent } from '../../input/events/HoverEvent';
+import type { HoverLostEvent } from '../../input/events/HoverLostEvent';
+import type { MouseDownEvent } from '../../input/events/MouseDownEvent';
+import type { MouseMoveEvent } from '../../input/events/MouseMoveEvent';
+import type { MouseUpEvent } from '../../input/events/MouseUpEvent';
+import type { UIEvent } from '../../input/events/UIEvent';
+import { Quad } from '../../math/Quad';
+import { Rectangle } from '../../math/Rectangle';
+import { Vec2, type IVec2 } from '../../math/Vec2';
 import {
   Color,
   Filter,
   PIXIContainer,
   type BLEND_MODES,
   type ColorSource,
-} from "../../pixi";
-import type { IFrameBasedClock } from "../../timing/IFrameBasedClock";
-import type { IDisposable } from "../../types/IDisposable";
-import { almostEquals } from "../../utils/almostEquals";
-import { debugAssert } from "../../utils/debugAssert";
-import { animationMixins } from "../AnimationMixins";
-import type { CompositeDrawable } from "../containers/CompositeDrawable";
-import { Anchor } from "./Anchor";
-import { Axes } from "./Axes";
-import { InvalidationState } from "./InvalidationState";
-import { LayoutComputed } from "./LayoutComputed";
-import { LayoutMember } from "./LayoutMember";
-import { MarginPadding, type MarginPaddingOptions } from "./MarginPadding";
-import type { FrameTimeInfo } from "../../timing";
-import gsap from "gsap";
-import { FillMode } from "./FillMode";
+} from '../../pixi';
+import type { IFrameBasedClock } from '../../timing/IFrameBasedClock';
+import type { IDisposable } from '../../types/IDisposable';
+import { almostEquals } from '../../utils/almostEquals';
+import { debugAssert } from '../../utils/debugAssert';
+import { animationMixins } from '../AnimationMixins';
+import type { CompositeDrawable } from '../containers/CompositeDrawable';
+import { Anchor } from './Anchor';
+import { Axes } from './Axes';
+import { InvalidationState } from './InvalidationState';
+import { LayoutComputed } from './LayoutComputed';
+import { LayoutMember } from './LayoutMember';
+import { MarginPadding, type MarginPaddingOptions } from './MarginPadding';
+import type { FrameTimeInfo } from '../../timing';
+import gsap from 'gsap';
+import { FillMode } from './FillMode';
 
 export interface DrawableOptions {
   position?: IVec2;
@@ -70,7 +70,7 @@ export interface DrawableOptions {
   blendMode?: BLEND_MODES;
 }
 
-export const LOAD = Symbol("load");
+export const LOAD = Symbol('load');
 
 export interface Drawable extends OsucadFrameworkMixins.Drawable {}
 
@@ -96,7 +96,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   public static mixin(source: Record<string, any>): void {
     Object.defineProperties(
       Drawable.prototype,
-      Object.getOwnPropertyDescriptors(source)
+      Object.getOwnPropertyDescriptors(source),
     );
   }
 
@@ -128,7 +128,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   set x(value: number) {
     if (this.#x === value) return;
 
-    debugAssert(isFinite(value), "x must be finite");
+    debugAssert(isFinite(value), 'x must be finite');
 
     this.#x = value;
     this.invalidate(Invalidation.Transform);
@@ -143,7 +143,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   set y(value: number) {
     if (this.#y === value) return;
 
-    debugAssert(isFinite(value), "y must be finite");
+    debugAssert(isFinite(value), 'y must be finite');
 
     this.#y = value;
     this.invalidate(Invalidation.Transform);
@@ -160,8 +160,8 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   set position(value: IVec2) {
     if (this.x === value.x && this.y === value.y) return;
 
-    debugAssert(isFinite(value.x), "x must be finite");
-    debugAssert(isFinite(value.y), "y must be finite");
+    debugAssert(isFinite(value.x), 'x must be finite');
+    debugAssert(isFinite(value.y), 'y must be finite');
 
     this.#x = value.x;
     this.#y = value.y;
@@ -178,7 +178,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   set width(value: number) {
     if (this.#width === value) return;
 
-    debugAssert(isFinite(value), "width must be finite");
+    debugAssert(isFinite(value), 'width must be finite');
 
     this.#width = value;
 
@@ -194,7 +194,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   set height(value: number) {
     if (this.#height === value) return;
 
-    debugAssert(isFinite(value), "height must be finite");
+    debugAssert(isFinite(value), 'height must be finite');
 
     this.#height = value;
 
@@ -208,7 +208,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   set size(value: IVec2 | number) {
     // TODO: optimize this
 
-    if (typeof value === "number") {
+    if (typeof value === 'number') {
       this.width = value;
       this.height = value;
     } else {
@@ -228,7 +228,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   }
 
   set scale(value: IVec2 | number) {
-    if (typeof value === "number") value = { x: value, y: value };
+    if (typeof value === 'number') value = { x: value, y: value };
 
     if (this.#scale.equals(value)) return;
 
@@ -297,7 +297,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   set rotation(value: number) {
     if (this.#rotation === value) return;
 
-    debugAssert(isFinite(value), "rotation must be finite");
+    debugAssert(isFinite(value), 'rotation must be finite');
 
     this.#rotation = value;
     this.invalidate(Invalidation.Transform);
@@ -331,7 +331,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   set color(value: ColorSource) {
     debugAssert(
       Color.isColorLike(value),
-      "color must be a valid color-like value"
+      'color must be a valid color-like value',
     );
 
     this.#color.setValue(value);
@@ -346,7 +346,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   set tint(value: ColorSource) {
     debugAssert(
       Color.isColorLike(value),
-      "tint must be a valid color-like value"
+      'tint must be a valid color-like value',
     );
 
     const alpha = this.#color.alpha;
@@ -487,7 +487,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   protected applyRelativeAxes(
     axes: Axes,
     v: Readonly<Vec2>,
-    fillMode: FillMode
+    fillMode: FillMode,
   ): Readonly<Vec2> {
     if (axes === Axes.None) {
       return v;
@@ -625,8 +625,8 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   set fillAspectRatio(value: number) {
     if (this.#fillAspectRatio === value) return;
 
-    if (!isFinite(value)) throw new Error("fillAspectRatio must be finite");
-    if (value === 0) throw new Error("fillAspectRatio cannot be 0");
+    if (!isFinite(value)) throw new Error('fillAspectRatio must be finite');
+    if (value === 0) throw new Error('fillAspectRatio cannot be 0');
 
     this.#fillAspectRatio = value;
 
@@ -646,7 +646,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     const position = this.applyRelativeAxes(
       this.relativePositionAxes,
       this.position,
-      FillMode.Stretch
+      FillMode.Stretch,
     );
 
     return position.add({
@@ -660,7 +660,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
       this.applyRelativeAxes(this.relativeSizeAxes, this.size, this.fillMode),
     Invalidation.Transform |
       Invalidation.RequiredParentSizeToFit |
-      Invalidation.Presence
+      Invalidation.Presence,
   );
 
   get drawSize(): Vec2 {
@@ -676,7 +676,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
       -this.margin.left,
       -this.margin.top,
       this.drawSize.x,
-      this.drawSize.y
+      this.drawSize.y,
     );
   }
 
@@ -690,12 +690,12 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
     const ratio1 = new Vec2(
       rap.x <= 0 ? 0 : 1 / rap.x,
-      rap.y <= 0 ? 0 : 1 / rap.y
+      rap.y <= 0 ? 0 : 1 / rap.y,
     );
 
     const ratio2 = new Vec2(
       rap.x >= 1 ? 0 : 1 / (1 - rap.x),
-      rap.y >= 1 ? 0 : 1 / (1 - rap.y)
+      rap.y >= 1 ? 0 : 1 / (1 - rap.y),
     );
 
     const bbox = this.boundingBox;
@@ -796,7 +796,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   dependencies!: DependencyContainer;
 
   removeFromParent(dispose = true) {
-    this.parent?.["removeInternal"]?.(this, dispose);
+    this.parent?.['removeInternal']?.(this, dispose);
   }
 
   #loadComplete() {
@@ -839,7 +839,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   processCustomClock = true;
 
   get clock() {
-    if (!this.#clock) throw new Error("Drawable is not loaded");
+    if (!this.#clock) throw new Error('Drawable is not loaded');
     return this.#clock;
   }
 
@@ -864,7 +864,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
       this.time.current +
       tweens.reduce(
         (max, t) => Math.max(max, (t.totalDuration() - t.time()) * 1000),
-        -Infinity
+        -Infinity,
       );
 
     console.log(this.lifetimeEnd - this.clock.currentTime);
@@ -901,7 +901,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
         key,
         optional
           ? this.dependencies.resolveOptional(type)
-          : this.dependencies.resolve(type)
+          : this.dependencies.resolve(type),
       );
     }
   }
@@ -915,7 +915,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   dispose(): boolean {
     if (this.isDisposed) return false;
 
-    debugAssert(!this.parent, "Cannot dispose drawable with parent");
+    debugAssert(!this.parent, 'Cannot dispose drawable with parent');
 
     this.drawNode?.destroy({ children: true });
     for (const callback of this.#onDispose) {
@@ -930,14 +930,14 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   #invalidateParentSizeDependencies(
     invalidation: Invalidation,
-    changedAxes: Axes
+    changedAxes: Axes,
   ) {
     this.invalidate(invalidation, InvalidationSource.Self, false);
 
     this.parent?.invalidateChildrenSizeDependencies(
       invalidation,
       changedAxes,
-      this
+      this,
     );
   }
 
@@ -961,12 +961,12 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
       this.#bypassAutoSizeAdditionalAxes;
 
     if (this.#bypassAutoSizeAxes !== value) {
-      var changedAxes = this.#bypassAutoSizeAxes ^ value;
+      const changedAxes = this.#bypassAutoSizeAxes ^ value;
       this.#bypassAutoSizeAxes = value;
       if ((this.parent?.autoSizeAxes ?? 0) & changedAxes)
         this.parent?.invalidate(
           Invalidation.RequiredParentSizeToFit,
-          InvalidationSource.Child
+          InvalidationSource.Child,
         );
     }
   }
@@ -1001,7 +1001,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   }
 
   findClosestParent<T extends Drawable>(
-    predicate: (d: Drawable) => d is T
+    predicate: (d: Drawable) => d is T,
   ): T | null {
     let parent = this.parent;
 
@@ -1017,7 +1017,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   }
 
   findClosestParentOfType<T extends Drawable>(
-    type: abstract new () => T
+    type: abstract new () => T,
   ): T | null {
     let parent = this.parent;
 
@@ -1052,7 +1052,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   updateSubTree(): boolean {
     if (this.isDisposed) {
-      throw new Error("Cannot update disposed drawable");
+      throw new Error('Cannot update disposed drawable');
     }
 
     if (this.processCustomClock) this.#customClock?.processFrame();
@@ -1091,7 +1091,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   update() {}
 
   #transformBacking = new LayoutMember(
-    Invalidation.Transform | Invalidation.DrawSize | Invalidation.Presence
+    Invalidation.Transform | Invalidation.DrawSize | Invalidation.Presence,
   );
 
   #colorBacking = new LayoutMember(Invalidation.Color);
@@ -1127,7 +1127,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   invalidate(
     invalidation: Invalidation,
     source: InvalidationSource = InvalidationSource.Self,
-    propagateToParent: boolean = true
+    propagateToParent: boolean = true,
   ): boolean {
     if (propagateToParent && source === InvalidationSource.Self) {
       this.parent?.invalidate(invalidation, InvalidationSource.Child);
@@ -1187,7 +1187,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   onInvalidate(
     invalidation: Invalidation,
-    source: InvalidationSource
+    source: InvalidationSource,
   ): boolean {
     return false;
   }
@@ -1247,7 +1247,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   getContainingInputManager(): InputManager | null {
     return this.findClosestParent((d): d is InputManager => {
-      return !!("isInputManager" in d && d.isInputManager);
+      return !!('isInputManager' in d && d.isInputManager);
     });
   }
 
@@ -1324,7 +1324,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 export function loadDrawable(
   drawable: Drawable,
   clock: IFrameBasedClock,
-  dependencies: ReadonlyDependencyContainer
+  dependencies: ReadonlyDependencyContainer,
 ) {
   drawable[LOAD](clock, dependencies);
 }

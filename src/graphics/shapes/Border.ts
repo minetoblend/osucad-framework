@@ -1,5 +1,5 @@
-import { lerp, lerpColor } from "../../math/lerp";
-import type { ILerp } from "../../types/ILerp";
+import { lerp, lerpColor } from '../../math/lerp';
+import type { ILerp } from '../../types/ILerp';
 
 export interface BorderOptions {
   width?: number;

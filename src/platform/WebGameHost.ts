@@ -1,5 +1,5 @@
-import { Vec2 } from "../math";
-import { GameHost, type GameHostOptions } from "./GameHost";
+import { Vec2 } from '../math';
+import { GameHost, type GameHostOptions } from './GameHost';
 
 export class WebGameHost extends GameHost {
   override getWindowSize(): Vec2 {

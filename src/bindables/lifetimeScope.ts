@@ -1,4 +1,4 @@
-import type { Drawable } from "../graphics/drawables/Drawable";
+import type { Drawable } from '../graphics/drawables/Drawable';
 
 const drawableScopeStack: Drawable[] = [];
 
@@ -14,10 +14,7 @@ export function popDrawableScope() {
   drawableScopeStack.pop();
 }
 
-export function withDrawableScope<T>(
-  drawable: Drawable,
-  callback: () => T
-): T {
+export function withDrawableScope<T>(drawable: Drawable, callback: () => T): T {
   try {
     pushDrawableScope(drawable);
     return callback();

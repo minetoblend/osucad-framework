@@ -24,16 +24,27 @@ export enum Anchor {
 
 export function anchorToString(anchor: Anchor) {
   switch (anchor) {
-    case Anchor.Custom: return "Custom";
-    case Anchor.TopLeft: return "TopLeft";
-    case Anchor.TopCenter: return "TopCenter";
-    case Anchor.TopRight: return "TopRight";
-    case Anchor.CenterLeft: return "CenterLeft";
-    case Anchor.Center: return "Center";
-    case Anchor.CenterRight: return "CenterRight";
-    case Anchor.BottomLeft: return "BottomLeft";
-    case Anchor.BottomCenter: return "BottomCenter";
-    case Anchor.BottomRight: return "BottomRight";
-    default: throw new Error(`Unknown anchor type: ${anchor}`);
+    case Anchor.Custom:
+      return 'Custom';
+    case Anchor.TopLeft:
+      return 'TopLeft';
+    case Anchor.TopCenter:
+      return 'TopCenter';
+    case Anchor.TopRight:
+      return 'TopRight';
+    case Anchor.CenterLeft:
+      return 'CenterLeft';
+    case Anchor.Center:
+      return 'Center';
+    case Anchor.CenterRight:
+      return 'CenterRight';
+    case Anchor.BottomLeft:
+      return 'BottomLeft';
+    case Anchor.BottomCenter:
+      return 'BottomCenter';
+    case Anchor.BottomRight:
+      return 'BottomRight';
+    default:
+      throw new Error(`Unknown anchor type: ${anchor}`);
   }
 }

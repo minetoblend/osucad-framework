@@ -1,12 +1,12 @@
-import type { ClickEvent } from "../../input/events/ClickEvent";
-import type { HoverEvent } from "../../input/events/HoverEvent";
-import { Color, type ColorSource } from "../../pixi";
-import { Anchor } from "../drawables/Anchor";
-import { Axes } from "../drawables/Axes";
-import { type DrawableOptions } from "../drawables/Drawable";
-import { Box } from "../shapes/Box";
-import { SpriteText } from "../text/SpriteText";
-import { Button } from "./Button";
+import type { ClickEvent } from '../../input/events/ClickEvent';
+import type { HoverEvent } from '../../input/events/HoverEvent';
+import { Color, type ColorSource } from '../../pixi';
+import { Anchor } from '../drawables/Anchor';
+import { Axes } from '../drawables/Axes';
+import { type DrawableOptions } from '../drawables/Drawable';
+import { Box } from '../shapes/Box';
+import { SpriteText } from '../text/SpriteText';
+import { Button } from './Button';
 
 export interface BasicButtonOptions extends DrawableOptions {
   text?: string;
@@ -54,9 +54,9 @@ export class BasicButton extends Button {
     this.hover.color = value;
   }
 
-  #disabledColour = new Color("rgb(128,128,128)");
+  #disabledColour = new Color('rgb(128,128,128)');
 
-  get disabledColor() : Color{
+  get disabledColor(): Color {
     return this.#disabledColour;
   }
 
@@ -86,7 +86,7 @@ export class BasicButton extends Button {
         anchor: Anchor.Center,
         origin: Anchor.Center,
         relativeSizeAxes: Axes.Both,
-        color: "rgb(51, 88, 96)",
+        color: 'rgb(51, 88, 96)',
       })),
       (this.hover = new Box({
         alpha: 0,
@@ -95,12 +95,14 @@ export class BasicButton extends Button {
         relativeSizeAxes: Axes.Both,
         color: new Color(0xffffff).setAlpha(0.1),
       })),
-      (this.spriteText = this.createText())
+      (this.spriteText = this.createText()),
     );
 
     this.withScope(() => {
-      this.enabled.addOnChangeListener(this.#enabledChanged, { immediate: true });
-    })
+      this.enabled.addOnChangeListener(this.#enabledChanged, {
+        immediate: true,
+      });
+    });
 
     this.apply(options);
   }
@@ -121,8 +123,7 @@ export class BasicButton extends Button {
       this.background.flashColorTo({
         color: this.flashColor,
         duration: this.flashDuration,
-      })
-      
+      });
     }
 
     return super.onClick(e);
@@ -130,7 +131,7 @@ export class BasicButton extends Button {
 
   override onHover(e: HoverEvent): boolean {
     if (this.enabled.value) {
-      this.hover.fadeIn({ duration: this.hoverFadeDuration })
+      this.hover.fadeIn({ duration: this.hoverFadeDuration });
     }
 
     return super.onHover?.(e) ?? true;
@@ -146,11 +147,11 @@ export class BasicButton extends Button {
 
   #enabledChanged = (enabled: boolean) => {
     const color = enabled ? 0xffffff : this.disabledColor;
-    
+
     this.fadeColorTo({
       color,
       duration: this.disabledFadeDuration,
       easing: 'power4.out',
-    })
-  }
+    });
+  };
 }

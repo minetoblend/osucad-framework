@@ -1,10 +1,13 @@
-import type { ILerp } from "../types/ILerp";
+import type { ILerp } from '../types/ILerp';
 
 export class Vec2 implements ILerp<Vec2> {
   constructor();
   constructor(xy: number);
   constructor(x: number, y: number);
-  constructor(public x: number = 0, public y: number = x) {}
+  constructor(
+    public x: number = 0,
+    public y: number = x,
+  ) {}
 
   readonly(): Readonly<Vec2> {
     return this;
@@ -114,7 +117,7 @@ export class Vec2 implements ILerp<Vec2> {
   static from(v: IVec2): Vec2 {
     return new Vec2(v.x, v.y);
   }
-  
+
   static zero(): Vec2 {
     return new Vec2(0);
   }
@@ -126,10 +129,10 @@ export class Vec2 implements ILerp<Vec2> {
   lerp(target: Vec2, t: number): Vec2 {
     return new Vec2(
       this.x + (target.x - this.x) * t,
-      this.y + (target.y - this.y) * t
+      this.y + (target.y - this.y) * t,
     );
   }
-  
+
   static add(a: IVec2, b: IVec2): Vec2 {
     return new Vec2(a.x + b.x, a.y + b.y);
   }
@@ -159,10 +162,7 @@ export class Vec2 implements ILerp<Vec2> {
   }
 
   static lerp(a: IVec2, b: IVec2, t: number): Vec2 {
-    return new Vec2(
-      a.x + (b.x - a.x) * t,
-      a.y + (b.y - a.y) * t
-    );
+    return new Vec2(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t);
   }
 
   static closerThan(a: IVec2, b: IVec2, threshold: number): boolean {

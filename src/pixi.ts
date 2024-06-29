@@ -18,4 +18,4 @@ export {
   Filter,
   BlurFilter,
   AlphaFilter,
-} from 'pixi.js'
+} from 'pixi.js';

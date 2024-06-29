@@ -1,15 +1,15 @@
-import { FrameworkEnvironment } from "../FrameworkEnvironment";
-import type { Game } from "../Game";
-import { AudioManager } from "../audio/AudioManager";
-import { DependencyContainer } from "../di/DependencyContainer";
-import type { Container } from "../graphics/containers/Container";
-import { loadDrawable } from "../graphics/drawables/Drawable";
-import { GAME_HOST } from "../injectionTokens";
-import { UserInputManager } from "../input/UserInputManager";
-import { Vec2 } from "../math";
-import { Renderer } from "../renderers/Renderer";
-import { FramedClock } from "../timing/FramedClock";
-import type { IFrameBasedClock } from "../timing/IFrameBasedClock";
+import { FrameworkEnvironment } from '../FrameworkEnvironment';
+import type { Game } from '../Game';
+import { AudioManager } from '../audio/AudioManager';
+import { DependencyContainer } from '../di/DependencyContainer';
+import type { Container } from '../graphics/containers/Container';
+import { loadDrawable } from '../graphics/drawables/Drawable';
+import { GAME_HOST } from '../injectionTokens';
+import { UserInputManager } from '../input/UserInputManager';
+import { Vec2 } from '../math';
+import { Renderer } from '../renderers/Renderer';
+import { FramedClock } from '../timing/FramedClock';
+import type { IFrameBasedClock } from '../timing/IFrameBasedClock';
 
 export interface GameHostOptions {
   friendlyGameName?: string;
@@ -17,7 +17,7 @@ export interface GameHostOptions {
 
 export abstract class GameHost {
   get renderer(): Renderer {
-    if (!this.#renderer) throw new Error("Renderer not initialized");
+    if (!this.#renderer) throw new Error('Renderer not initialized');
 
     return this.#renderer;
   }
@@ -25,7 +25,7 @@ export abstract class GameHost {
   #renderer?: Renderer;
 
   get audioManager(): AudioManager {
-    if (!this.#audioManager) throw new Error("AudioManager not initialized");
+    if (!this.#audioManager) throw new Error('AudioManager not initialized');
 
     return this.#audioManager;
   }
@@ -73,18 +73,18 @@ export abstract class GameHost {
   }
 
   async takeScreenshot(): Promise<Blob> {
-    throw new Error("Not implemented");
+    throw new Error('Not implemented');
   }
 
   async run(game: Game, container: HTMLElement = document.body) {
     if (this.executionState !== ExecutionState.Idle) {
-      throw new Error("GameHost is already running");
+      throw new Error('GameHost is already running');
     }
 
-    window.addEventListener("error", (event) => {
+    window.addEventListener('error', (event) => {
       this.onUnhandledError(event.error);
     });
-    window.addEventListener("unhandledrejection", (event) => {
+    window.addEventListener('unhandledrejection', (event) => {
       this.onUnhandledRejection(event);
     });
 

@@ -1,5 +1,5 @@
-import type { Drawable } from "../graphics/drawables/Drawable";
-import type { IInputReceiver } from "./IInputReceiver";
+import type { Drawable } from '../graphics/drawables/Drawable';
+import type { IInputReceiver } from './IInputReceiver';
 
 type DrawableConstructor = new (...args: any[]) => Drawable;
 
@@ -17,7 +17,7 @@ export class HandleInputCache {
     return this.getViaReflection(
       drawable,
       this.nonPositionalCachedValues,
-      false
+      false,
     );
   }
 
@@ -28,7 +28,7 @@ export class HandleInputCache {
   private static getViaReflection(
     drawable: Drawable,
     cache: Map<DrawableConstructor, boolean>,
-    positional: boolean
+    positional: boolean,
   ): boolean {
     const cached = cache.get(drawable.constructor as DrawableConstructor);
     if (cached !== undefined) {
@@ -47,20 +47,20 @@ export class HandleInputCache {
     ];
 
   private static readonly positionalInputMethods: (keyof IInputReceiver)[] = [
-    "onMouseDown",
-    "onMouseUp",
-    "onClick",
-    "onMouseMove",
-    "onHover",
-    "onHoverLost",
-    "onDragStart",
-    "onDrag",
-    "onDragEnd",
+    'onMouseDown',
+    'onMouseUp',
+    'onClick',
+    'onMouseMove',
+    'onHover',
+    'onHoverLost',
+    'onDragStart',
+    'onDrag',
+    'onDragEnd',
   ];
 
   private static computeViaReflection(
     drawable: Drawable,
-    positional: boolean
+    positional: boolean,
   ): boolean {
     const inputMethods = positional
       ? this.positionalInputMethods

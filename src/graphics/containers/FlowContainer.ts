@@ -1,13 +1,13 @@
-import gsap from "gsap";
-import { Action } from "../../bindables";
-import { Vec2, type IVec2 } from "../../math";
+import gsap from 'gsap';
+import { Action } from '../../bindables';
+import { Vec2, type IVec2 } from '../../math';
 import {
   Drawable,
   Invalidation,
   InvalidationSource,
   LayoutMember,
-} from "../drawables";
-import { Container } from "./Container";
+} from '../drawables';
+import { Container } from './Container';
 
 export abstract class FlowContainer extends Container {
   readonly onLayout = new Action();
@@ -19,11 +19,11 @@ export abstract class FlowContainer extends Container {
     this.addLayout(this.#childLayout);
   }
 
-  get layoutEasing(): this["autoSizeEasing"] {
+  get layoutEasing(): this['autoSizeEasing'] {
     return this.autoSizeEasing;
   }
 
-  set layoutEasing(easing: this["autoSizeEasing"]) {
+  set layoutEasing(easing: this['autoSizeEasing']) {
     this.autoSizeEasing = easing;
   }
 
@@ -52,7 +52,7 @@ export abstract class FlowContainer extends Container {
 
   #childLayout = new LayoutMember(
     Invalidation.RequiredParentSizeToFit | Invalidation.Presence,
-    InvalidationSource.Child
+    InvalidationSource.Child,
   );
 
   override get requiresChildrenUpdate(): boolean {
@@ -66,7 +66,7 @@ export abstract class FlowContainer extends Container {
   readonly #layoutChildren = new Map<Drawable, number>();
 
   protected override addInternal<T extends Drawable>(
-    drawable: T
+    drawable: T,
   ): T | undefined {
     this.#layoutChildren.set(drawable, 0);
 
@@ -76,7 +76,7 @@ export abstract class FlowContainer extends Container {
 
   protected override removeInternal(
     drawable: Drawable,
-    disposeImmediately?: boolean
+    disposeImmediately?: boolean,
   ): boolean {
     this.#layoutChildren.delete(drawable);
 
@@ -87,7 +87,7 @@ export abstract class FlowContainer extends Container {
   setLayoutPosition(drawable: Drawable, newPosition: number): void {
     if (!this.#layoutChildren.has(drawable)) {
       throw new Error(
-        `Cannot change layout position of drawable which is not contained within this ${this.constructor.name}.`
+        `Cannot change layout position of drawable which is not contained within this ${this.constructor.name}.`,
       );
     }
 
@@ -103,7 +103,7 @@ export abstract class FlowContainer extends Container {
   protected getLayoutPosition(drawable: Drawable): number {
     if (!this.#layoutChildren.has(drawable)) {
       throw new Error(
-        `Cannot get layout position of drawable which is not contained within this ${this.constructor.name}.`
+        `Cannot get layout position of drawable which is not contained within this ${this.constructor.name}.`,
       );
     }
 
@@ -111,7 +111,7 @@ export abstract class FlowContainer extends Container {
   }
 
   override updateChildrenLife(): boolean {
-    let changed = super.updateChildrenLife();
+    const changed = super.updateChildrenLife();
 
     if (changed) {
       this.invalidateLayout();
@@ -155,11 +155,11 @@ export abstract class FlowContainer extends Container {
       for (const tween of gsap.getTweensOf(drawable)) {
         if (!tween.isActive()) continue;
 
-        if (typeof tween.vars.x === "number") {
+        if (typeof tween.vars.x === 'number') {
           targetX ??= tween.vars.x;
         }
 
-        if (typeof tween.vars.y === "number") {
+        if (typeof tween.vars.y === 'number') {
           targetY ??= tween.vars.y;
         }
 
@@ -168,7 +168,7 @@ export abstract class FlowContainer extends Container {
 
       const currentTargetPos = new Vec2(
         targetX ?? drawable.position.x,
-        targetY ?? drawable.position.y
+        targetY ?? drawable.position.y,
       );
 
       if (currentTargetPos.equals(pos)) continue;
@@ -180,7 +180,7 @@ export abstract class FlowContainer extends Container {
           easing: this.layoutEasing,
         });
       else {
-        gsap.killTweensOf(drawable, "x,y", true);
+        gsap.killTweensOf(drawable, 'x,y', true);
         drawable.position = pos;
       }
     }
@@ -189,15 +189,13 @@ export abstract class FlowContainer extends Container {
   override updateAfterChildren(): void {
     super.updateAfterChildren();
 
-    if (!this.#childLayout.isValid)
-        this.invalidateLayout();
+    if (!this.#childLayout.isValid) this.invalidateLayout();
 
-    if (!this.#layout.isValid)
-      {
-          this.#performLayout();
+    if (!this.#layout.isValid) {
+      this.#performLayout();
 
-          this.#layout.validate();
-          this.#childLayout.validate();
-      }
+      this.#layout.validate();
+      this.#childLayout.validate();
+    }
   }
 }
