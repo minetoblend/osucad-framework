@@ -46,6 +46,7 @@ import { LayoutMember } from "./LayoutMember";
 import { MarginPadding, type MarginPaddingOptions } from "./MarginPadding";
 import type { FrameTimeInfo } from "../../timing";
 import gsap from "gsap";
+import { FillMode } from "./FillMode";
 
 export interface DrawableOptions {
   position?: IVec2;
@@ -407,10 +408,32 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   set relativeSizeAxes(value: Axes) {
     if (this.#relativeSizeAxes === value) return;
 
+    if (
+      this.#fillMode != FillMode.Stretch &&
+      (value === Axes.Both || this.#relativeSizeAxes === Axes.Both)
+    )
+      this.invalidate(Invalidation.DrawSize);
+    else {
+      const conversion = this.#relativeToAbsoluteFactor;
+      if ((value & Axes.X) > (this.#relativeSizeAxes & Axes.X))
+        this.width = almostEquals(conversion.x, 0)
+          ? 0
+          : this.width / conversion.x;
+      else if ((this.#relativeSizeAxes & Axes.X) > (value & Axes.X))
+        this.width *= conversion.x;
+
+      if ((value & Axes.Y) > (this.#relativeSizeAxes & Axes.Y))
+        this.height = almostEquals(conversion.y, 0)
+          ? 0
+          : this.height / conversion.y;
+      else if ((this.#relativeSizeAxes & Axes.Y) > (value & Axes.Y))
+        this.height *= conversion.y;
+    }
+
     this.#relativeSizeAxes = value;
 
-    if (this.width === 0) this.width = 1;
-    if (this.height === 0) this.height = 1;
+    if (value & Axes.X && this.width === 0) this.width = 1;
+    if (value & Axes.Y && this.height === 0) this.height = 1;
 
     this.invalidate(Invalidation.DrawSize);
 
@@ -445,7 +468,11 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     this.#updateBypassAutoSizeAxes();
   }
 
-  protected applyRelativeAxes(axes: Axes, v: Readonly<Vec2>): Readonly<Vec2> {
+  protected applyRelativeAxes(
+    axes: Axes,
+    v: Readonly<Vec2>,
+    fillMode: FillMode
+  ): Readonly<Vec2> {
     if (axes === Axes.None) {
       return v;
     }
@@ -461,6 +488,14 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
     if (axes & Axes.Y) {
       y *= conversion.y;
+    }
+
+    if (this.relativeSizeAxes === Axes.Both && fillMode !== FillMode.Stretch) {
+      if (fillMode == FillMode.Fill)
+        x = y = Math.max(x, y * this.#fillAspectRatio);
+      else if (fillMode == FillMode.Fit)
+        x = y = Math.min(x, y * this.#fillAspectRatio);
+      y /= this.#fillAspectRatio;
     }
 
     return new Vec2(x, y);
@@ -552,6 +587,41 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     this.#margin = MarginPadding.from(value);
   }
 
+  #fillMode = FillMode.Stretch;
+
+  get fillMode() {
+    return this.#fillMode;
+  }
+
+  set fillMode(value: FillMode) {
+    if (this.#fillMode === value) return;
+
+    this.#fillMode = value;
+    this.invalidate(Invalidation.DrawSize);
+  }
+
+  #fillAspectRatio = 1;
+
+  get fillAspectRatio() {
+    return this.#fillAspectRatio;
+  }
+
+  set fillAspectRatio(value: number) {
+    if (this.#fillAspectRatio === value) return;
+
+    if (!isFinite(value)) throw new Error("fillAspectRatio must be finite");
+    if (value === 0) throw new Error("fillAspectRatio cannot be 0");
+
+    this.#fillAspectRatio = value;
+
+    if (
+      this.#fillMode != FillMode.Stretch &&
+      this.relativeSizeAxes == Axes.Both
+    ) {
+      this.invalidate(Invalidation.DrawSize);
+    }
+  }
+
   //#endregion
 
   //#region computed layout properties
@@ -559,7 +629,8 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   get drawPosition(): Vec2 {
     const position = this.applyRelativeAxes(
       this.relativePositionAxes,
-      this.position
+      this.position,
+      FillMode.Stretch
     );
 
     return position.add({
@@ -569,7 +640,8 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   }
 
   #drawSizeBacking = new LayoutComputed(
-    () => this.applyRelativeAxes(this.relativeSizeAxes, this.size),
+    () =>
+      this.applyRelativeAxes(this.relativeSizeAxes, this.size, this.fillMode),
     Invalidation.Transform |
       Invalidation.RequiredParentSizeToFit |
       Invalidation.Presence
