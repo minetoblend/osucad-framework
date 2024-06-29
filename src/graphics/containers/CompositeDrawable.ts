@@ -23,10 +23,9 @@ export interface CompositeDrawableOptions extends DrawableOptions {
 }
 
 export class CompositeDrawable extends Drawable {
-
   constructor() {
-    super()
-    this.addLayout(this.#childrenSizeDependencies)
+    super();
+    this.addLayout(this.#childrenSizeDependencies);
   }
 
   override createDrawNode(): PIXIContainer {
@@ -130,8 +129,28 @@ export class CompositeDrawable extends Drawable {
     return this.drawSize.sub(this.padding.total);
   }
 
+  #relativeChildSize = new Vec2(1);
+
+  get relativeChildSize(): Vec2 {
+    return this.#relativeChildSize;
+  }
+
+  protected set relativeChildSize(value: IVec2) {
+    if (this.#relativeChildSize.equals(value)) return;
+
+    if (!isFinite(value.x) || !isFinite(value.y))
+      throw new Error("relativeChildSize must be finite.");
+    if (value.x === 0 || value.y === 0)
+      throw new Error("relativeChildSize must be non-zero.");
+
+    this.#relativeChildSize = Vec2.from(value);
+
+    for (const c of this.internalChildren)
+      c.invalidate(c.invalidationFromParentSize);
+  }
+
   get relativeToAbsoluteFactor() {
-    return this.childSize;
+    return this.childSize.div(this.relativeChildSize);
   }
 
   override get relativeSizeAxes(): Axes {
@@ -227,9 +246,8 @@ export class CompositeDrawable extends Drawable {
   autoSizeEasing: gsap.EaseString | gsap.EaseFunction = "linear";
 
   #childrenSizeDependencies = new LayoutMember(
-    Invalidation.RequiredParentSizeToFit |
-      Invalidation.Presence,
-      InvalidationSource.Child
+    Invalidation.RequiredParentSizeToFit | Invalidation.Presence,
+    InvalidationSource.Child
   );
 
   invalidateChildrenSizeDependencies(
