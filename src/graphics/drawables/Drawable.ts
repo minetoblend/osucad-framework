@@ -44,6 +44,8 @@ import { InvalidationState } from "./InvalidationState";
 import { LayoutComputed } from "./LayoutComputed";
 import { LayoutMember } from "./LayoutMember";
 import { MarginPadding, type MarginPaddingOptions } from "./MarginPadding";
+import type { FrameTimeInfo } from "../../timing";
+import gsap from "gsap";
 
 export interface DrawableOptions {
   position?: IVec2;
@@ -648,14 +650,48 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   //#region lifecycle
 
+  lifetimeChanged = new Action<Drawable>();
+
+  get lifetimeStart() {
+    return this.#lifeTimeStart;
+  }
+
+  set lifetimeStart(value: number) {
+    if (this.#lifeTimeStart === value) return;
+
+    this.#lifeTimeStart = value;
+    this.lifetimeChanged.emit(this);
+  }
+
+  get lifetimeEnd() {
+    return this.#lifeTimeEnd;
+  }
+
+  set lifetimeEnd(value: number) {
+    if (this.#lifeTimeEnd === value) return;
+
+    this.#lifeTimeEnd = value;
+    this.lifetimeChanged.emit(this);
+  }
+
+  #lifeTimeStart = -Infinity;
+
+  #lifeTimeEnd = Infinity;
+
   isAlive = false;
 
   get shouldBeAlive() {
-    return true;
+    if (this.lifetimeStart == -Infinity && this.lifetimeEnd === Infinity)
+      return true;
+
+    return (
+      this.time.current >= this.lifetimeStart &&
+      this.time.current < this.lifetimeEnd
+    );
   }
 
   get removeWhenNotAlive() {
-    return this.parent === null; // TODO: || this.time.current > this.lifetimeStart;
+    return this.parent === null || this.time.current > this.lifetimeStart;
   }
 
   get disposeOnDeathRemoval() {
@@ -700,7 +736,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
       const dependencyLoaders = getDependencyLoaders(this);
       for (const key of dependencyLoaders) {
         (this as any)[key]();
-      }  
+      }
 
       this.#loadState = LoadState.Ready;
     } finally {
@@ -709,7 +745,10 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   }
 
   #clock!: IFrameBasedClock;
+
   #customClock?: IFrameBasedClock;
+
+  processCustomClock = true;
 
   get clock() {
     if (!this.#clock) throw new Error("Drawable is not loaded");
@@ -719,6 +758,41 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   set clock(value: IFrameBasedClock) {
     this.#customClock = value;
     this.updateClock(value);
+  }
+
+  get time(): FrameTimeInfo {
+    return this.#clock.timeInfo;
+  }
+
+  expire(calculateLifetimeStart: boolean = false) {
+    if (this.#clock === null) {
+      this.lifetimeEnd = -Infinity;
+      return;
+    }
+
+    const tweens = gsap.getTweensOf(this);
+
+    this.lifetimeEnd =
+      this.time.current +
+      tweens.reduce(
+        (max, t) => Math.max(max, (t.totalDuration() - t.time()) * 1000),
+        -Infinity
+      );
+
+    console.log(this.lifetimeEnd - this.clock.currentTime);
+
+    if (calculateLifetimeStart) {
+      let min = Infinity;
+
+      for (const t of tweens) {
+        if (t.time() < min) min = t.time();
+      }
+
+      min *= 1000;
+      min += this.time.current;
+
+      this.lifetimeStart = min < Infinity ? min : -Infinity;
+    }
   }
 
   updateClock(clock: IFrameBasedClock) {
@@ -739,7 +813,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
         key,
         optional
           ? this.dependencies.resolveOptional(type)
-          : this.dependencies.resolve(type),
+          : this.dependencies.resolve(type)
       );
     }
   }
@@ -892,6 +966,8 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     if (this.isDisposed) {
       throw new Error("Cannot update disposed drawable");
     }
+
+    if (this.processCustomClock) this.#customClock?.processFrame();
 
     if (this.loadState < LoadState.Ready) return false;
 
