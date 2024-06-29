@@ -46,6 +46,8 @@ export class MouseHandler extends InputHandler {
   }
 
   #handleMouseDown = (event: MouseEvent) => {
+    event.preventDefault();
+
     const button = this.#getMouseButton(event);
 
     if (button === null) return;
@@ -54,6 +56,8 @@ export class MouseHandler extends InputHandler {
   };
 
   #handleMouseUp = (event: MouseEvent) => {
+    event.preventDefault();
+
     const button = this.#getMouseButton(event);
 
     if (button === null) return;
@@ -64,6 +68,8 @@ export class MouseHandler extends InputHandler {
   #handleMouseLeave = (event: MouseEvent) => {};
 
   #handleMouseMove = (event: MouseEvent | PointerEvent) => {
+    event.preventDefault();
+
     const rect = (event.target as HTMLCanvasElement).getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
