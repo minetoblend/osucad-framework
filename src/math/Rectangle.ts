@@ -13,6 +13,10 @@ export class Rectangle {
     this.height = height;
   }
 
+  get size() {
+    return new Vec2(this.width, this.height);
+  }
+
   get center(): Vec2 {
     return new Vec2(this.x + this.width / 2, this.y + this.height / 2);
   }
