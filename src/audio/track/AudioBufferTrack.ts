@@ -50,24 +50,21 @@ export class AudioBufferTrack extends Track {
 
     this.#offset = this.contextTimeMillis - this.#offset;
 
-    this.#source.onended = () => {
-      this.#onStop();
+    this.#source.onended = (ev) => {
+      if(this.contextTimeMillis - this.#offset < this.length - 10) return;
+      this.#source = null;
+      this.#offset = this.contextTimeMillis - this.#offset;
       this.raiseCompleted();
     };
   }
 
   override stop(): void {
-    if (!this.isRunning) return;
+    if (!this.#source) return;
 
-    this.#source!.stop();
-
-    this.#onStop();
-  }
-
-  #onStop() {
-    if(this.#source === null) return;
-    this.#offset = this.contextTimeMillis - this.#offset;
+    this.#source.stop();
     this.#source = null;
+    
+    this.#offset = this.contextTimeMillis - this.#offset;
   }
 
   override get isRunning(): boolean {
