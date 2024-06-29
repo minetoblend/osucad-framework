@@ -42,4 +42,5 @@ export interface ReadonlyDependencyContainer {
   resolve<T>(key: InjectionToken<T>): T;
 }
 
-export interface InjectionToken<T> extends symbol {}
+// eslint-disable-next-line @typescript-eslint/ban-types
+export interface InjectionToken<T> extends Symbol {}
