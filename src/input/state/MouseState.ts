@@ -9,6 +9,8 @@ export class MouseState {
 
   isPositionValid = true;
 
+  scroll = new Vec2();
+
   isPressed(button: MouseButton) {
     return this.buttons.isPressed(button);
   }

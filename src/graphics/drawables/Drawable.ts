@@ -47,6 +47,7 @@ import { MarginPadding, type MarginPaddingOptions } from './MarginPadding';
 import type { FrameTimeInfo } from '../../timing';
 import gsap from 'gsap';
 import { FillMode } from './FillMode';
+import type { ScrollEvent } from '../../input/events/ScrollEvent';
 
 export interface DrawableOptions {
   position?: IVec2;
@@ -1309,6 +1310,8 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   onHover?(e: HoverEvent): boolean;
 
   onHoverLost?(e: HoverLostEvent): boolean;
+
+  onScroll?(e: ScrollEvent): boolean;
 
   get dragBlocksClick() {
     return true;

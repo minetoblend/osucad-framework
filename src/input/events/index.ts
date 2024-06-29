@@ -7,4 +7,5 @@ export * from './HoverLostEvent';
 export * from './MouseDownEvent';
 export * from './MouseUpEvent';
 export * from './MouseMoveEvent';
+export * from './ScrollEvent';
 export * from './UIEvent';

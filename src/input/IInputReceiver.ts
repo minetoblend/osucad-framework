@@ -7,6 +7,7 @@ import type { HoverLostEvent } from './events/HoverLostEvent';
 import type { MouseDownEvent } from './events/MouseDownEvent';
 import type { MouseMoveEvent } from './events/MouseMoveEvent';
 import type { MouseUpEvent } from './events/MouseUpEvent';
+import type { ScrollEvent } from './events/ScrollEvent';
 
 export interface IInputReceiver {
   onMouseMove?(e: MouseMoveEvent): boolean;
@@ -18,4 +19,5 @@ export interface IInputReceiver {
   onDragStart?(e: DragStartEvent): boolean;
   onDrag?(e: DragEvent): boolean;
   onDragEnd?(e: DragEndEvent): boolean;
+  onScroll?(e: ScrollEvent): boolean;
 }

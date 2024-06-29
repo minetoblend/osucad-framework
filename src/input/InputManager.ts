@@ -10,6 +10,7 @@ import { MouseButtonEventManager } from './MouseButtonEventManager';
 import { HoverEvent } from './events/HoverEvent';
 import { HoverLostEvent } from './events/HoverLostEvent';
 import { MouseMoveEvent } from './events/MouseMoveEvent';
+import { ScrollEvent } from './events/ScrollEvent';
 import type { UIEvent } from './events/UIEvent';
 import type { InputHandler } from './handlers/InputHandler';
 import { InputState } from './state/InputState';
@@ -20,11 +21,9 @@ import { MouseButtonInput } from './stateChanges/MouseButtonInput';
 import { ButtonStateChangeEvent } from './stateChanges/events/ButtonStateChangeEvent';
 import type { InputStateChangeEvent } from './stateChanges/events/InputStateChangeEvent';
 import { MousePositionChangeEvent } from './stateChanges/events/MousePositionChangeEvent';
+import { MouseScrollChangeEvent } from './stateChanges/events/MouseScrollChangeEvent';
 
-export abstract class InputManager
-  extends Container
-  implements IInputStateChangeHandler
-{
+export abstract class InputManager extends Container implements IInputStateChangeHandler {
   currentState = new InputState();
 
   abstract inputHandlers: ReadonlyArray<InputHandler>;
@@ -34,11 +33,7 @@ export abstract class InputManager
 
     this.relativeSizeAxes = Axes.Both;
 
-    for (const mouseButton of [
-      MouseButton.Left,
-      MouseButton.Middle,
-      MouseButton.Right,
-    ]) {
+    for (const mouseButton of [MouseButton.Left, MouseButton.Middle, MouseButton.Right]) {
       const manager = this.createMouseButtonEventManager(mouseButton);
 
       manager.inputManager = this;
@@ -86,16 +81,12 @@ export abstract class InputManager
     if (this.currentState.mouse.isPositionValid) {
       debugAssert(this.highFrequencyDrawables.length === 0);
       for (const d of this.positionalInputQueue) {
-        if (d.requiresHighFrequencyMousePosition)
-          this.highFrequencyDrawables.push(d);
+        if (d.requiresHighFrequencyMousePosition) this.highFrequencyDrawables.push(d);
       }
 
       if (this.highFrequencyDrawables.length > 0) {
         this.#lastMouseMove ??= new MouseMoveEvent(this.currentState);
-        this.propagateBlockableEvent(
-          this.highFrequencyDrawables,
-          this.#lastMouseMove,
-        );
+        this.propagateBlockableEvent(this.highFrequencyDrawables, this.#lastMouseMove);
       }
 
       this.highFrequencyDrawables.length = 0;
@@ -124,10 +115,11 @@ export abstract class InputManager
       case ButtonStateChangeEvent:
         const buttonEvent = event as ButtonStateChangeEvent<any>;
         if (buttonEvent.input instanceof MouseButtonInput) {
-          this.handleMouseButtonStateChange(
-            buttonEvent as ButtonStateChangeEvent<MouseButton>,
-          );
+          this.handleMouseButtonStateChange(buttonEvent as ButtonStateChangeEvent<MouseButton>);
         }
+        break;
+      case MouseScrollChangeEvent:
+        this.handleMouseScrollChange(event as MouseScrollChangeEvent);
         break;
       default:
         console.warn('Unhandled input state change event', event);
@@ -149,6 +141,17 @@ export abstract class InputManager
     this.propagateBlockableEvent(
       this.positionalInputQueue,
       (this.#lastMouseMove = new MouseMoveEvent(state, lastPosition)),
+    );
+  }
+
+  handleMouseScrollChange(e: MouseScrollChangeEvent): void {
+    this.#handleScroll(e.state, e.lastScroll, e.isPrecise);
+  }
+
+  #handleScroll(state: InputState, lastScroll: Vec2, isPrecise: boolean): void {
+    this.propagateBlockableEvent(
+      this.positionalInputQueue,
+      new ScrollEvent(state, state.mouse.scroll.sub(lastScroll), isPrecise),
     );
   }
 
@@ -208,8 +211,7 @@ export abstract class InputManager
     handler?.handleButtonStateChange(this.currentState, event.kind);
   }
 
-  #mouseButtonEventManagers: Record<MouseButton, MouseButtonEventManager> =
-    {} as any;
+  #mouseButtonEventManagers: Record<MouseButton, MouseButtonEventManager> = {} as any;
 
   #lastMouseMove: MouseMoveEvent | null = null;
   #hoverEventsUpdated = false;
@@ -227,10 +229,7 @@ export abstract class InputManager
     const children = this.internalChildren;
     for (let i = 0; i < children.length; i++) {
       if (this.shouldBeConsideredForInput(children[i]))
-        children[i].buildPositionalInputQueue(
-          screenSpacePos,
-          this.#positionalInputQueue,
-        );
+        children[i].buildPositionalInputQueue(screenSpacePos, this.#positionalInputQueue);
     }
 
     this.#positionalInputQueue.reverse();
@@ -243,10 +242,7 @@ export abstract class InputManager
     return true;
   }
 
-  override buildPositionalInputQueue(
-    screenSpacePos: Vec2,
-    queue: Drawable[],
-  ): boolean {
+  override buildPositionalInputQueue(screenSpacePos: Vec2, queue: Drawable[]): boolean {
     return false;
   }
 

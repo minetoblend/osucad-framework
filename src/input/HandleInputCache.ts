@@ -4,21 +4,11 @@ import type { IInputReceiver } from './IInputReceiver';
 type DrawableConstructor = new (...args: any[]) => Drawable;
 
 export class HandleInputCache {
-  private static positionalCachedValudes = new Map<
-    DrawableConstructor,
-    boolean
-  >();
-  private static nonPositionalCachedValues = new Map<
-    DrawableConstructor,
-    boolean
-  >();
+  private static positionalCachedValudes = new Map<DrawableConstructor, boolean>();
+  private static nonPositionalCachedValues = new Map<DrawableConstructor, boolean>();
 
   static requestsNonPositionalInput(drawable: Drawable): boolean {
-    return this.getViaReflection(
-      drawable,
-      this.nonPositionalCachedValues,
-      false,
-    );
+    return this.getViaReflection(drawable, this.nonPositionalCachedValues, false);
   }
 
   static requestsPositionalInput(drawable: Drawable): boolean {
@@ -41,10 +31,9 @@ export class HandleInputCache {
     return value;
   }
 
-  private static readonly nonPositionalInputMethods: (keyof IInputReceiver)[] =
-    [
-      // TODO
-    ];
+  private static readonly nonPositionalInputMethods: (keyof IInputReceiver)[] = [
+    // TODO
+  ];
 
   private static readonly positionalInputMethods: (keyof IInputReceiver)[] = [
     'onMouseDown',
@@ -56,15 +45,11 @@ export class HandleInputCache {
     'onDragStart',
     'onDrag',
     'onDragEnd',
+    'onScroll',
   ];
 
-  private static computeViaReflection(
-    drawable: Drawable,
-    positional: boolean,
-  ): boolean {
-    const inputMethods = positional
-      ? this.positionalInputMethods
-      : this.nonPositionalInputMethods;
+  private static computeViaReflection(drawable: Drawable, positional: boolean): boolean {
+    const inputMethods = positional ? this.positionalInputMethods : this.nonPositionalInputMethods;
 
     for (const method of inputMethods) {
       if (method in drawable) {
