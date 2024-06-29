@@ -18,7 +18,7 @@ export class Sample {
     return this.buffer.duration * 1000;
   }
 
-  play(options: SamplePlayOptions): SamplePlayback {
+  play(options: SamplePlayOptions = {}): SamplePlayback {
     const source = this.context.createBufferSource();
     source.buffer = this.buffer;
 
