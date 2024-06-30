@@ -702,6 +702,14 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   #lifeTimeEnd = Infinity;
 
+  hide() {
+    this.fadeOut({ duration: 0 });
+  }
+
+  show() {
+    this.fadeIn({ duration: 0 });
+  }
+
   isAlive = false;
 
   get shouldBeAlive() {
@@ -921,7 +929,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     return null;
   }
 
-  findClosestParentOfType<T extends Drawable>(type: abstract new () => T): T | null {
+  findClosestParentOfType<T extends Drawable>(type: abstract new (...args: any[]) => T): T | null {
     let parent = this.parent;
 
     while (parent) {
@@ -1126,6 +1134,10 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   toScreenSpace(localSpacePosition: Vec2): Vec2 {
     return Vec2.from(this.drawNode.toGlobal(localSpacePosition));
+  }
+
+  toSpaceOfOtherDrawable(v: Vec2, other: Drawable): Vec2 {
+    return other.toLocalSpace(this.toScreenSpace(v));
   }
 
   rectToParentSpace(rect: Rectangle): Quad {
