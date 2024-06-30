@@ -146,6 +146,8 @@ export abstract class GameHost {
       child: game,
     });
 
+    root.isAlive = true;
+
     this.dependencies.provide(game);
     game.host = this;
     loadDrawable(root, (this.clock = new FramedClock()), this.dependencies);
