@@ -57,7 +57,7 @@ export abstract class Menu extends CompositeDrawable {
     this.#parentMenu = value;
   }
 
-  #background: Box;
+  #background: Drawable;
 
   readonly #submenuContainer: Container;
 
@@ -81,10 +81,7 @@ export abstract class Menu extends CompositeDrawable {
         relativeSizeAxes: Axes.Both,
         masking: true,
         children: [
-          (this.#background = new Box({
-            relativeSizeAxes: Axes.Both,
-            color: 'black',
-          })),
+          (this.#background = this.createBackground()),
           (this.contentContainer = this.createScrollContainer(direction).apply({
             relativeSizeAxes: Axes.Both,
             masking: false,
@@ -117,6 +114,13 @@ export abstract class Menu extends CompositeDrawable {
   protected override onLoadComplete() {
     super.onLoadComplete();
     this.#updateState();
+  }
+
+  protected createBackground(): Drawable {
+    return new Box({
+      relativeSizeAxes: Axes.Both,
+      color: 'black',
+    });
   }
 
   get items(): MenuItem[] {
