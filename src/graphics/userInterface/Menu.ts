@@ -743,7 +743,7 @@ export abstract class DrawableMenuItem extends CompositeDrawable {
     return true;
   }
 
-  createBackground() {
+  createBackground(): Drawable {
     return new Box({
       relativeSizeAxes: Axes.Both,
     });
