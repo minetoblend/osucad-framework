@@ -47,6 +47,7 @@ export interface DrawableOptions {
   width?: number;
   height?: number;
   rotation?: number;
+  scale?: IVec2 | number;
   skew?: IVec2;
   alpha?: number;
   color?: ColorSource;
