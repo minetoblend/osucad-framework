@@ -173,17 +173,17 @@ export abstract class ScrollContainer extends Container {
   readonly #scrollbarCache = new Cached();
 
   #updatePadding() {
-    if (this.#scrollbarOverlapsContent || this.availableContent <= this.displayableContent)
-      this.scrollContent.padding.isZero();
-    else {
+    if (this.#scrollbarOverlapsContent || this.availableContent <= this.displayableContent) {
+      this.scrollContent.padding = 0;
+    } else {
       if (this.scrollDirection == Direction.Vertical) {
         this.scrollContent.padding =
-          this.scrollbarAnchor == Anchor.TopLeft
+          this.scrollbarAnchor === Anchor.TopLeft
             ? new MarginPadding({ left: this.scrollbar.width + this.scrollbar.margin.left })
             : new MarginPadding({ right: this.scrollbar.width + this.scrollbar.margin.right });
       } else {
         this.scrollContent.padding =
-          this.scrollbarAnchor == Anchor.TopLeft
+          this.scrollbarAnchor === Anchor.TopLeft
             ? new MarginPadding({ top: this.scrollbar.height + this.scrollbar.margin.top })
             : new MarginPadding({ bottom: this.scrollbar.height + this.scrollbar.margin.bottom });
       }
