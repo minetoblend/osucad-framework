@@ -1,4 +1,4 @@
-class CachedValue<T> {
+export class CachedValue<T> {
   #value?: T;
 
   get value() {
