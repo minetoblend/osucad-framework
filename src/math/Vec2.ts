@@ -146,6 +146,10 @@ export class Vec2 implements ILerp<Vec2> {
     return new Vec2(a.x / b.x, a.y / b.y);
   }
 
+  static scale(v: IVec2, f: number): Vec2 {
+    return new Vec2(v.x * f, v.y * f);
+  }
+
   static equals(a: IVec2, b: IVec2): boolean {
     return a.x === b.x && a.y === b.y;
   }
