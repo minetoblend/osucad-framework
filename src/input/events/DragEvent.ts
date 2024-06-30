@@ -8,14 +8,20 @@ export class DragEvent extends UIEvent {
   constructor(
     state: InputState,
     readonly button: MouseButton,
-    readonly screenSpaceMouseDownPosition: Vec2 | null = null,
+    screenSpaceMouseDownPosition: Vec2 | null = null,
     screenSpaceLastMousePosition: Vec2 | null = null,
   ) {
     super(state, 'onDrag');
     this.screenSpaceLastMousePosition = screenSpaceLastMousePosition ?? state.mouse.position;
+    this.screenSpaceMouseDownPosition = screenSpaceMouseDownPosition ?? state.mouse.position;
   }
 
+  readonly screenSpaceMouseDownPosition: Vec2;
   readonly screenSpaceLastMousePosition: Vec2;
+
+  get delta() {
+    return this.state.mouse.position.sub(this.screenSpaceLastMousePosition);
+  }
 
   get screenSpaceDelta(): Vec2 {
     return this.screenSpaceMousePosition.sub(this.screenSpaceLastMousePosition);

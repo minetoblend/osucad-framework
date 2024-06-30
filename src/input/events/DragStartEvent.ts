@@ -11,4 +11,8 @@ export class DragStartEvent extends UIEvent {
   ) {
     super(state, 'onDragStart');
   }
+
+  get delta() {
+    return this.state.mouse.position.sub(this.screenSpaceMouseDownPosition ?? this.state.mouse.position);
+  }
 }

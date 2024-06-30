@@ -51,6 +51,10 @@ export abstract class InputManager extends Container implements IInputStateChang
     return new MouseMinorButtonEventManager(button);
   }
 
+  getMouseButtonEventManagerFor(button: MouseButton) {
+    return this.#mouseButtonEventManagers[button];
+  }
+
   @resolved(GAME_HOST)
   host!: GameHost;
 
