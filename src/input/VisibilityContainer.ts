@@ -17,11 +17,11 @@ export abstract class VisibilityContainer extends Container {
     super.onLoadComplete();
   }
 
-  show() {
+  override show() {
     this.state.value = Visibility.Visible;
   }
 
-  hide() {
+  override hide() {
     this.state.value = Visibility.Hidden;
   }
 

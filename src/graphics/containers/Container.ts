@@ -61,11 +61,11 @@ export class Container extends CompositeDrawable {
     return this;
   }
 
-  remove(child: Drawable): boolean {
+  remove(child: Drawable, disposeImmediately: boolean = true): boolean {
     if (this.content === this) {
-      return this.removeInternal(child);
+      return this.removeInternal(child, disposeImmediately);
     } else {
-      return this.content.remove(child);
+      return this.content.remove(child, disposeImmediately);
     }
   }
 

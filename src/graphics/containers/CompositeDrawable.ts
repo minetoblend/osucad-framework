@@ -17,6 +17,7 @@ import { MarginPadding, type MarginPaddingOptions } from '../drawables/MarginPad
 export interface CompositeDrawableOptions extends DrawableOptions {
   padding?: MarginPaddingOptions;
   autoSizeAxes?: Axes;
+  masking?: boolean;
 }
 
 export class CompositeDrawable extends Drawable {
@@ -331,8 +332,29 @@ export class CompositeDrawable extends Drawable {
   override buildPositionalInputQueue(screenSpacePos: Vec2, queue: Drawable[]): boolean {
     if (!super.buildPositionalInputQueue(screenSpacePos, queue)) return false;
 
-    for (const child of this.internalChildren) {
+    if (!this.receivePositionalInputAtSubTree(screenSpacePos)) return false;
+
+    for (const child of this.aliveInternalChildren) {
       child.buildPositionalInputQueue(screenSpacePos, queue);
+    }
+
+    return true;
+  }
+
+  protected receivePositionalInputAtSubTree(screenSpacePos: Vec2): boolean {
+    return !this.masking || this.receivePositionalInputAt(screenSpacePos);
+  }
+
+  protected shouldBeConsideredForInput(child: Drawable) {
+    return child.loadState == LoadState.Loaded;
+  }
+
+  override buildNonPositionalInputQueue(queue: Drawable[], allowBlocking?: boolean): boolean {
+    if (!super.buildNonPositionalInputQueue(queue, allowBlocking)) return false;
+
+    for (let i = 0; i < this.aliveInternalChildren.length; ++i) {
+      if (this.shouldBeConsideredForInput(this.aliveInternalChildren[i]))
+        this.aliveInternalChildren[i].buildNonPositionalInputQueue(queue, allowBlocking);
     }
 
     return true;

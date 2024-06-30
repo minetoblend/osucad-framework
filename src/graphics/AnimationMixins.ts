@@ -5,8 +5,8 @@ import { type Drawable } from './drawables/Drawable';
 
 export interface AnimationMixins {
   fadeTo(options: FadeOptions): void;
-  fadeOut(options: AnimationOptions): void;
-  fadeIn(options: AnimationOptions): void;
+  fadeOut(options?: AnimationOptions): void;
+  fadeIn(options?: AnimationOptions): void;
   moveTo(options: MoveToOptions): void;
   rotateTo(options: RotateToOptions): void;
   fadeColorTo(options: FadeColorToOptions): void;
@@ -49,16 +49,21 @@ export type FadeColorToOptions = AnimationOptions & {
 
 export const animationMixins: Partial<Drawable> = {
   fadeTo(options: FadeOptions) {
+    if (!options.duration) {
+      this.alpha = options.alpha;
+      return;
+    }
+
     gsap.to(this, {
       alpha: options.alpha,
       duration: (options.duration ?? 0) / 1000,
       ease: options.easing ?? 'linear',
     });
   },
-  fadeOut(options: AnimationOptions) {
+  fadeOut(options: AnimationOptions = {}) {
     this.fadeTo({ ...options, alpha: 0 });
   },
-  fadeIn(options: AnimationOptions) {
+  fadeIn(options: AnimationOptions = {}) {
     this.alpha = 0;
     this.fadeTo({ ...options, alpha: 1 });
   },

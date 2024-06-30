@@ -36,6 +36,8 @@ import type { FrameTimeInfo } from '../../timing';
 import gsap from 'gsap';
 import { FillMode } from './FillMode';
 import type { ScrollEvent } from '../../input/events/ScrollEvent';
+import type { FocusLostEvent } from '../../input/events/FocusLostEvent';
+import { isFocusManager } from '../../input/IFocusManager';
 
 export interface DrawableOptions {
   position?: IVec2;
@@ -703,11 +705,11 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   #lifeTimeEnd = Infinity;
 
   hide() {
-    this.fadeOut({ duration: 0 });
+    this.fadeOut({});
   }
 
   show() {
-    this.fadeIn({ duration: 0 });
+    this.fadeIn({});
   }
 
   isAlive = false;
@@ -801,8 +803,6 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     this.lifetimeEnd =
       this.time.current + tweens.reduce((max, t) => Math.max(max, (t.totalDuration() - t.time()) * 1000), -Infinity);
 
-    console.log(this.lifetimeEnd - this.clock.currentTime);
-
     if (calculateLifetimeStart) {
       let min = Infinity;
 
@@ -821,9 +821,9 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     this.#clock = this.#customClock ?? clock;
   }
 
-  onLoad() {}
+  protected onLoad() {}
 
-  onLoadComplete() {}
+  protected onLoadComplete() {}
 
   #injectDependencies(dependencies: ReadonlyDependencyContainer) {
     this.dependencies = new DependencyContainer(dependencies);
@@ -984,7 +984,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   }
 
   updateSubTreeTransforms(): boolean {
-    if (!this.isPresent) return false;
+    if (!this.isPresent && this.#colorBacking.isValid) return false;
 
     if (!this.#transformBacking.isValid) {
       this.updateDrawNodeTransform();
@@ -1156,6 +1156,10 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     });
   }
 
+  getContainingFocusManager(): InputManager | null {
+    return this.findClosestParent((d): d is InputManager => isFocusManager(d));
+  }
+
   buildPositionalInputQueue(screenSpacePos: Vec2, queue: Drawable[]): boolean {
     if (!this.propagatePositionalInputSubTree) return false;
 
@@ -1214,6 +1218,10 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   onScroll?(e: ScrollEvent): boolean;
 
+  onFocus?(e: FocusEvent): boolean;
+
+  onFocusLost?(e: FocusLostEvent): boolean;
+
   get dragBlocksClick() {
     return true;
   }
@@ -1221,6 +1229,20 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   isHovered = false;
 
   isDragged = false;
+
+  hasFocus = false;
+
+  get requestsFocus() {
+    return false;
+  }
+
+  get acceptsFocus() {
+    return false;
+  }
+
+  get changeFocusOnClick() {
+    return true;
+  }
 
   //#endregion
 }
@@ -1230,10 +1252,10 @@ export function loadDrawable(drawable: Drawable, clock: IFrameBasedClock, depend
 }
 
 export enum LoadState {
-  NotLoaded,
-  Loading,
-  Ready,
-  Loaded,
+  NotLoaded = 0,
+  Loading = 1,
+  Ready = 2,
+  Loaded = 3,
 }
 
 export enum Invalidation {

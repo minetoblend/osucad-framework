@@ -16,6 +16,8 @@ export abstract class MouseButtonEventManager extends ButtonEventManager<MouseBu
 
   abstract get enableClick(): boolean;
 
+  abstract get changeFocusOnClick(): boolean;
+
   blockNextClick = false;
 
   mouseDownPosition: Vec2 | null = null;
@@ -97,8 +99,9 @@ export abstract class MouseButtonEventManager extends ButtonEventManager<MouseBu
       this.clickedDrawable = null;
     }
 
-    // if (this.changeFocusOnClick)
-    //     this.inputManager.changeFocusFromClick(clicked);
+    if (this.changeFocusOnClick && clicked?.changeFocusOnClick) {
+      this.inputManager.changeFocusFromClick(clicked);
+    }
   }
 
   #handleDrag(state: InputState, lastPosition: Vec2) {

@@ -5,7 +5,7 @@ import { FillMode } from '../drawables/FillMode';
 import type { ContainerOptions } from './Container';
 import { FlowContainer } from './FlowContainer';
 
-export interface IFillFlowContainerOptions extends ContainerOptions {
+export interface FillFlowContainerOptions extends ContainerOptions {
   direction?: FillDirection;
   spacing?: IVec2;
   maxSize?: IVec2;
@@ -14,7 +14,7 @@ export interface IFillFlowContainerOptions extends ContainerOptions {
 }
 
 export class FillFlowContainer extends FlowContainer {
-  constructor(options: IFillFlowContainerOptions = {}) {
+  constructor(options: FillFlowContainerOptions = {}) {
     super();
 
     this.apply(options);

@@ -2,6 +2,7 @@ import type { ClickEvent } from './events/ClickEvent';
 import type { DragEndEvent } from './events/DragEndEvent';
 import type { DragEvent } from './events/DragEvent';
 import type { DragStartEvent } from './events/DragStartEvent';
+import type { FocusLostEvent } from './events/FocusLostEvent';
 import type { HoverEvent } from './events/HoverEvent';
 import type { HoverLostEvent } from './events/HoverLostEvent';
 import type { MouseDownEvent } from './events/MouseDownEvent';
@@ -20,4 +21,6 @@ export interface IInputReceiver {
   onDrag?(e: DragEvent): boolean;
   onDragEnd?(e: DragEndEvent): boolean;
   onScroll?(e: ScrollEvent): boolean;
+  onFocus?(e: FocusEvent): boolean;
+  onFocusLost?(e: FocusLostEvent): boolean;
 }

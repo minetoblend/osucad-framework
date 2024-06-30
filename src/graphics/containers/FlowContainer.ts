@@ -90,7 +90,7 @@ export abstract class FlowContainer extends Container {
     this.setLayoutPosition(drawable, position);
   }
 
-  protected getLayoutPosition(drawable: Drawable): number {
+  getLayoutPosition(drawable: Drawable): number {
     if (!this.#layoutChildren.has(drawable)) {
       throw new Error(
         `Cannot get layout position of drawable which is not contained within this ${this.constructor.name}.`,

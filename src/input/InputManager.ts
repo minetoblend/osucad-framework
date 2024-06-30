@@ -6,7 +6,10 @@ import { GAME_HOST } from '../injectionTokens';
 import type { Vec2 } from '../math';
 import type { GameHost } from '../platform/GameHost';
 import { debugAssert } from '../utils/debugAssert';
+import type { IFocusManager } from './IFocusManager';
 import { MouseButtonEventManager } from './MouseButtonEventManager';
+import { FocusEvent } from './events/FocusEvent';
+import { FocusLostEvent } from './events/FocusLostEvent';
 import { HoverEvent } from './events/HoverEvent';
 import { HoverLostEvent } from './events/HoverLostEvent';
 import { MouseMoveEvent } from './events/MouseMoveEvent';
@@ -23,10 +26,12 @@ import type { InputStateChangeEvent } from './stateChanges/events/InputStateChan
 import { MousePositionChangeEvent } from './stateChanges/events/MousePositionChangeEvent';
 import { MouseScrollChangeEvent } from './stateChanges/events/MouseScrollChangeEvent';
 
-export abstract class InputManager extends Container implements IInputStateChangeHandler {
+export abstract class InputManager extends Container implements IInputStateChangeHandler, IFocusManager {
   currentState = new InputState();
 
   abstract inputHandlers: ReadonlyArray<InputHandler>;
+
+  readonly isFocusManger = true;
 
   constructor() {
     super();
@@ -58,6 +63,8 @@ export abstract class InputManager extends Container implements IInputStateChang
   @resolved(GAME_HOST)
   host!: GameHost;
 
+  focusedDrawable: Drawable | null = null;
+
   override onLoad() {
     super.onLoad();
 
@@ -69,6 +76,7 @@ export abstract class InputManager extends Container implements IInputStateChang
   isInputManager = true;
 
   override update(): void {
+    this.#unfocusIfNoLongerValid();
     this.#inputQueue.length = 0;
     this.#positionalInputQueue.length = 0;
 
@@ -100,7 +108,63 @@ export abstract class InputManager extends Container implements IInputStateChang
       this.#updateHoverEvents(this.currentState);
     }
 
+    if (this.focusedDrawable === null) {
+      this.#focusTopMostRequestingDrawable();
+    }
+
     super.update();
+  }
+
+  changeFocus(potentialFocusTarget: Drawable | null, state: InputState = this.currentState): boolean {
+    if (potentialFocusTarget === this.focusedDrawable) return true;
+
+    if (
+      potentialFocusTarget !== null &&
+      (!this.#isDrawableValidForFocus(potentialFocusTarget) || !potentialFocusTarget.acceptsFocus)
+    )
+      return false;
+
+    const previousFocus = this.focusedDrawable;
+
+    this.focusedDrawable = null;
+
+    if (previousFocus != null) {
+      previousFocus.hasFocus = false;
+      previousFocus.triggerEvent(new FocusLostEvent(state, potentialFocusTarget));
+
+      if (this.focusedDrawable != null) {
+        throw new Error('Focus cannot be changed inside OnFocusLost.');
+      }
+    }
+
+    this.focusedDrawable = potentialFocusTarget;
+
+    if (this.focusedDrawable != null) {
+      this.focusedDrawable.hasFocus = true;
+      this.focusedDrawable.triggerEvent(new FocusEvent(state, previousFocus));
+    }
+
+    return true;
+  }
+
+  #isDrawableValidForFocus(drawable: Drawable): boolean {
+    let valid = drawable.isAlive && drawable.isPresent && drawable.parent !== null;
+
+    if (valid) {
+      //ensure we are visible
+      let d = drawable.parent;
+
+      while (d != null) {
+        if (!d.isPresent || !d.isAlive) {
+          valid = false;
+          break;
+        }
+
+        d = d.parent;
+      }
+    }
+
+    return valid;
   }
 
   getPendingInputs(): IInput[] {
@@ -227,6 +291,10 @@ export abstract class InputManager extends Container implements IInputStateChang
     return this.#buildPositionalInputQueue(this.currentState.mouse.position);
   }
 
+  get nonPositionalInputQueue(): Drawable[] {
+    return this.#buildNonPositionalInputQueue();
+  }
+
   #buildPositionalInputQueue(screenSpacePos: Vec2): Drawable[] {
     this.#positionalInputQueue.length = 0;
 
@@ -241,12 +309,37 @@ export abstract class InputManager extends Container implements IInputStateChang
     return this.#positionalInputQueue;
   }
 
-  shouldBeConsideredForInput(drawable: Drawable) {
-    // TODO
-    return true;
+  #buildNonPositionalInputQueue(): Drawable[] {
+    this.#inputQueue.length = 0;
+
+    const children = this.aliveInternalChildren;
+
+    for (let i = 0; i < children.length; i++) {
+      if (this.shouldBeConsideredForInput(children[i])) {
+        children[i].buildNonPositionalInputQueue(this.#inputQueue);
+      }
+    }
+
+    if (!this.#unfocusIfNoLongerValid()) {
+      const index = this.#inputQueue.indexOf(this.focusedDrawable!);
+      if (index !== -1 && index !== this.#inputQueue.length - 1) {
+        this.#inputQueue.splice(index, 1);
+        this.#inputQueue.push(this.focusedDrawable!);
+      }
+    }
+
+    this.#inputQueue.reverse();
+
+    return this.#inputQueue;
   }
 
   override buildPositionalInputQueue(screenSpacePos: Vec2, queue: Drawable[]): boolean {
+    return false;
+  }
+
+  override buildNonPositionalInputQueue(queue: Drawable[], allowBlocking: boolean = true) {
+    if (!allowBlocking) super.buildNonPositionalInputQueue(queue, false);
+
     return false;
   }
 
@@ -261,6 +354,61 @@ export abstract class InputManager extends Container implements IInputStateChang
 
     return false;
   }
+
+  #unfocusIfNoLongerValid() {
+    if (this.focusedDrawable === null) {
+      return true;
+    }
+
+    if (this.#isDrawableValidForFocus(this.focusedDrawable)) {
+      return false;
+    }
+
+    this.changeFocus(null);
+    return true;
+  }
+
+  #focusTopMostRequestingDrawable() {
+    for (const d of this.nonPositionalInputQueue) {
+      if (d.requestsFocus) {
+        this.changeFocus(d);
+        return;
+      }
+    }
+
+    this.changeFocus(null);
+  }
+
+  changeFocusFromClick(clickedDrawable: Drawable | null) {
+    let focusTarget: Drawable | null = null;
+    if (clickedDrawable !== null) {
+      focusTarget = clickedDrawable;
+
+      if (!focusTarget.acceptsFocus) {
+        // search upwards from the clicked drawable until we find something to handle focus.
+        const previousFocused = this.focusedDrawable;
+
+        while (focusTarget?.acceptsFocus === false) {
+          focusTarget = focusTarget.parent;
+        }
+
+        if (focusTarget !== null && previousFocused !== null) {
+          // we found a focusable target above us.
+          // now search upwards from previousFocused to check whether focusTarget is a common parent.
+          let search: Drawable | null = previousFocused;
+          while (search !== null && search !== focusTarget) {
+            search = search.parent;
+          }
+
+          if (focusTarget === search)
+            // we have a common parent, so let's keep focus on the previously focused target.
+            focusTarget = previousFocused;
+        }
+      }
+    }
+
+    this.changeFocus(focusTarget);
+  }
 }
 
 class MouseLeftButtonEventManager extends MouseButtonEventManager {
@@ -271,6 +419,10 @@ class MouseLeftButtonEventManager extends MouseButtonEventManager {
   override get enableDrag(): boolean {
     return true;
   }
+
+  override get changeFocusOnClick(): boolean {
+    return true;
+  }
 }
 
 class MouseMinorButtonEventManager extends MouseButtonEventManager {
@@ -279,6 +431,10 @@ class MouseMinorButtonEventManager extends MouseButtonEventManager {
   }
 
   override get enableDrag(): boolean {
+    return false;
+  }
+
+  override get changeFocusOnClick(): boolean {
     return false;
   }
 }

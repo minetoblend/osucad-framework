@@ -427,7 +427,6 @@ export abstract class ScrollContainer extends Container {
 
     if (!this.#scrollbarCache.isValid) {
       const size = this.scrollDirection === Direction.Horizontal ? this.drawSize.x : this.drawSize.y;
-      console.log(this.availableContent, this.displayableContent, this.availableContent);
       if (size > 0)
         this.scrollbar.resizeTo(
           clamp(
