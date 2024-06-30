@@ -1,5 +1,6 @@
+import gsap from 'gsap';
 import { Vec2, type IVec2 } from '../../math/Vec2';
-import { PIXIContainer } from '../../pixi';
+import { PIXIContainer, PIXIGraphics } from '../../pixi';
 import { debugAssert } from '../../utils/debugAssert';
 import { Axes } from '../drawables/Axes';
 import {
@@ -12,7 +13,6 @@ import {
 } from '../drawables/Drawable';
 import { LayoutMember } from '../drawables/LayoutMember';
 import { MarginPadding, type MarginPaddingOptions } from '../drawables/MarginPadding';
-import gsap from 'gsap';
 
 export interface CompositeDrawableOptions extends DrawableOptions {
   padding?: MarginPaddingOptions;
@@ -520,6 +520,40 @@ export class CompositeDrawable extends Drawable {
 
   private set baseHeight(value: number) {
     super.height = value;
+  }
+
+  get masking(): boolean {
+    return this.#masking;
+  }
+
+  set masking(value: boolean) {
+    if (this.#masking == value) return;
+
+    this.#masking = value;
+    this.#updateMasking();
+  }
+
+  #masking = false;
+  #maskingContainer: PIXIGraphics | null = null;
+
+  #updateMasking() {
+    if (this.#masking && !this.#maskingContainer) {
+      this.#maskingContainer = new PIXIGraphics().rect(0, 0, 1, 1).fill({ color: 0xffffff });
+
+      this.drawNode.addChild(this.#maskingContainer);
+      this.drawNode.mask = this.#maskingContainer;
+    } else if (!this.#masking && this.#maskingContainer) {
+      this.drawNode.removeChild(this.#maskingContainer)?.destroy();
+      this.drawNode.mask = null;
+
+      this.#maskingContainer = null;
+    }
+  }
+
+  override updateDrawNodeTransform(): void {
+    super.updateDrawNodeTransform();
+
+    this.#maskingContainer?.scale.copyFrom(this.drawSize);
   }
 }
 
