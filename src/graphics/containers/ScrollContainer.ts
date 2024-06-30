@@ -17,7 +17,7 @@ import { almostEquals } from '../../utils/almostEquals';
 import { clamp } from '../../utils/clamp';
 import { debugAssert } from '../../utils/debugAssert';
 import { Container } from '.';
-import { Anchor, Axes, Drawable, Invalidation, LayoutComputed, MarginPadding } from '../drawables';
+import { Anchor, Axes, Direction, Drawable, Invalidation, LayoutComputed, MarginPadding } from '../drawables';
 
 const distance_decay_clamping = 0.012;
 
@@ -120,10 +120,10 @@ export abstract class ScrollContainer extends Container {
     return this.#isDragging;
   }
 
-  readonly scrollDirection: ScrollDirection;
+  readonly scrollDirection: Direction;
 
   protected get scrollDim(): 'x' | 'y' {
-    return this.scrollDirection === ScrollDirection.Horizontal ? 'x' : 'y';
+    return this.scrollDirection === Direction.Horizontal ? 'x' : 'y';
   }
 
   readonly #parentScrollContainerCache = new LayoutComputed<ScrollContainer | null>(
@@ -131,13 +131,13 @@ export abstract class ScrollContainer extends Container {
     Invalidation.Parent,
   );
 
-  constructor(direction: ScrollDirection = ScrollDirection.Vertical) {
+  constructor(direction: Direction = Direction.Vertical) {
     super();
     this.scrollDirection = direction;
 
     this.masking = true;
 
-    const scrollAxis = this.scrollDirection == ScrollDirection.Horizontal ? Axes.X : Axes.Y;
+    const scrollAxis = this.scrollDirection == Direction.Horizontal ? Axes.X : Axes.Y;
 
     this.addAllInternal(
       (this.scrollContent = new Container({
@@ -149,7 +149,7 @@ export abstract class ScrollContainer extends Container {
 
     this.scrollbar.hide();
     this.scrollbar.dragged.addListener(this.#onScrollbarMovement);
-    this.scrollbarAnchor = this.scrollDirection === ScrollDirection.Vertical ? Anchor.TopRight : Anchor.BottomLeft;
+    this.scrollbarAnchor = this.scrollDirection === Direction.Vertical ? Anchor.TopRight : Anchor.BottomLeft;
 
     this.addLayout(this.#parentScrollContainerCache);
   }
@@ -176,7 +176,7 @@ export abstract class ScrollContainer extends Container {
     if (this.#scrollbarOverlapsContent || this.availableContent <= this.displayableContent)
       this.scrollContent.padding.isZero();
     else {
-      if (this.scrollDirection == ScrollDirection.Vertical) {
+      if (this.scrollDirection == Direction.Vertical) {
         this.scrollContent.padding =
           this.scrollbarAnchor == Anchor.TopLeft
             ? new MarginPadding({ left: this.scrollbar.width + this.scrollbar.margin.left })
@@ -199,7 +199,7 @@ export abstract class ScrollContainer extends Container {
       this.#parentScrollContainerCache.value.scrollDirection !== this.scrollDirection
     ) {
       const dragWasMostlyHorizontal = Math.abs(e.delta.x) > Math.abs(e.delta.y);
-      if (dragWasMostlyHorizontal != (this.scrollDirection == ScrollDirection.Horizontal)) return false;
+      if (dragWasMostlyHorizontal != (this.scrollDirection == Direction.Horizontal)) return false;
     }
 
     this.#lastDragTime = this.time.current;
@@ -300,7 +300,7 @@ export abstract class ScrollContainer extends Container {
 
       // For horizontal scrolling containers, vertical scroll is also used to perform horizontal traversal.
       // Due to this, we only block horizontal scroll in vertical containers, but not vice-versa.
-      if (scrollWasMostlyHorizontal && this.scrollDirection === ScrollDirection.Vertical) {
+      if (scrollWasMostlyHorizontal && this.scrollDirection === Direction.Vertical) {
         return false;
       }
     }
@@ -309,7 +309,7 @@ export abstract class ScrollContainer extends Container {
 
     const scrollDelta = e.scrollDelta;
     let scrollDeltaFloat = scrollDelta.y;
-    if (this.scrollDirection === ScrollDirection.Horizontal && scrollDelta.x !== 0) {
+    if (this.scrollDirection === Direction.Horizontal && scrollDelta.x !== 0) {
       scrollDeltaFloat = scrollDelta.x;
     }
 
@@ -426,7 +426,7 @@ export abstract class ScrollContainer extends Container {
     this.#updatePosition();
 
     if (!this.#scrollbarCache.isValid) {
-      const size = this.scrollDirection === ScrollDirection.Horizontal ? this.drawSize.x : this.drawSize.y;
+      const size = this.scrollDirection === Direction.Horizontal ? this.drawSize.x : this.drawSize.y;
       console.log(this.availableContent, this.displayableContent, this.availableContent);
       if (size > 0)
         this.scrollbar.resizeTo(
@@ -447,7 +447,7 @@ export abstract class ScrollContainer extends Container {
       this.#scrollbarCache.validate();
     }
 
-    if (this.scrollDirection == ScrollDirection.Horizontal) {
+    if (this.scrollDirection == Direction.Horizontal) {
       this.scrollbar.x = this.#toScrollbarPosition(this.current);
       this.scrollContent.x = -this.current + this.scrollableExtent * this.scrollContent.relativeAnchorPosition.x;
     } else {
@@ -468,7 +468,7 @@ export abstract class ScrollContainer extends Container {
     return this.scrollableExtent * (scrollbarPosition / this.scrollbarMovementExtent);
   }
 
-  protected abstract createScrollbar(direction: ScrollDirection): ScrollbarContainer;
+  protected abstract createScrollbar(direction: Direction): ScrollbarContainer;
 }
 
 export abstract class ScrollbarContainer extends Container {
@@ -476,17 +476,17 @@ export abstract class ScrollbarContainer extends Container {
 
   readonly dragged = new Action<number>();
 
-  readonly scrollDirection: ScrollDirection;
+  readonly scrollDirection: Direction;
 
   get minimumDimSize(): number {
-    return this.size[this.scrollDirection == ScrollDirection.Vertical ? 'x' : 'y'];
+    return this.size[this.scrollDirection == Direction.Vertical ? 'x' : 'y'];
   }
 
-  constructor(direction: ScrollDirection) {
+  constructor(direction: Direction) {
     super();
     this.scrollDirection = direction;
 
-    this.relativeSizeAxes = direction === ScrollDirection.Horizontal ? Axes.X : Axes.Y;
+    this.relativeSizeAxes = direction === Direction.Horizontal ? Axes.X : Axes.Y;
   }
 
   abstract resizeTo(val: number, duration?: number, easing?: gsap.EaseFunction | gsap.EaseString): void;
@@ -498,7 +498,7 @@ export abstract class ScrollbarContainer extends Container {
   override onDragStart(e: DragStartEvent): boolean {
     if (e.button != MouseButton.Left) return false;
 
-    const dim = this.scrollDirection == ScrollDirection.Horizontal ? 'x' : 'y';
+    const dim = this.scrollDirection == Direction.Horizontal ? 'x' : 'y';
 
     this.#dragOffset = this.toLocalSpace(e.screenSpaceMousePosition)[dim] - this.position[dim];
     return true;
@@ -507,7 +507,7 @@ export abstract class ScrollbarContainer extends Container {
   override onMouseDown(e: MouseDownEvent): boolean {
     if (e.button != MouseButton.Left) return false;
 
-    const dim = this.scrollDirection == ScrollDirection.Horizontal ? 'x' : 'y';
+    const dim = this.scrollDirection == Direction.Horizontal ? 'x' : 'y';
 
     this.#dragOffset = this.position[dim];
     this.dragged.emit(this.#dragOffset);
@@ -515,13 +515,8 @@ export abstract class ScrollbarContainer extends Container {
   }
 
   override onDrag(e: DragEvent): boolean {
-    const dim = this.scrollDirection == ScrollDirection.Horizontal ? 'x' : 'y';
+    const dim = this.scrollDirection == Direction.Horizontal ? 'x' : 'y';
     this.dragged.emit(this.toLocalSpace(e.screenSpaceMousePosition)[dim] - this.#dragOffset);
     return true;
   }
-}
-
-export enum ScrollDirection {
-  Horizontal = 0,
-  Vertical = 1,
 }

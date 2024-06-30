@@ -4,3 +4,5 @@ export { DrawSizePreservingFillContainer } from './DrawSizePreservingFillContain
 export { ClickableContainer, ButtonTrigger } from './ClickableContainer';
 export { FlowContainer } from './FlowContainer';
 export { FillFlowContainer, FillDirection } from './FillFlowContainer';
+export { ScrollContainer, ScrollbarContainer } from './ScrollContainer';
+export { BasicScrollContainer } from './BasicScrollContainer';

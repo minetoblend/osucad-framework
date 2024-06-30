@@ -6,3 +6,4 @@ export { LayoutComputed } from './LayoutComputed';
 export { LayoutMember } from './LayoutMember';
 export { MarginPadding, type MarginPaddingOptions } from './MarginPadding';
 export { DrawableSprite, type DrawableSpriteOptions } from './DrawableSprite';
+export { Direction } from './Direction';
