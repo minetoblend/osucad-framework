@@ -16,7 +16,7 @@ import { almostBigger } from '../../utils/almostBigger';
 import { almostEquals } from '../../utils/almostEquals';
 import { clamp } from '../../utils/clamp';
 import { debugAssert } from '../../utils/debugAssert';
-import { Container } from '../containers';
+import { Container } from '.';
 import { Anchor, Axes, Drawable, Invalidation, LayoutComputed, MarginPadding } from '../drawables';
 
 const distance_decay_clamping = 0.012;
