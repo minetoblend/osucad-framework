@@ -59,6 +59,9 @@ export class KeyboardHandler extends InputHandler {
       case 'I':
         // allow ctrl + shift + i to open dev tools
         return !event.ctrlKey;
+      case 'r':
+        // allow ctrl + r to refresh
+        return !event.ctrlKey;
     }
 
     return true;
