@@ -33,7 +33,7 @@ export class Sample {
     if (options.volume !== undefined && options.volume !== 1) {
       const gain = this.context.createGain();
       gain.gain.value = options.volume;
-      destination.connect(gain);
+      gain.connect(destination);
       destination = gain;
     }
 
