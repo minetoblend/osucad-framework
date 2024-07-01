@@ -317,6 +317,12 @@ export abstract class Menu extends CompositeDrawable {
     if (!this.positionLayout.isValid && this.state === MenuState.Open && this.#parentMenu !== null) {
       const inputManager = this.getContainingInputManager()!;
 
+      if (this.triggeringItem?.isDisposed) {
+        this.positionLayout.validate();
+        this.close();
+        return;
+      }
+
       const triggeringItemTopLeftPosition = this.triggeringItem!.toSpaceOfOtherDrawable(Vec2.zero(), this.#parentMenu);
 
       const menuMaximumPosition = this.triggeringItem!.toSpaceOfOtherDrawable(
@@ -489,6 +495,7 @@ export abstract class Menu extends CompositeDrawable {
 
     if (this.#openTimeout) {
       clearTimeout(this.#openTimeout);
+      this.#openTimeout = undefined;
     }
 
     if (this.topLevelMenu || this.hoverOpenDelay === 0) {
@@ -582,6 +589,8 @@ export abstract class DrawableMenuItem extends CompositeDrawable {
     return true;
   }
 
+  #scheduled: (() => void)[] = [];
+
   protected constructor(item: MenuItem) {
     super();
 
@@ -613,6 +622,15 @@ export abstract class DrawableMenuItem extends CompositeDrawable {
         });
       }
     });
+  }
+
+  override update(): void {
+    super.update();
+
+    for (const scheduled of this.#scheduled) {
+      scheduled();
+    }
+    this.#scheduled.length = 0;
   }
 
   setFlowDirection(direction: Direction) {
@@ -714,12 +732,16 @@ export abstract class DrawableMenuItem extends CompositeDrawable {
   }
 
   override onHover(e: HoverEvent): boolean {
-    this.hovered.emit(this);
-
     this.updateBackgroundColor();
     this.updateForegroundColor();
 
-    return true;
+    this.#scheduled.push(() => {
+      if (this.isHovered) {
+        this.hovered.emit(this);
+      }
+    });
+
+    return false;
   }
 
   override onHoverLost(e: HoverLostEvent): boolean {
