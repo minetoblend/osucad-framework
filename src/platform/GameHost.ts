@@ -18,6 +18,7 @@ import { KeyCombination } from '../input/bindings/KeyCombination';
 import { InputKey } from '../input/state/InputKey';
 import { PlatformAction } from '../input/PlatformAction';
 import { PlatformActionContainer } from '../input/PlatformActionContainer';
+import { autoDetectPlatformActions } from '../input/autoDetectPlatformActions';
 
 export interface GameHostOptions {
   friendlyGameName?: string;
@@ -196,63 +197,7 @@ export abstract class GameHost {
   }
 
   get platformKeyBindings(): KeyBinding[] {
-    return [
-      new KeyBinding(KeyCombination.from(InputKey.Control, InputKey.X), PlatformAction.Cut),
-      new KeyBinding(KeyCombination.from(InputKey.Control, InputKey.C), PlatformAction.Copy),
-      new KeyBinding(KeyCombination.from(InputKey.Control, InputKey.V), PlatformAction.Paste),
-      new KeyBinding(KeyCombination.from(InputKey.Shift, InputKey.Delete), PlatformAction.Cut),
-      new KeyBinding(KeyCombination.from(InputKey.Control, InputKey.Insert), PlatformAction.Copy),
-      new KeyBinding(KeyCombination.from(InputKey.Shift, InputKey.Insert), PlatformAction.Paste),
-      new KeyBinding(KeyCombination.from(InputKey.Control, InputKey.A), PlatformAction.SelectAll),
-      new KeyBinding(KeyCombination.from(InputKey.Left), PlatformAction.MoveBackwardChar),
-      new KeyBinding(KeyCombination.from(InputKey.Right), PlatformAction.MoveForwardChar),
-      new KeyBinding(KeyCombination.from(InputKey.BackSpace), PlatformAction.DeleteBackwardChar),
-      new KeyBinding(KeyCombination.from(InputKey.Delete), PlatformAction.DeleteForwardChar),
-      new KeyBinding(KeyCombination.from(InputKey.Shift, InputKey.Left), PlatformAction.SelectBackwardChar),
-      new KeyBinding(KeyCombination.from(InputKey.Shift, InputKey.Right), PlatformAction.SelectForwardChar),
-      new KeyBinding(KeyCombination.from(InputKey.Shift, InputKey.BackSpace), PlatformAction.DeleteBackwardChar),
-      new KeyBinding(KeyCombination.from(InputKey.Control, InputKey.Left), PlatformAction.MoveBackwardWord),
-      new KeyBinding(KeyCombination.from(InputKey.Control, InputKey.Right), PlatformAction.MoveForwardWord),
-      new KeyBinding(KeyCombination.from(InputKey.Control, InputKey.BackSpace), PlatformAction.DeleteBackwardWord),
-      new KeyBinding(KeyCombination.from(InputKey.Control, InputKey.Delete), PlatformAction.DeleteForwardWord),
-      new KeyBinding(
-        KeyCombination.from(InputKey.Control, InputKey.Shift, InputKey.Left),
-        PlatformAction.SelectBackwardWord,
-      ),
-      new KeyBinding(
-        KeyCombination.from(InputKey.Control, InputKey.Shift, InputKey.Right),
-        PlatformAction.SelectForwardWord,
-      ),
-      new KeyBinding(KeyCombination.from(InputKey.Home), PlatformAction.MoveBackwardLine),
-      new KeyBinding(KeyCombination.from(InputKey.End), PlatformAction.MoveForwardLine),
-      new KeyBinding(KeyCombination.from(InputKey.Shift, InputKey.Home), PlatformAction.SelectBackwardLine),
-      new KeyBinding(KeyCombination.from(InputKey.Shift, InputKey.End), PlatformAction.SelectForwardLine),
-      new KeyBinding(KeyCombination.from(InputKey.Control, InputKey.PageUp), PlatformAction.DocumentPrevious),
-      new KeyBinding(KeyCombination.from(InputKey.Control, InputKey.PageDown), PlatformAction.DocumentNext),
-      new KeyBinding(KeyCombination.from(InputKey.Control, InputKey.Tab), PlatformAction.DocumentNext),
-      new KeyBinding(
-        KeyCombination.from(InputKey.Control, InputKey.Shift, InputKey.Tab),
-        PlatformAction.DocumentPrevious,
-      ),
-      new KeyBinding(KeyCombination.from(InputKey.Control, InputKey.W), PlatformAction.DocumentClose),
-      new KeyBinding(KeyCombination.from(InputKey.Control, InputKey.F4), PlatformAction.DocumentClose),
-      new KeyBinding(KeyCombination.from(InputKey.Control, InputKey.N), PlatformAction.DocumentNew),
-      new KeyBinding(KeyCombination.from(InputKey.Control, InputKey.T), PlatformAction.TabNew),
-      new KeyBinding(KeyCombination.from(InputKey.Control, InputKey.Shift, InputKey.T), PlatformAction.TabRestore),
-      new KeyBinding(KeyCombination.from(InputKey.Control, InputKey.S), PlatformAction.Save),
-      new KeyBinding(KeyCombination.from(InputKey.Home), PlatformAction.MoveToListStart),
-      new KeyBinding(KeyCombination.from(InputKey.End), PlatformAction.MoveToListEnd),
-      new KeyBinding(KeyCombination.from(InputKey.Control, InputKey.Z), PlatformAction.Undo),
-      new KeyBinding(KeyCombination.from(InputKey.Control, InputKey.Y), PlatformAction.Redo),
-      new KeyBinding(KeyCombination.from(InputKey.Control, InputKey.Shift, InputKey.Z), PlatformAction.Redo),
-      new KeyBinding(KeyCombination.from(InputKey.Delete), PlatformAction.Delete),
-      new KeyBinding(KeyCombination.from(InputKey.Control, InputKey.Plus), PlatformAction.ZoomIn),
-      new KeyBinding(KeyCombination.from(InputKey.Control, InputKey.KeypadPlus), PlatformAction.ZoomIn),
-      new KeyBinding(KeyCombination.from(InputKey.Control, InputKey.Minus), PlatformAction.ZoomOut),
-      new KeyBinding(KeyCombination.from(InputKey.Control, InputKey.KeypadMinus), PlatformAction.ZoomOut),
-      new KeyBinding(KeyCombination.from(InputKey.Control, InputKey.Number0), PlatformAction.ZoomDefault),
-      new KeyBinding(KeyCombination.from(InputKey.Control, InputKey.Keypad0), PlatformAction.ZoomDefault),
-    ];
+    return autoDetectPlatformActions();
   }
 }
 
