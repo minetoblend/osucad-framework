@@ -11,15 +11,21 @@ export interface SpriteTextOptions extends DrawableOptions {
 
 export class SpriteText extends Drawable {
   constructor(options: SpriteTextOptions = {}) {
+    const { text, font, style, ...rest } = options;
+
     super();
-    this.text = options.text ?? '';
-    if (options.style) {
-      this.#textStyle = new PIXITextStyle(options.style);
+
+    this.apply(rest);
+
+    this.text = text ?? '';
+
+    if (style) {
+      this.#textStyle = new PIXITextStyle(style);
     } else {
       this.#textStyle = new PIXITextStyle();
     }
-    if (options.font) {
-      this.#textStyle.fontFamily = options.font.font.fontFamily;
+    if (font) {
+      this.#textStyle.fontFamily = font.font.fontFamily;
     }
   }
 
@@ -62,6 +68,7 @@ export class SpriteText extends Drawable {
     this.#text = value;
 
     this.#textBacking.invalidate();
+    this.invalidate(Invalidation.DrawSize);
   }
 
   override update() {
