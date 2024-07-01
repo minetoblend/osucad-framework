@@ -17,15 +17,15 @@ export class MouseHandler extends InputHandler {
       (enabled) => {
         if (enabled) {
           // eslint-disable-next-line prettier/prettier
-          host.renderer.canvas.addEventListener('mousedown', this.#handleMouseDown);
-          host.renderer.canvas.addEventListener('mouseup', this.#handleMouseUp);
-          host.renderer.canvas.addEventListener('mousemove', this.#handleMouseMove);
+          host.renderer.canvas.addEventListener('pointerdown', this.#handleMouseDown);
+          host.renderer.canvas.addEventListener('pointerup', this.#handleMouseUp);
+          host.renderer.canvas.addEventListener('pointermove', this.#handleMouseMove);
           host.renderer.canvas.addEventListener('mouseleave', this.#handleMouseLeave);
           host.renderer.canvas.addEventListener('wheel', this.#handleWheel);
         } else {
-          host.renderer.canvas.removeEventListener('mousedown', this.#handleMouseDown);
-          host.renderer.canvas.removeEventListener('mouseup', this.#handleMouseUp);
-          host.renderer.canvas.removeEventListener('mousemove', this.#handleMouseMove);
+          host.renderer.canvas.removeEventListener('pointerdown', this.#handleMouseDown);
+          host.renderer.canvas.removeEventListener('pointerup', this.#handleMouseUp);
+          host.renderer.canvas.removeEventListener('pointermove', this.#handleMouseMove);
           host.renderer.canvas.removeEventListener('mouseleave', this.#handleMouseLeave);
           host.renderer.canvas.removeEventListener('wheel', this.#handleWheel);
         }
@@ -33,8 +33,12 @@ export class MouseHandler extends InputHandler {
       { immediate: true },
     );
 
+    this.#host = host;
+
     return true;
   }
+
+  #host!: GameHost;
 
   #getMouseButton(event: MouseEvent): MouseButton | null {
     switch (event.button) {
@@ -49,8 +53,12 @@ export class MouseHandler extends InputHandler {
     }
   }
 
-  #handleMouseDown = (event: MouseEvent) => {
+  #handleMouseDown = (event: PointerEvent) => {
+    if (event.pointerType !== 'mouse') return;
+
     event.preventDefault();
+
+    this.#host.renderer.canvas.setPointerCapture(event.pointerId);
 
     const button = this.#getMouseButton(event);
 
@@ -59,8 +67,12 @@ export class MouseHandler extends InputHandler {
     this.#enqueueInput(MouseButtonInput.create(button, true));
   };
 
-  #handleMouseUp = (event: MouseEvent) => {
+  #handleMouseUp = (event: PointerEvent) => {
+    if (event.pointerType !== 'mouse') return;
+
     event.preventDefault();
+
+    this.#host.renderer.canvas.releasePointerCapture(event.pointerId);
 
     const button = this.#getMouseButton(event);
 
