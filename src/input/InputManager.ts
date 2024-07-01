@@ -17,14 +17,17 @@ import { ScrollEvent } from './events/ScrollEvent';
 import type { UIEvent } from './events/UIEvent';
 import type { InputHandler } from './handlers/InputHandler';
 import { InputState } from './state/InputState';
+import type { Key } from './state/Key';
 import { MouseButton } from './state/MouseButton';
 import type { IInput } from './stateChanges/IInput';
 import type { IInputStateChangeHandler } from './stateChanges/IInputStateChangeHandler';
+import { KeyboardKeyInput } from './stateChanges/KeyboardKeyInput';
 import { MouseButtonInput } from './stateChanges/MouseButtonInput';
 import { ButtonStateChangeEvent } from './stateChanges/events/ButtonStateChangeEvent';
 import type { InputStateChangeEvent } from './stateChanges/events/InputStateChangeEvent';
 import { MousePositionChangeEvent } from './stateChanges/events/MousePositionChangeEvent';
 import { MouseScrollChangeEvent } from './stateChanges/events/MouseScrollChangeEvent';
+import { KeyEventManager } from './KeyEventManager';
 
 export abstract class InputManager extends Container implements IInputStateChangeHandler, IFocusManager {
   currentState = new InputState();
@@ -58,6 +61,25 @@ export abstract class InputManager extends Container implements IInputStateChang
 
   getMouseButtonEventManagerFor(button: MouseButton) {
     return this.#mouseButtonEventManagers[button];
+  }
+
+  #keyButtonEventManagers: Record<Key, KeyEventManager> = {} as any;
+
+  getKeyEventManagerFor(key: Key): KeyEventManager {
+    if (!this.#keyButtonEventManagers[key]) {
+      const manager = this.createKeyEventManagerFor(key);
+
+      manager.inputManager = this;
+      manager.getInputQueue = () => this.nonPositionalInputQueue;
+
+      this.#keyButtonEventManagers[key] = manager;
+    }
+
+    return this.#keyButtonEventManagers[key];
+  }
+
+  protected createKeyEventManagerFor(key: Key) {
+    return new KeyEventManager(key);
   }
 
   @resolved(GAME_HOST)
@@ -184,6 +206,8 @@ export abstract class InputManager extends Container implements IInputStateChang
         const buttonEvent = event as ButtonStateChangeEvent<any>;
         if (buttonEvent.input instanceof MouseButtonInput) {
           this.handleMouseButtonStateChange(buttonEvent as ButtonStateChangeEvent<MouseButton>);
+        } else if (buttonEvent.input instanceof KeyboardKeyInput) {
+          this.handleKeyboardKeyStateChange(buttonEvent as ButtonStateChangeEvent<Key>);
         }
         break;
       case MouseScrollChangeEvent:
@@ -277,6 +301,14 @@ export abstract class InputManager extends Container implements IInputStateChang
   handleMouseButtonStateChange(event: ButtonStateChangeEvent<MouseButton>) {
     const handler = this.#mouseButtonEventManagers[event.button];
     handler?.handleButtonStateChange(this.currentState, event.kind);
+  }
+
+  handleKeyboardKeyStateChange(keyboardKeyStateChange: ButtonStateChangeEvent<Key>) {
+    const state = keyboardKeyStateChange.state;
+    const key = keyboardKeyStateChange.button;
+    const kind = keyboardKeyStateChange.kind;
+
+    this.getKeyEventManagerFor(key).handleButtonStateChange(state, kind);
   }
 
   #mouseButtonEventManagers: Record<MouseButton, MouseButtonEventManager> = {} as any;

@@ -4,7 +4,7 @@ import { InputHandler } from './InputHandler';
 
 export class ManualInputHandler extends InputHandler {
   override initialize(host: GameHost): boolean {
-    return true;
+    return super.initialize(host);
   }
 
   enqueueInput(input: IInput) {

@@ -9,6 +9,10 @@ import { InputHandler } from './InputHandler';
 
 export class MouseHandler extends InputHandler {
   override initialize(host: GameHost): boolean {
+    if (!super.initialize(host)) {
+      return false;
+    }
+
     this.enabled.addOnChangeListener(
       (enabled) => {
         if (enabled) {
@@ -93,6 +97,7 @@ export class MouseHandler extends InputHandler {
   }
 
   #handleWheel = (event: WheelEvent) => {
+    event.preventDefault();
     this.#enqueueInput(new MouseScrollRelativeInput(new Vec2(event.deltaX, event.deltaY), false));
   };
 }

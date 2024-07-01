@@ -10,6 +10,9 @@ import { Vec2 } from '../math';
 import { Renderer } from '../renderers/Renderer';
 import { FramedClock } from '../timing/FramedClock';
 import type { IFrameBasedClock } from '../timing/IFrameBasedClock';
+import { KeyboardHandler } from '../input/handlers/KeyboardHandler';
+import { MouseHandler } from '../input/handlers/MouseHandler';
+import type { InputHandler } from '../input';
 
 export interface GameHostOptions {
   friendlyGameName?: string;
@@ -136,7 +139,15 @@ export abstract class GameHost {
     this.#renderer = renderer;
   }
 
-  #populateInputHandlers() {}
+  protected createAvailableInputHandlers() {
+    return [new KeyboardHandler(), new MouseHandler()];
+  }
+
+  #populateInputHandlers() {
+    this.availableInputHandlers = this.createAvailableInputHandlers();
+  }
+
+  availableInputHandlers!: InputHandler[];
 
   #initializeInputHandlers() {}
 

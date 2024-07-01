@@ -38,6 +38,8 @@ import { FillMode } from './FillMode';
 import type { ScrollEvent } from '../../input/events/ScrollEvent';
 import type { FocusLostEvent } from '../../input/events/FocusLostEvent';
 import { isFocusManager } from '../../input/IFocusManager';
+import type { KeyDownEvent } from '../../input/events/KeyDownEvent';
+import type { KeyUpEvent } from '../../input/events/KeyUpEvent';
 
 export interface DrawableOptions {
   position?: IVec2;
@@ -1222,6 +1224,10 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   onFocus?(e: FocusEvent): boolean;
 
   onFocusLost?(e: FocusLostEvent): boolean;
+
+  onKeyDown?(e: KeyDownEvent): boolean;
+
+  onKeyUp?(e: KeyUpEvent): boolean;
 
   get dragBlocksClick() {
     return true;

@@ -8,4 +8,8 @@ export * from './MouseDownEvent';
 export * from './MouseUpEvent';
 export * from './MouseMoveEvent';
 export * from './ScrollEvent';
+export * from './FocusEvent';
+export * from './FocusLostEvent';
+export * from './KeyDownEvent';
+export * from './KeyUpEvent';
 export * from './UIEvent';

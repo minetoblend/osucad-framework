@@ -31,9 +31,7 @@ export class HandleInputCache {
     return value;
   }
 
-  private static readonly nonPositionalInputMethods: (keyof IInputReceiver)[] = [
-    // TODO
-  ];
+  private static readonly nonPositionalInputMethods: (keyof IInputReceiver)[] = ['onKeyDown', 'onKeyUp'];
 
   private static readonly positionalInputMethods: (keyof IInputReceiver)[] = [
     'onMouseDown',

@@ -4,7 +4,16 @@ import type { IDisposable } from '../../types/IDisposable';
 import type { IInput } from '../stateChanges/IInput';
 
 export abstract class InputHandler implements IDisposable {
-  abstract initialize(host: GameHost): boolean;
+  #isInitialized = false;
+
+  initialize(host: GameHost): boolean {
+    if (this.#isInitialized) {
+      throw new Error('InputHandler is already initialized');
+    }
+
+    this.#isInitialized = true;
+    return true;
+  }
 
   readonly enabled = new Bindable(true);
 
