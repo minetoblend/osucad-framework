@@ -856,6 +856,8 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
       callback();
     }
 
+    gsap.killTweensOf(this);
+
     this.#isDisposed = true;
     return true;
   }
