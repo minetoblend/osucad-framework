@@ -1,4 +1,4 @@
-import { PIXIGraphics } from '../../pixi';
+import { Color, PIXIGraphics, type ColorSource } from '../../pixi';
 import { LayoutMember } from '../drawables';
 import { Drawable, Invalidation, type DrawableOptions } from '../drawables/Drawable';
 
@@ -6,6 +6,7 @@ export interface RoundedBoxOptions extends DrawableOptions {
   cornerRadius?: number;
   outline?: OutlineInfo;
   outlines?: OutlineInfo[];
+  fillColor?: ColorSource;
   fillAlpha?: number;
 }
 
@@ -90,6 +91,18 @@ export class RoundedBox extends Drawable {
 
   #fillAlpha = 1;
 
+  get fillColor(): Color {
+    return this.#fillColor;
+  }
+
+  set fillColor(value: ColorSource) {
+    this.#fillColor.setValue(value);
+
+    this.#graphicsBacking.invalidate();
+  }
+
+  #fillColor = new Color(0xffffff);
+
   #updateGraphics() {
     const g = this.#graphics;
 
@@ -100,7 +113,7 @@ export class RoundedBox extends Drawable {
       g.rect(0, 0, this.drawSize.x, this.drawSize.y);
     }
 
-    g.fill({ color: 0xffffff, alpha: this.#fillAlpha });
+    g.fill({ color: this.fillColor, alpha: this.#fillAlpha });
 
     for (const outline of this.#outlines) {
       if (this.#cornerRadius > 0) {
