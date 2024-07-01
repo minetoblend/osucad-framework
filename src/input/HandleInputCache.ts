@@ -1,5 +1,5 @@
 import type { Drawable } from '../graphics/drawables/Drawable';
-import type { IInputReceiver } from './IInputReceiver';
+import type { IKeyBindingHandler } from './bindings';
 
 type DrawableConstructor = new (...args: any[]) => Drawable;
 
@@ -31,9 +31,15 @@ export class HandleInputCache {
     return value;
   }
 
-  private static readonly nonPositionalInputMethods: (keyof IInputReceiver)[] = ['onKeyDown', 'onKeyUp'];
+  private static readonly nonPositionalInputMethods: (keyof Drawable | keyof IKeyBindingHandler<any>)[] = [
+    'onKeyDown',
+    'onKeyUp',
+    'onKeyBindingPressed',
+    'onKeyBindingReleased',
+    'onScrollKeyBinding',
+  ];
 
-  private static readonly positionalInputMethods: (keyof IInputReceiver)[] = [
+  private static readonly positionalInputMethods: (keyof Drawable)[] = [
     'onMouseDown',
     'onMouseUp',
     'onClick',

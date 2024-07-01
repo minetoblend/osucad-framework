@@ -1,3 +1,4 @@
+import type { Drawable } from '../../graphics';
 import type { IInputReceiver } from '../IInputReceiver';
 import type { InputState } from '../state/InputState';
 
@@ -6,6 +7,8 @@ export class UIEvent {
     readonly state: InputState,
     readonly handler: keyof IInputReceiver,
   ) {}
+
+  target: Drawable | null = null;
 
   get screenSpaceMousePosition() {
     return this.state.mouse.position;

@@ -6,6 +6,7 @@ export class KeyDownEvent extends UIEvent {
   constructor(
     state: InputState,
     readonly key: Key,
+    readonly repeat: boolean = false,
   ) {
     super(state, 'onKeyDown');
   }
