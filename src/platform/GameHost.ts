@@ -5,20 +5,17 @@ import { DependencyContainer } from '../di/DependencyContainer';
 import type { Container } from '../graphics/containers/Container';
 import { loadDrawable } from '../graphics/drawables/Drawable';
 import { GAME_HOST } from '../injectionTokens';
+import type { InputHandler } from '../input';
+import { PlatformActionContainer } from '../input/PlatformActionContainer';
 import { UserInputManager } from '../input/UserInputManager';
+import { autoDetectPlatformActions } from '../input/autoDetectPlatformActions';
+import { KeyBinding } from '../input/bindings/KeyBinding';
+import { KeyboardHandler } from '../input/handlers/KeyboardHandler';
+import { MouseHandler } from '../input/handlers/MouseHandler';
 import { Vec2 } from '../math';
 import { Renderer } from '../renderers/Renderer';
 import { FramedClock } from '../timing/FramedClock';
 import type { IFrameBasedClock } from '../timing/IFrameBasedClock';
-import { KeyboardHandler } from '../input/handlers/KeyboardHandler';
-import { MouseHandler } from '../input/handlers/MouseHandler';
-import type { InputHandler } from '../input';
-import { KeyBinding } from '../input/bindings/KeyBinding';
-import { KeyCombination } from '../input/bindings/KeyCombination';
-import { InputKey } from '../input/state/InputKey';
-import { PlatformAction } from '../input/PlatformAction';
-import { PlatformActionContainer } from '../input/PlatformActionContainer';
-import { autoDetectPlatformActions } from '../input/autoDetectPlatformActions';
 
 export interface GameHostOptions {
   friendlyGameName?: string;
