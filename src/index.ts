@@ -10,4 +10,5 @@ export * from './types';
 export * from './pixi';
 export * from './injectionTokens';
 export * from './mixins';
+export * from './utils';
 export { Game } from './Game';
