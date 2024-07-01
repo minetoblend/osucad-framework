@@ -12,6 +12,7 @@ import { autoDetectPlatformActions } from '../input/autoDetectPlatformActions';
 import { KeyBinding } from '../input/bindings/KeyBinding';
 import { KeyboardHandler } from '../input/handlers/KeyboardHandler';
 import { MouseHandler } from '../input/handlers/MouseHandler';
+import { TouchHandler } from '../input/handlers/TouchHandler';
 import { Vec2 } from '../math';
 import { Renderer } from '../renderers/Renderer';
 import { FramedClock } from '../timing/FramedClock';
@@ -143,7 +144,7 @@ export abstract class GameHost {
   }
 
   protected createAvailableInputHandlers() {
-    return [new KeyboardHandler(), new MouseHandler()];
+    return [new KeyboardHandler(), new TouchHandler(), new MouseHandler()];
   }
 
   #populateInputHandlers() {

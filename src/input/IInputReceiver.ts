@@ -11,6 +11,9 @@ import type { MouseDownEvent } from './events/MouseDownEvent';
 import type { MouseMoveEvent } from './events/MouseMoveEvent';
 import type { MouseUpEvent } from './events/MouseUpEvent';
 import type { ScrollEvent } from './events/ScrollEvent';
+import type { TouchDownEvent } from './events/TouchDownEvent';
+import type { TouchMoveEvent } from './events/TouchMoveEvent';
+import type { TouchUpEvent } from './events/TouchUpEvent';
 
 export interface IInputReceiver {
   onMouseMove?(e: MouseMoveEvent): boolean;
@@ -27,4 +30,7 @@ export interface IInputReceiver {
   onFocusLost?(e: FocusLostEvent): boolean;
   onKeyDown?(e: KeyDownEvent): boolean;
   onKeyUp?(e: KeyUpEvent): boolean;
+  onTouchMove?(e: TouchMoveEvent): boolean;
+  onTouchDown?(e: TouchDownEvent): boolean;
+  onTouchUp?(e: TouchUpEvent): boolean;
 }

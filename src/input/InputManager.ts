@@ -3,7 +3,7 @@ import { Container } from '../graphics/containers/Container';
 import { Axes } from '../graphics/drawables/Axes';
 import type { Drawable } from '../graphics/drawables/Drawable';
 import { GAME_HOST } from '../injectionTokens';
-import type { Vec2 } from '../math';
+import { Vec2 } from '../math';
 import type { GameHost } from '../platform/GameHost';
 import { debugAssert } from '../utils/debugAssert';
 import type { IFocusManager } from './IFocusManager';
@@ -28,6 +28,13 @@ import type { InputStateChangeEvent } from './stateChanges/events/InputStateChan
 import { MousePositionChangeEvent } from './stateChanges/events/MousePositionChangeEvent';
 import { MouseScrollChangeEvent } from './stateChanges/events/MouseScrollChangeEvent';
 import { KeyEventManager } from './KeyEventManager';
+import { TouchStateChangeEvent } from './stateChanges/events/TouchStateChangeEvent';
+import type { TouchSource } from './handlers/Touch';
+import { TouchEventManager } from './TouchEventManager';
+import { ButtonStateChangeKind } from './stateChanges/events/ButtonStateChangeKind';
+import { Action } from '../bindables';
+import { MousePositionAbsoluteInputFromTouch } from './stateChanges/MousePositionAbsoluteInputFromTouch';
+import { MouseButtonInputFromTouch } from './stateChanges/MouseButtonInputFromTouch';
 
 export abstract class InputManager extends Container implements IInputStateChangeHandler, IFocusManager {
   currentState = new InputState();
@@ -198,23 +205,37 @@ export abstract class InputManager extends Container implements IInputStateChang
   }
 
   handleInputStateChange(event: InputStateChangeEvent): void {
-    switch (event.constructor) {
-      case MousePositionChangeEvent:
-        this.handleMousePositionChange(event as MousePositionChangeEvent);
-        break;
-      case ButtonStateChangeEvent:
-        const buttonEvent = event as ButtonStateChangeEvent<any>;
-        if (buttonEvent.input instanceof MouseButtonInput) {
-          this.handleMouseButtonStateChange(buttonEvent as ButtonStateChangeEvent<MouseButton>);
-        } else if (buttonEvent.input instanceof KeyboardKeyInput) {
-          this.handleKeyboardKeyStateChange(buttonEvent as ButtonStateChangeEvent<Key>);
-        }
-        break;
-      case MouseScrollChangeEvent:
-        this.handleMouseScrollChange(event as MouseScrollChangeEvent);
-        break;
-      default:
-        console.warn('Unhandled input state change event', event);
+    if (event instanceof MousePositionChangeEvent) {
+      this.handleMousePositionChange(event as MousePositionChangeEvent);
+      return;
+    }
+
+    if (event instanceof ButtonStateChangeEvent) {
+      const buttonEvent = event as ButtonStateChangeEvent<any>;
+      if (buttonEvent.input instanceof MouseButtonInput) {
+        this.handleMouseButtonStateChange(buttonEvent as ButtonStateChangeEvent<MouseButton>);
+      } else if (buttonEvent.input instanceof KeyboardKeyInput) {
+        this.handleKeyboardKeyStateChange(buttonEvent as ButtonStateChangeEvent<Key>);
+      }
+      return;
+    }
+
+    if (event instanceof MouseScrollChangeEvent) {
+      this.handleMouseScrollChange(event as MouseScrollChangeEvent);
+      return;
+    }
+
+    if (event instanceof TouchStateChangeEvent) {
+      const touchChange = event as TouchStateChangeEvent;
+      const manager = this.getTouchButtonEventManagerFor(touchChange.touch.source);
+
+      const touchWasHandled = manager.heldDrawable !== null;
+      this.handleTouchStateChange(touchChange);
+
+      const touchIsHandled = manager.heldDrawable !== null;
+
+      if (!touchWasHandled && !touchIsHandled) this.handleMouseTouchStateChange(touchChange);
+      return;
     }
   }
 
@@ -441,7 +462,140 @@ export abstract class InputManager extends Container implements IInputStateChang
 
     this.changeFocus(focusTarget);
   }
+
+  #touchEventManagers: Record<TouchSource, TouchEventManager> = {} as any;
+
+  getTouchButtonEventManagerFor(source: TouchSource) {
+    const existing = this.#touchEventManagers[source];
+    if (existing !== undefined) return existing;
+
+    const manager = this.createTouchEventManagerFor(source);
+    manager.inputManager = this;
+    manager.getInputQueue = () => this.#buildPositionalInputQueue(this.currentState.touch.touchPositions[source]!);
+    return (this.#touchEventManagers[source] = manager);
+  }
+
+  protected createTouchEventManagerFor(source: TouchSource) {
+    return new TouchEventManager(source);
+  }
+
+  protected handleTouchStateChange(e: TouchStateChangeEvent) {
+    const manager = this.getTouchButtonEventManagerFor(e.touch.source);
+
+    if (e.lastPosition !== null) {
+      manager.handlePositionChange(e.state, e.lastPosition);
+    }
+
+    if (e.isActive !== null) {
+      manager.handleButtonStateChange(
+        e.state,
+        e.isActive ? ButtonStateChangeKind.Pressed : ButtonStateChangeKind.Released,
+      );
+    }
+  }
+
+  protected mapMouseToLatestTouch(): boolean {
+    return true;
+  }
+
+  get allowRightClickFromLongTouch(): boolean {
+    return true;
+  }
+
+  readonly #mouseMappedTouchesDown = new Set<TouchSource>();
+
+  readonly touchLongPressBegan = new Action<[Vec2, number]>();
+
+  readonly touchLongPressCancelled = new Action();
+
+  #touchLongPressTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  #touchLongPressPosition: Vec2 | null = null;
+
+  #validForLongPress = false;
+
+  protected handleMouseTouchStateChange(e: TouchStateChangeEvent): boolean {
+    if (!this.mapMouseToLatestTouch) return false;
+
+    if (e.isActive === true || e.lastPosition !== null) {
+      new MousePositionAbsoluteInputFromTouch(e, e.touch.position).apply(this.currentState, this);
+    }
+
+    if (e.isActive !== null) {
+      if (e.isActive == true) {
+        this.#mouseMappedTouchesDown.add(e.touch.source);
+      } else {
+        this.#mouseMappedTouchesDown.delete(e.touch.source);
+      }
+
+      this.#updateTouchMouseLeft(e);
+    }
+
+    this.#updateTouchMouseRight(e);
+    return true;
+  }
+
+  #updateTouchMouseLeft(e: TouchStateChangeEvent) {
+    if (this.#mouseMappedTouchesDown.size > 0) {
+      new MouseButtonInputFromTouch(MouseButton.Left, true, e).apply(this.currentState, this);
+    } else {
+      new MouseButtonInputFromTouch(MouseButton.Left, false, e).apply(this.currentState, this);
+    }
+  }
+
+  #updateTouchMouseRight(e: TouchStateChangeEvent) {
+    if (!this.allowRightClickFromLongTouch) return;
+
+    // if a touch was pressed/released in this event, reset gesture validity state.
+    if (e.isActive != null) this.#validForLongPress = e.isActive === true && this.#mouseMappedTouchesDown.size == 1;
+
+    const gestureActive = this.#touchLongPressTimeout !== null;
+
+    if (gestureActive) {
+      debugAssert(this.#touchLongPressPosition !== null);
+
+      // if a gesture was active and the user moved away from actuation point, invalidate gesture.
+      if (Vec2.distance(this.#touchLongPressPosition!, e.touch.position) > touch_right_click_distance)
+        this.#validForLongPress = false;
+
+      if (!this.#validForLongPress) this.#cancelTouchLongPress();
+    } else {
+      if (this.#validForLongPress) this.#beginTouchLongPress(e);
+    }
+  }
+
+  #beginTouchLongPress(e: TouchStateChangeEvent) {
+    this.#touchLongPressPosition = e.touch.position;
+
+    this.touchLongPressBegan.emit([e.touch.position, touch_right_click_delay]);
+    this.#touchLongPressTimeout = setTimeout(() => {
+      new MousePositionAbsoluteInputFromTouch(e, e.touch.position).apply(this.currentState, this);
+      new MouseButtonInputFromTouch(MouseButton.Right, true, e).apply(this.currentState, this);
+      new MouseButtonInputFromTouch(MouseButton.Right, false, e).apply(this.currentState, this);
+
+      // the touch actuated a long-press, releasing it should not perform a click.
+      this.getMouseButtonEventManagerFor(MouseButton.Left).blockNextClick = true;
+
+      this.#touchLongPressTimeout = null;
+      this.#validForLongPress = false;
+    }, touch_right_click_delay);
+  }
+
+  #cancelTouchLongPress() {
+    debugAssert(this.#touchLongPressTimeout != null);
+
+    this.#touchLongPressPosition = null;
+
+    clearTimeout(this.#touchLongPressTimeout!);
+
+    this.#touchLongPressTimeout = null;
+
+    this.touchLongPressCancelled.emit();
+  }
 }
+
+const touch_right_click_delay = 750;
+const touch_right_click_distance = 100;
 
 class MouseLeftButtonEventManager extends MouseButtonEventManager {
   override get enableClick(): boolean {

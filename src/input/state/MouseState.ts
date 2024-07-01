@@ -7,7 +7,7 @@ export class MouseState {
 
   position = new Vec2();
 
-  isPositionValid = true;
+  isPositionValid = false;
 
   scroll = new Vec2();
 
