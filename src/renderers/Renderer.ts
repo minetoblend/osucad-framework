@@ -35,6 +35,7 @@ export class Renderer {
       context,
       preference: 'webgl', // environment.webGpuSupported ? rendererPreference : "webgl",
       antialias: options.environment?.antialiasPreferred ?? true,
+      resolution: devicePixelRatio,
       width: this.#size.x,
       height: this.#size.y,
       autoDensity: true,
