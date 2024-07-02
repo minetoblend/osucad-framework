@@ -22,12 +22,14 @@ export class MouseHandler extends InputHandler {
           host.renderer.canvas.addEventListener('pointermove', this.#handleMouseMove);
           host.renderer.canvas.addEventListener('mouseleave', this.#handleMouseLeave);
           host.renderer.canvas.addEventListener('wheel', this.#handleWheel);
+          host.renderer.canvas.addEventListener('contextmenu', this.#handleContextMenu);
         } else {
           host.renderer.canvas.removeEventListener('pointerdown', this.#handleMouseDown);
           host.renderer.canvas.removeEventListener('pointerup', this.#handleMouseUp);
           host.renderer.canvas.removeEventListener('pointermove', this.#handleMouseMove);
           host.renderer.canvas.removeEventListener('mouseleave', this.#handleMouseLeave);
           host.renderer.canvas.removeEventListener('wheel', this.#handleWheel);
+          host.renderer.canvas.removeEventListener('contextmenu', this.#handleContextMenu);
         }
       },
       { immediate: true },
@@ -111,5 +113,9 @@ export class MouseHandler extends InputHandler {
   #handleWheel = (event: WheelEvent) => {
     event.preventDefault();
     this.#enqueueInput(new MouseScrollRelativeInput(new Vec2(event.deltaX, event.deltaY), false));
+  };
+
+  #handleContextMenu = (event: MouseEvent) => {
+    event.preventDefault();
   };
 }
