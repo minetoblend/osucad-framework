@@ -10,6 +10,10 @@ export class UIEvent {
 
   target: Drawable | null = null;
 
+  get mousePosition() {
+    return this.target!.toLocalSpace(this.screenSpaceMousePosition);
+  }
+
   get screenSpaceMousePosition() {
     return this.state.mouse.position;
   }
