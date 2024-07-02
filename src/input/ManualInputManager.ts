@@ -4,7 +4,7 @@ import { Container } from '../graphics/containers/Container';
 import { Vec2 } from '../math';
 import { PassThroughInputManager } from './PassThroughInputManager';
 import { TestCursorContainer } from './TestCursorContainer';
-import { Visibility } from './VisibilityContainer';
+import { Visibility } from '../graphics/containers/VisibilityContainer';
 import { ManualInputHandler } from './handlers/ManualInputHandler';
 import type { MouseButton } from './state/MouseButton';
 import type { IInput } from './stateChanges/IInput';

@@ -2,7 +2,7 @@ import { Axes } from '../graphics/drawables/Axes';
 import type { Drawable } from '../graphics/drawables/Drawable';
 import { Container } from '../graphics/containers/Container';
 import { PIXIGraphics } from '../pixi';
-import { Visibility, VisibilityContainer } from './VisibilityContainer';
+import { Visibility, VisibilityContainer } from '../graphics/containers/VisibilityContainer';
 import type { MouseMoveEvent } from './events/MouseMoveEvent';
 import type { Vec2 } from '../math';
 
