@@ -70,7 +70,10 @@ export class Container extends CompositeDrawable {
   }
 
   clear() {
-    // TODO
+    // TODO: Add more efficient clear method
+    while (this.children.length > 0) {
+      this.remove(this.children[0]);
+    }
   }
 
   get child(): Drawable {
