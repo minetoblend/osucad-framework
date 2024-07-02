@@ -37,7 +37,7 @@ export class AudioManager {
   #channels = new Set<AudioChannel>();
 
   createChannel(): AudioChannel {
-    const channel = new AudioChannel(this.context);
+    const channel = new AudioChannel(this);
     this.#channels.add(channel);
     return channel;
   }
@@ -56,5 +56,9 @@ export class AudioManager {
 
     this.context.resume();
     this.#resumed.abort();
+  }
+
+  get destination() {
+    return this.context.destination;
   }
 }

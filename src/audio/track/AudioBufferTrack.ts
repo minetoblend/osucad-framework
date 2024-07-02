@@ -98,7 +98,7 @@ export class AudioBufferTrack extends Track {
 
     source.playbackRate.value = this.rate;
 
-    source.connect(this.channel.destination);
+    source.connect(this.channel.input);
 
     return source;
   }

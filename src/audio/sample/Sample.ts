@@ -26,7 +26,7 @@ export class Sample {
       source.playbackRate.value = options.rate;
     }
 
-    let destination = this.channel.destination;
+    let destination = this.channel.input;
 
     let gain: GainNode | undefined;
 
