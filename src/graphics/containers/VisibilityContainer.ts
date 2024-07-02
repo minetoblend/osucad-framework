@@ -1,5 +1,5 @@
-import { Bindable } from '../bindables/Bindable';
-import { Container } from '../graphics/containers/Container';
+import { Bindable } from '../../bindables/Bindable';
+import { Container } from './Container';
 
 export abstract class VisibilityContainer extends Container {
   readonly state = new Bindable<Visibility>(Visibility.Hidden);

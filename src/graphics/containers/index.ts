@@ -6,3 +6,4 @@ export { FlowContainer } from './FlowContainer';
 export { FillFlowContainer, FillDirection } from './FillFlowContainer';
 export { ScrollContainer, ScrollbarContainer } from './ScrollContainer';
 export { BasicScrollContainer } from './BasicScrollContainer';
+export { VisibilityContainer, Visibility } from './VisibilityContainer';
