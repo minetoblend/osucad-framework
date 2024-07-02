@@ -1195,6 +1195,8 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   }
 
   triggerEvent(e: UIEvent): boolean {
+    e.target = this;
+
     return this[e.handler]?.(e as any) ?? this.handle(e);
   }
 
