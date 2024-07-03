@@ -9,12 +9,12 @@ export abstract class VisibilityContainer extends Container {
     return this.state.value == Visibility.Hidden;
   }
 
-  override onLoadComplete() {
+  override loadComplete() {
     this.state.addOnChangeListener(this.updateState, {
       immediate: this.state.value === Visibility.Visible || !this.#didInitialHide,
     });
 
-    super.onLoadComplete();
+    super.loadComplete();
   }
 
   override show() {

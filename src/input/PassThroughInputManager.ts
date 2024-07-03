@@ -83,8 +83,8 @@ export class PassThroughInputManager extends CustomInputManager {
 
   #parentInputManager: InputManager | null = null;
 
-  override onLoadComplete() {
-    super.onLoadComplete();
+  override loadComplete() {
+    super.loadComplete();
 
     this.sync();
   }

@@ -48,8 +48,8 @@ export class CursorContainer extends VisibilityContainer {
 }
 
 class Cursor extends Container {
-  override onLoadComplete() {
-    super.onLoadComplete();
+  override loadComplete() {
+    super.loadComplete();
 
     const g = new PIXIGraphics();
 

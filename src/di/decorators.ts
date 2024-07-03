@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 
 const key = Symbol('DependencyLoader');
+const asyncKey = Symbol('AsyncDependencyLoader');
 const injectKey = Symbol('Inject');
 
 export function dependencyLoader(): MethodDecorator {
@@ -10,8 +11,19 @@ export function dependencyLoader(): MethodDecorator {
   };
 }
 
+export function asyncDependencyLoader(): MethodDecorator {
+  return function (target: any, propertyKey: string | symbol) {
+    const loaders = getAsyncDependencyLoaders(target);
+    Reflect.defineMetadata(asyncKey, [...loaders, propertyKey], target);
+  };
+}
+
 export function getDependencyLoaders(target: any): (string | symbol)[] {
   return Reflect.getMetadata(key, target) ?? [];
+}
+
+export function getAsyncDependencyLoaders(target: any): (string | symbol)[] {
+  return Reflect.getMetadata(asyncKey, target) ?? [];
 }
 
 export function resolved(type: any, optional = false): PropertyDecorator {

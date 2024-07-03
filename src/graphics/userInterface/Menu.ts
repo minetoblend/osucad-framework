@@ -111,8 +111,8 @@ export abstract class Menu extends CompositeDrawable {
     this.addLayout(this.positionLayout);
   }
 
-  protected override onLoadComplete() {
-    super.onLoadComplete();
+  protected override loadComplete() {
+    super.loadComplete();
     this.#updateState();
   }
 
@@ -725,8 +725,8 @@ export abstract class DrawableMenuItem extends CompositeDrawable {
     });
   }
 
-  override onLoadComplete(): void {
-    super.onLoadComplete();
+  override loadComplete(): void {
+    super.loadComplete();
     this.updateBackgroundColor();
     this.updateForegroundColor();
   }

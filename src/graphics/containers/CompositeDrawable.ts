@@ -10,9 +10,12 @@ import {
   LoadState,
   loadDrawable,
   type DrawableOptions,
+  loadDrawableFromAsync,
 } from '../drawables/Drawable';
 import { LayoutMember } from '../drawables/LayoutMember';
 import { MarginPadding, type MarginPaddingOptions } from '../drawables/MarginPadding';
+import type { Scheduler } from '../../scheduling/Scheduler.ts';
+import { DependencyContainer } from '../../di';
 
 export interface CompositeDrawableOptions extends DrawableOptions {
   padding?: MarginPaddingOptions;
@@ -66,6 +69,72 @@ export class CompositeDrawable extends Drawable {
     loadDrawable(child, this.clock, this.dependencies);
     child.parent = this;
   }
+
+  loadComponentAsync<TLoadable extends Drawable>(
+    component: TLoadable,
+    signal?: AbortSignal,
+    scheduler?: Scheduler,
+  ): Promise<TLoadable> {
+    return this.loadComponentsAsync([component], signal, scheduler).then(([loaded]) => loaded);
+  }
+
+  loadComponentsAsync<TLoadable extends Drawable>(
+    components: TLoadable[],
+    signal?: AbortSignal,
+    scheduler?: Scheduler,
+  ): Promise<TLoadable[]> {
+    if (this.loadState < LoadState.Loading) {
+      throw new Error('May not invoke LoadComponentAsync prior to this CompositeDrawable being loaded.');
+    }
+
+    if (this.isDisposed) {
+      throw new Error('May not invoke LoadComponentAsync on a disposed CompositeDrawable.');
+    }
+
+    this.#disposalAbortController ??= new AbortController();
+
+    const linkedAbortController = new AbortController();
+
+    signal?.addEventListener('abort', () => linkedAbortController.abort());
+    this.#disposalAbortController.signal.addEventListener('abort', () => linkedAbortController.abort());
+
+    const deps = new DependencyContainer(this.dependencies);
+    deps.provide(linkedAbortController.signal);
+
+    this.#loadingComponents ??= new WeakSet<Drawable>();
+
+    const loadables = [...components];
+
+    for (const d of loadables) {
+      this.#loadingComponents.add(d);
+
+      d.onLoadComplete.addListener(() => {
+        this.#loadingComponents?.delete(d);
+      });
+    }
+
+    return this.#loadComponentsAsync(loadables, deps, true, linkedAbortController.signal);
+  }
+
+  async #loadComponentsAsync<TLoadable extends Drawable>(
+    components: TLoadable[],
+    dependencies: DependencyContainer,
+    isDirectAsyncContext: boolean,
+    signal: AbortSignal,
+  ): Promise<TLoadable[]> {
+    for (let i = 0; i < components.length; i++) {
+      if (signal.aborted) break;
+
+      if (!(await loadDrawableFromAsync(components[i], this.clock, dependencies, isDirectAsyncContext))) {
+        components.splice(i--, 1);
+      }
+    }
+
+    return components;
+  }
+
+  #disposalAbortController: AbortController | null = null;
+  #loadingComponents: WeakSet<Drawable> | null = null;
 
   override onLoad() {
     for (const child of this.internalChildren) {

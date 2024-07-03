@@ -18,8 +18,8 @@ export abstract class BaseKeyBindingContainer extends Container {
 
   abstract get defaultKeyBindings(): IKeyBinding[];
 
-  protected override onLoadComplete(): void {
-    super.onLoadComplete();
+  protected override loadComplete(): void {
+    super.loadComplete();
 
     this.reloadMappings();
   }

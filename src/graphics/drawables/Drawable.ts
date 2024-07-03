@@ -2,7 +2,7 @@ import { Matrix } from 'pixi.js';
 import { Action } from '../../bindables/Action';
 import { popDrawableScope, pushDrawableScope } from '../../bindables/lifetimeScope';
 import { DependencyContainer, type ReadonlyDependencyContainer } from '../../di/DependencyContainer';
-import { getDependencyLoaders, getInjections } from '../../di/decorators';
+import { getAsyncDependencyLoaders, getDependencyLoaders, getInjections } from '../../di/decorators';
 import { HandleInputCache } from '../../input/HandleInputCache';
 import type { IInputReceiver } from '../../input/IInputReceiver';
 import type { InputManager } from '../../input/InputManager';
@@ -43,6 +43,7 @@ import type { KeyUpEvent } from '../../input/events/KeyUpEvent';
 import type { TouchMoveEvent } from '../../input/events/TouchMoveEvent';
 import type { TouchDownEvent } from '../../input/events/TouchDownEvent';
 import type { TouchUpEvent } from '../../input/events/TouchUpEvent';
+import { Scheduler } from '../../scheduling/Scheduler.ts';
 
 export interface DrawableOptions {
   position?: IVec2;
@@ -68,6 +69,7 @@ export interface DrawableOptions {
 }
 
 export const LOAD = Symbol('load');
+export const LOAD_FROM_ASYNC = Symbol('loadFromAsync');
 
 export interface Drawable extends OsucadFrameworkMixins.Drawable {}
 
@@ -741,6 +743,10 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     return this.#loadState;
   }
 
+  get isLoaded() {
+    return this.loadState === LoadState.Loaded;
+  }
+
   dependencies!: DependencyContainer;
 
   removeFromParent(dispose = true) {
@@ -749,10 +755,14 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   #loadComplete() {
     this.#loadState = LoadState.Loaded;
-    this.onLoadComplete();
+    this.loadComplete();
   }
 
-  [LOAD](clock: IFrameBasedClock, dependencies: ReadonlyDependencyContainer) {
+  async [LOAD](
+    clock: IFrameBasedClock,
+    dependencies: ReadonlyDependencyContainer,
+    isDirectAsyncContext: boolean = false,
+  ) {
     try {
       this.updateClock(clock);
 
@@ -768,14 +778,42 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
       this.#injectDependencies(dependencies);
       this.onLoad();
       const dependencyLoaders = getDependencyLoaders(this);
+
       for (const key of dependencyLoaders) {
         (this as any)[key]();
+      }
+
+      const asyncDependencyLoaders = getAsyncDependencyLoaders(this);
+      if (asyncDependencyLoaders.length > 0) {
+        if (!isDirectAsyncContext) {
+          throw new Error('Cannot load async dependencies in a non-async context');
+        }
+
+        await Promise.all(
+          asyncDependencyLoaders.map((key) => {
+            (this as any)[key]();
+          }),
+        );
       }
 
       this.#loadState = LoadState.Ready;
     } finally {
       popDrawableScope();
     }
+  }
+
+  async [LOAD_FROM_ASYNC](
+    clock: IFrameBasedClock,
+    dependencies: ReadonlyDependencyContainer,
+    isDirectAsyncContext: boolean = false,
+  ): Promise<boolean> {
+    if (this.isDisposed) {
+      return false;
+    }
+
+    await this[LOAD](clock, dependencies, isDirectAsyncContext);
+
+    return true;
   }
 
   #clock!: IFrameBasedClock;
@@ -825,11 +863,14 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   updateClock(clock: IFrameBasedClock) {
     this.#clock = this.#customClock ?? clock;
+    this.#scheduler?.updateClock(this.#clock);
   }
 
   protected onLoad() {}
 
-  protected onLoadComplete() {}
+  protected loadComplete() {}
+
+  onLoadComplete = new Action<Drawable>();
 
   #injectDependencies(dependencies: ReadonlyDependencyContainer) {
     this.dependencies = new DependencyContainer(dependencies);
@@ -969,6 +1010,21 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   //#region update & invalidation
 
+  #scheduler: Scheduler | null = null;
+
+  get scheduler(): Scheduler {
+    if (this.#scheduler) {
+      return this.#scheduler;
+    }
+
+    this.#scheduler = new Scheduler(this.clock);
+    return this.#scheduler;
+  }
+
+  schedule(action: () => void) {
+    this.scheduler.add(action);
+  }
+
   updateSubTree(): boolean {
     if (this.isDisposed) {
       throw new Error('Cannot update disposed drawable');
@@ -980,10 +1036,15 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
     if (this.loadState === LoadState.Ready) {
       this.#loadComplete();
+      this.onLoadComplete.emit(this);
     }
 
     if (!this.isPresent) {
       return true;
+    }
+
+    if (this.#scheduler !== null) {
+      this.#scheduler.update();
     }
 
     this.update();
@@ -1269,6 +1330,15 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
 export function loadDrawable(drawable: Drawable, clock: IFrameBasedClock, dependencies: ReadonlyDependencyContainer) {
   drawable[LOAD](clock, dependencies);
+}
+
+export function loadDrawableFromAsync(
+  drawable: Drawable,
+  clock: IFrameBasedClock,
+  dependencies: ReadonlyDependencyContainer,
+  isDirectAsyncContext: boolean,
+): Promise<boolean> {
+  return drawable[LOAD_FROM_ASYNC](clock, dependencies, isDirectAsyncContext);
 }
 
 export enum LoadState {
