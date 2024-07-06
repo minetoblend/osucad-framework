@@ -61,6 +61,7 @@ export class AudioBufferTrack extends Track {
   override stop(): void {
     if (!this.#source) return;
 
+    this.#source.onended = null;
     this.#source.stop();
     this.#source = null;
 
