@@ -1,4 +1,4 @@
-import { Vec2 } from './Vec2';
+import { type IVec2, Vec2 } from './Vec2';
 
 export class Rectangle {
   x: number;
@@ -51,5 +51,9 @@ export class Rectangle {
 
   get bottomRight(): Vec2 {
     return new Vec2(this.right, this.bottom);
+  }
+
+  contains(point: IVec2) {
+    return point.x >= this.left && point.x <= this.right && point.y >= this.top && point.y <= this.bottom;
   }
 }
