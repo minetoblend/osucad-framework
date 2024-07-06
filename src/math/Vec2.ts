@@ -171,7 +171,7 @@ export class Vec2 implements ILerp<Vec2> {
   }
 
   static closerThanSq(a: IVec2, b: IVec2, threshold: number): boolean {
-    return Vec2.distanceSq(a, b) < threshold * threshold;
+    return Vec2.distanceSq(a, b) < threshold;
   }
 }
 
