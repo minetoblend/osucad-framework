@@ -22,6 +22,8 @@ export class Bindable<T> {
   }
 
   set value(value: T) {
+    if (value === this.#value) return;
+
     this.#value = value;
     this.triggerChange();
   }
