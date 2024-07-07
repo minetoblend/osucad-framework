@@ -62,6 +62,17 @@ export class KeyboardHandler extends InputHandler {
 
       // On Mac OS we don't receive key up events while super key is pressed, so we need to simulate them
       if (this.#isMac && this.#superPressed && key !== Key.MetaLeft) {
+        if (
+          key === Key.ShiftLeft ||
+          key === Key.ShiftRight ||
+          key === Key.ControlLeft ||
+          key === Key.ControlRight ||
+          key === Key.AltLeft ||
+          key === Key.AltRight
+        ) {
+          return;
+        }
+
         this.#enqueueInput(KeyboardKeyInput.create(key, false));
       }
     }
