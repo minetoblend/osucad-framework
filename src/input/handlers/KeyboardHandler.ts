@@ -41,6 +41,10 @@ export class KeyboardHandler extends InputHandler {
 
   #pressedKeys = new Set<Key>();
 
+  #superPressed = false;
+
+  #isMac = navigator.userAgent.includes('Mac');
+
   #handleKeyDown = (event: KeyboardEvent) => {
     if (this.#shouldPreventDefault(event)) event.preventDefault();
 
@@ -48,9 +52,18 @@ export class KeyboardHandler extends InputHandler {
 
     const key = this.#getKey(event);
 
+    if (key === Key.MetaLeft) {
+      this.#superPressed = true;
+    }
+
     if (key !== null) {
       this.#pressedKeys.add(key);
       this.#enqueueInput(KeyboardKeyInput.create(key, true));
+
+      // On Mac OS we don't receive key up events while super key is pressed, so we need to simulate them
+      if (this.#isMac && this.#superPressed && key !== Key.MetaLeft) {
+        this.#enqueueInput(KeyboardKeyInput.create(key, false));
+      }
     }
   };
 
@@ -62,6 +75,10 @@ export class KeyboardHandler extends InputHandler {
       case 'r':
         // allow ctrl + r to refresh
         return !event.ctrlKey && !event.metaKey;
+      case 'z':
+        return !event.metaKey;
+      case 'Z':
+        return !event.metaKey;
     }
 
     return true;
@@ -71,6 +88,10 @@ export class KeyboardHandler extends InputHandler {
     event.preventDefault();
 
     const key = this.#getKey(event);
+
+    if (key === Key.MetaLeft) {
+      this.#superPressed = false;
+    }
 
     if (key !== null) {
       this.#pressedKeys.delete(key);
