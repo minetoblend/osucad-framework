@@ -75,10 +75,6 @@ export class KeyboardHandler extends InputHandler {
       case 'r':
         // allow ctrl + r to refresh
         return !event.ctrlKey && !event.metaKey;
-      case 'z':
-        return !event.metaKey;
-      case 'Z':
-        return !event.metaKey;
     }
 
     return true;
