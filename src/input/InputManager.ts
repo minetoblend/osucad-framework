@@ -35,6 +35,8 @@ import { ButtonStateChangeKind } from './stateChanges/events/ButtonStateChangeKi
 import { Action } from '../bindables';
 import { MousePositionAbsoluteInputFromTouch } from './stateChanges/MousePositionAbsoluteInputFromTouch';
 import { MouseButtonInputFromTouch } from './stateChanges/MouseButtonInputFromTouch';
+import { FrameStatistics } from '../statistics/FrameStatistics.ts';
+import { StatisticsCounterType } from '../statistics/StatisticsCounterType.ts';
 
 export abstract class InputManager extends Container implements IInputStateChangeHandler, IFocusManager {
   currentState = new InputState();
@@ -351,6 +353,10 @@ export abstract class InputManager extends Container implements IInputStateChang
   #buildPositionalInputQueue(screenSpacePos: Vec2): Drawable[] {
     this.#positionalInputQueue.length = 0;
 
+    if (this.name === 'UserInputManager') {
+      FrameStatistics.increment(StatisticsCounterType.PositionalIQ);
+    }
+
     const children = this.internalChildren;
     for (let i = 0; i < children.length; i++) {
       if (this.shouldBeConsideredForInput(children[i]))
@@ -364,6 +370,10 @@ export abstract class InputManager extends Container implements IInputStateChang
 
   #buildNonPositionalInputQueue(): Drawable[] {
     this.#inputQueue.length = 0;
+
+    if (this.name === 'UserInputManager') {
+      FrameStatistics.increment(StatisticsCounterType.InputQueue);
+    }
 
     const children = this.aliveInternalChildren;
 

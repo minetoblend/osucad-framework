@@ -17,6 +17,7 @@ import { Vec2 } from '../math';
 import { Renderer } from '../renderers/Renderer';
 import { FramedClock } from '../timing/FramedClock';
 import type { IFrameBasedClock } from '../timing/IFrameBasedClock';
+import { FrameStatistics } from '../statistics/FrameStatistics.ts';
 
 export interface GameHostOptions {
   friendlyGameName?: string;
@@ -58,6 +59,8 @@ export abstract class GameHost {
   abstract getWindowSize(): Vec2;
 
   update() {
+    FrameStatistics.clear();
+
     if (!this.root) return;
 
     this.#frameCount++;

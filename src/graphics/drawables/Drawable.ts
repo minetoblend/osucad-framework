@@ -44,6 +44,8 @@ import type { TouchMoveEvent } from '../../input/events/TouchMoveEvent';
 import type { TouchDownEvent } from '../../input/events/TouchDownEvent';
 import type { TouchUpEvent } from '../../input/events/TouchUpEvent';
 import { Scheduler } from '../../scheduling/Scheduler.ts';
+import { FrameStatistics } from '../../statistics/FrameStatistics.ts';
+import { StatisticsCounterType } from '../../statistics/StatisticsCounterType.ts';
 
 export interface DrawableOptions {
   position?: IVec2;
@@ -1044,6 +1046,8 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     }
 
     if (this.#scheduler !== null) {
+      const amountScheduledTasks = this.#scheduler.update();
+      FrameStatistics.add(StatisticsCounterType.ScheduleInvk, amountScheduledTasks);
       this.#scheduler.update();
     }
 

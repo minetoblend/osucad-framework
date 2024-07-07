@@ -7,6 +7,7 @@ export * from './input';
 export * from './screens';
 export * from './scheduling';
 export * from './timing';
+export * from './statistics';
 export * from './math';
 export * from './types';
 export * from './pixi';
