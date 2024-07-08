@@ -17,7 +17,7 @@ import { ScrollEvent } from './events/ScrollEvent';
 import type { UIEvent } from './events/UIEvent';
 import type { InputHandler } from './handlers/InputHandler';
 import { InputState } from './state/InputState';
-import type { Key } from './state/Key';
+import { Key } from './state/Key';
 import { MouseButton } from './state/MouseButton';
 import type { IInput } from './stateChanges/IInput';
 import type { IInputStateChangeHandler } from './stateChanges/IInputStateChangeHandler';
@@ -38,10 +38,16 @@ import { MouseButtonInputFromTouch } from './stateChanges/MouseButtonInputFromTo
 import { FrameStatistics } from '../statistics/FrameStatistics.ts';
 import { StatisticsCounterType } from '../statistics/StatisticsCounterType.ts';
 
+const repeat_tick_rate = 70;
+const repeat_initial_delay = 250;
+
 export abstract class InputManager extends Container implements IInputStateChangeHandler, IFocusManager {
   currentState = new InputState();
 
   abstract inputHandlers: ReadonlyArray<InputHandler>;
+
+  #keyboardRepeatTime = 0;
+  #keyboardRepeatKey: Key | null = null;
 
   readonly isFocusManger = true;
 
@@ -135,6 +141,8 @@ export abstract class InputManager extends Container implements IInputStateChang
       this.highFrequencyDrawables.length = 0;
     }
 
+    this.#updateKeyRepeat(this.currentState);
+
     if (!this.#hoverEventsUpdated) {
       this.#updateHoverEvents(this.currentState);
     }
@@ -196,6 +204,17 @@ export abstract class InputManager extends Container implements IInputStateChang
     }
 
     return valid;
+  }
+
+  #updateKeyRepeat(state: InputState) {
+    if (!this.#keyboardRepeatKey) return;
+
+    this.#keyboardRepeatTime -= this.time.elapsed;
+
+    while (this.#keyboardRepeatTime < 0) {
+      this.getKeyEventManagerFor(this.#keyboardRepeatKey!).handleRepeat(state);
+      this.#keyboardRepeatTime += repeat_tick_rate;
+    }
   }
 
   getPendingInputs(): IInput[] {
@@ -332,6 +351,31 @@ export abstract class InputManager extends Container implements IInputStateChang
     const kind = keyboardKeyStateChange.kind;
 
     this.getKeyEventManagerFor(key).handleButtonStateChange(state, kind);
+
+    if (kind == ButtonStateChangeKind.Pressed) {
+      if (!this.#isModifierKey(key)) {
+        this.#keyboardRepeatKey = key;
+        this.#keyboardRepeatTime = repeat_initial_delay;
+      }
+    } else {
+      if (key === this.#keyboardRepeatKey) {
+        this.#keyboardRepeatKey = null;
+        this.#keyboardRepeatTime = 0;
+      }
+    }
+  }
+
+  #isModifierKey(key: Key) {
+    return (
+      key === Key.ShiftLeft ||
+      key === Key.ShiftRight ||
+      key === Key.ControlLeft ||
+      key === Key.ControlRight ||
+      key === Key.AltLeft ||
+      key === Key.AltRight ||
+      key === Key.MetaLeft ||
+      key === Key.MetaRight
+    );
   }
 
   #mouseButtonEventManagers: Record<MouseButton, MouseButtonEventManager> = {} as any;
