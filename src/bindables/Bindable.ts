@@ -31,8 +31,8 @@ export class Bindable<T> {
   #listeners = new Set<BindableListener<T>>();
 
   addOnChangeListener(listener: BindableListener<T>, options: AddOnChangeListenerOptions = {}) {
-    this.#listeners.add(() => listener(this.value));
-    if (options.scoped === false) {
+    this.#listeners.add(listener);
+    if (options.scoped !== false) {
       const scope = getCurrentDrawablScope();
       if (scope) {
         scope.onDispose(() => this.removeOnChangeListener(listener));
