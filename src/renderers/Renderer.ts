@@ -44,6 +44,13 @@ export class Renderer {
       hello: false,
       clearBeforeRender: true,
       depth: true,
+      eventMode: 'none',
+      eventFeatures: {
+        click: false,
+        globalMove: false,
+        move: false,
+        wheel: false,
+      },
     });
   }
 
