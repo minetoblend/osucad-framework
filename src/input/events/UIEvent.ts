@@ -1,6 +1,7 @@
 import type { Drawable } from '../../graphics';
 import type { IInputReceiver } from '../IInputReceiver';
 import type { InputState } from '../state/InputState';
+import { Vec2 } from '../../math';
 
 export class UIEvent {
   constructor(
@@ -10,7 +11,7 @@ export class UIEvent {
 
   target: Drawable | null = null;
 
-  get mousePosition() {
+  get mousePosition(): Vec2 {
     return this.target!.toLocalSpace(this.screenSpaceMousePosition);
   }
 
