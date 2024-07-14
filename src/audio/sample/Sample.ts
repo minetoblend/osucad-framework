@@ -39,16 +39,20 @@ export class Sample {
 
     source.connect(destination);
 
+    const playback = new SamplePlayback(source, this.context, this.channel);
+
     source.onended = () => {
       if (gain) {
         gain.disconnect();
       }
 
       source.disconnect();
+
+      playback.onEnded.emit(playback);
     };
 
-    source.start(undefined, options.delay ? options.delay / 1000 : undefined);
+    source.start(options.delay ? this.context.currentTime + options.delay / 1000 : undefined, undefined);
 
-    return new SamplePlayback(source, this.context, this.channel);
+    return playback;
   }
 }

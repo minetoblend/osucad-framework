@@ -1,4 +1,5 @@
 import type { AudioChannel } from '../AudioChannel';
+import { Action } from '../../bindables';
 
 export class SamplePlayback {
   constructor(
@@ -18,4 +19,6 @@ export class SamplePlayback {
   stop() {
     this.source.stop();
   }
+
+  onEnded = new Action<SamplePlayback>();
 }
