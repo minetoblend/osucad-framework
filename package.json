@@ -22,10 +22,12 @@
   "exports": {
     ".": {
       "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
       "types": "./dist/index.d.ts"
     },
     "./math": {
       "import": "./dist/math.js",
+      "require": "./dist/math.cjs",
       "types": "./dist/math.d.ts"
     }
   },
@@ -38,7 +40,7 @@
     "eslint": "^8.42.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
-    "pixi.js": "^8.2.0",
+    "pixi.js": "https://pkg.csb.dev/pixijs/pixijs/commit/f2243093/pixi.js",
     "tsup": "^8.1.0",
     "typescript": "^5.2.2",
     "vite": "^5.3.1",
