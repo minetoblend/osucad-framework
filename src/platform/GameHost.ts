@@ -116,6 +116,11 @@ export abstract class GameHost {
 
     this.executionState = ExecutionState.Running;
 
+    // @ts-expect-error pixi devtools types not available
+    globalThis['__PIXI_STAGE__'] = this.root!.drawNode;
+    // @ts-expect-error pixi devtools types not available
+    globalThis['__PIXI_RENDERER__'] = this.renderer.internalRenderer;
+
     while (this.executionState === ExecutionState.Running) {
       this.update();
       this.render();
