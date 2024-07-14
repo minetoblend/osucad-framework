@@ -1,7 +1,7 @@
 import { defineConfig } from "tsup";
 
 export default defineConfig({
-  target: "es2020",
+  target: "esnext",
   dts: true,
   format: ["esm", 'cjs'],
   sourcemap: true,
