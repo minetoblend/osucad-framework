@@ -106,6 +106,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   get drawNode() {
     this.#drawNode ??= this.createDrawNode();
+    this.#drawNode.label = this.label ?? this.name
     return this.#drawNode;
   }
 
