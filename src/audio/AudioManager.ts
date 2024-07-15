@@ -6,6 +6,9 @@ export class AudioManager {
   constructor() {
     this.context = new AudioContext();
     this.#setupContextAutostart();
+
+    this.#gain = this.context.createGain();
+    this.#gain.connect(this.context.destination);
   }
 
   readonly context: AudioContext;
@@ -58,7 +61,17 @@ export class AudioManager {
     this.#resumed.abort();
   }
 
+  #gain: GainNode;
+
   get destination() {
-    return this.context.destination;
+    return this.#gain;
+  }
+
+  get masterVolume(): number {
+    return this.#gain.gain.value;
+  }
+
+  set masterVolume(value: number) {
+    this.#gain.gain.value = value;
   }
 }
