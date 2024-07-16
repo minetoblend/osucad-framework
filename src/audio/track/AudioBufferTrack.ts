@@ -19,7 +19,7 @@ export class AudioBufferTrack extends Track {
   override get currentTime(): number {
     if (!this.isRunning) return this.#offset;
 
-    return (this.contextTimeMillis - this.#offset) * this.rate;
+    return (this.contextTimeMillis - this.#contextTimeAtStart) * this.rate + this.#timeAtStart;
   }
 
   override seek(position: number): boolean {
@@ -37,9 +37,11 @@ export class AudioBufferTrack extends Track {
   }
 
   #offset = 0;
+  #timeAtStart = 0;
+  #contextTimeAtStart = 0;
 
   protected get contextTimeMillis() {
-    return this.context.currentTime * 1000;
+    return performance.now();
   }
 
   override start(): void {
@@ -52,17 +54,18 @@ export class AudioBufferTrack extends Track {
 
     if (offset < 0) {
       offset = 0;
-      when = this.context.currentTime - offset;
+      when = (this.context.currentTime - offset) / this.rate;
     }
 
     this.#source.start(when, offset);
 
-    this.#offset = this.contextTimeMillis - this.#offset;
+    this.#contextTimeAtStart = this.contextTimeMillis;
+    this.#timeAtStart = this.#offset;
 
     this.#source.onended = (ev) => {
       if (this.contextTimeMillis - this.#offset < this.length - 10) return;
       this.#source = null;
-      this.#offset = this.contextTimeMillis - this.#offset;
+      this.#offset += (this.contextTimeMillis - this.#contextTimeAtStart) * this.rate;
       this.raiseCompleted();
     };
   }
@@ -74,7 +77,7 @@ export class AudioBufferTrack extends Track {
     this.#source.stop();
     this.#source = null;
 
-    this.#offset = this.contextTimeMillis - this.#offset;
+    this.#offset = (this.contextTimeMillis - this.#contextTimeAtStart) * this.rate + this.#timeAtStart;
   }
 
   override get isRunning(): boolean {
@@ -89,7 +92,7 @@ export class AudioBufferTrack extends Track {
 
   override set rate(value: number) {
     if (!this.isRunning) {
-      this.rate = value;
+      this.#rate = value;
       return;
     }
 
