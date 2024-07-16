@@ -16,6 +16,7 @@ import { LayoutMember } from '../drawables/LayoutMember';
 import { MarginPadding, type MarginPaddingOptions } from '../drawables/MarginPadding';
 import type { Scheduler } from '../../scheduling/Scheduler.ts';
 import { DependencyContainer } from '../../di';
+import { Anchor } from '../drawables';
 
 export interface CompositeDrawableOptions extends DrawableOptions {
   padding?: MarginPaddingOptions;
@@ -223,23 +224,33 @@ export class CompositeDrawable extends Drawable {
 
     if (invalidation === Invalidation.None) return anyInvalidated;
 
-    if (invalidation & Invalidation.DrawSize) {
-      for (const c of this.internalChildren) {
-        let childInvalidation = invalidation;
+    let targetChildren = this.aliveInternalChildren;
 
-        // Other geometry things like rotation, shearing, etc don't affect child properties.
-        childInvalidation &= ~Invalidation.Transform;
+    if ((invalidation & ~Invalidation.Layout) > 0) {
+      targetChildren = this.internalChildren;
+    }
 
-        if (c.relativePositionAxes !== Axes.None && (invalidation & Invalidation.DrawSize) > 0)
-          childInvalidation |= Invalidation.Transform;
+    for (const c of targetChildren) {
+      let childInvalidation = invalidation;
 
-        if (c.relativeSizeAxes === Axes.None) childInvalidation &= ~Invalidation.DrawSize;
+      // Other geometry things like rotation, shearing, etc don't affect child properties.
+      childInvalidation &= ~Invalidation.Transform;
 
-        if (c.invalidate(childInvalidation, InvalidationSource.Parent)) {
-          anyInvalidated = true;
-        }
+      if (
+        (c.relativePositionAxes !== Axes.None || c.anchor !== Anchor.TopLeft) &&
+        (invalidation & Invalidation.DrawSize) > 0
+      )
+        childInvalidation |= Invalidation.Transform;
+
+      if (c.relativeSizeAxes === Axes.None) {
+        childInvalidation &= ~Invalidation.DrawSize;
+      }
+
+      if (c.invalidate(childInvalidation, InvalidationSource.Parent)) {
+        anyInvalidated = true;
       }
     }
+
     return anyInvalidated;
   }
 
