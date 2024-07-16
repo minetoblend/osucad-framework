@@ -106,7 +106,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   get drawNode() {
     this.#drawNode ??= this.createDrawNode();
-    this.#drawNode.label = this.label ?? this.name
+    this.#drawNode.label = this.label ?? this.name;
     return this.#drawNode;
   }
 
@@ -1075,7 +1075,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   update() {}
 
-  #transformBacking = new LayoutMember(Invalidation.Transform | Invalidation.DrawSize | Invalidation.Presence);
+  #transformBacking = new LayoutMember(Invalidation.Transform | Invalidation.RequiredParentSizeToFit | Invalidation.Presence);
 
   #colorBacking = new LayoutMember(Invalidation.Color);
 
@@ -1145,10 +1145,14 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   readonly invalidated = new Action<[Drawable, Invalidation]>();
 
   get invalidationFromParentSize(): Invalidation {
-    if (this.relativeSizeAxes === Axes.None) {
-      return Invalidation.None;
+    let result = Invalidation.None;
+    if (this.relativeSizeAxes !== Axes.None) {
+      result |= Invalidation.DrawSize;
     }
-    return Invalidation.DrawSize;
+    if (this.relativePositionAxes !== Axes.None) {
+      result |= Invalidation.Transform;
+    }
+    return result;
   }
 
   get localTransform() {
