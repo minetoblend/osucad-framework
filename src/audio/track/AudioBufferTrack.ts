@@ -23,7 +23,7 @@ export class AudioBufferTrack extends Track {
   }
 
   override seek(position: number): boolean {
-    if (position < 0 || position > this.length) return false;
+    if (position > this.length) return false;
 
     if (!this.isRunning) {
       this.#offset = position;
@@ -46,7 +46,16 @@ export class AudioBufferTrack extends Track {
     if (this.isRunning) return;
 
     this.#source = this.createSource();
-    this.#source.start(undefined, this.#offset / 1000);
+
+    let offset = this.#offset / 1000;
+    let when: number | undefined;
+
+    if (offset < 0) {
+      offset = 0;
+      when = this.context.currentTime - offset;
+    }
+
+    this.#source.start(when, offset);
 
     this.#offset = this.contextTimeMillis - this.#offset;
 
