@@ -77,8 +77,8 @@ export const animationMixins: Partial<Drawable> = {
       });
     } else {
       gsap.to(this, {
-        x: options.x,
-        y: options.y,
+        x: options.x ?? this.x,
+        y: options.y ?? this.y,
         duration: (options.duration ?? 0) / 1000,
         ease: options.easing ?? 'linear',
       });
