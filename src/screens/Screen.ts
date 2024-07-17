@@ -44,4 +44,18 @@ export abstract class Screen extends CompositeDrawable implements IScreen {
   onResuming(e: ScreenTransitionEvent) {}
 
   onSuspending(e: ScreenTransitionEvent) {}
+
+  protected get screenStack() {
+    const screenStack = this.findClosestParentOfType(ScreenStack);
+
+    if (screenStack === null) {
+      throw new Error('Cannot exit a screen that is not in a ScreenStack');
+    }
+
+    return screenStack;
+  }
+
+  exit() {
+    this.screenStack.exit(this);
+  }
 }
