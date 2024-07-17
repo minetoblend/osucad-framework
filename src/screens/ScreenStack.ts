@@ -68,20 +68,22 @@ export class ScreenStack extends CompositeDrawable {
     }
 
     this.#stack.push(newScreen);
-
-    //ScreenPushed?.Invoke(source, newScreen);
+    this.screenPushed.emit({ lastScreen: source, newScreen });
 
     newScreen.onLoadComplete.addListener(() => {
       newScreen.onEntering(new ScreenTransitionEvent(source, newScreen));
     });
 
     if (source === null) {
-      if (this.loadState >= LoadState.Ready) this.loadScreen(this, newScreen, () => this.#finishPush(null, newScreen));
-      else {
+      if (this.loadState >= LoadState.Ready) {
+        this.loadScreen(this, newScreen).then(() => this.#finishPush(null, newScreen));
+      } else {
         this.schedule(() => this.#finishPush(null, newScreen));
       }
     } else {
-      this.loadScreen(source as unknown as CompositeDrawable, newScreen, () => this.#finishPush(source, newScreen));
+      this.loadScreen(source as unknown as CompositeDrawable, newScreen).then(() =>
+        this.#finishPush(source, newScreen),
+      );
     }
   }
 
@@ -117,17 +119,19 @@ export class ScreenStack extends CompositeDrawable {
     }
   }
 
-  protected loadScreen(loader: CompositeDrawable | null, toLoad: IScreen, continuation: () => void) {
-    if (loader && (loader as unknown as IScreen)?.validForPush === false) return;
+  protected loadScreen(loader: CompositeDrawable | null, toLoad: IScreen): Promise<void> {
+    return new Promise((resolve) => {
+      if (loader && (loader as unknown as IScreen)?.validForPush === false) return;
 
-    if (toLoad.loadState >= LoadState.Ready) continuation?.();
-    else {
-      if (loader && loader?.loadState >= LoadState.Ready) {
-        loader.loadComponentAsync(toLoad, undefined, this.scheduler).then(() => continuation?.());
-      } else {
-        this.schedule(() => this.loadScreen(loader, toLoad, continuation));
+      if (toLoad.loadState >= LoadState.Ready) resolve();
+      else {
+        if (loader && loader?.loadState >= LoadState.Ready) {
+          loader.loadComponentAsync(toLoad, undefined, this.scheduler).then(() => resolve());
+        } else {
+          this.schedule(() => this.loadScreen(loader, toLoad).then(resolve));
+        }
       }
-    }
+    });
   }
 
   exit(source: IScreen) {
@@ -275,6 +279,7 @@ export class ScreenStack extends CompositeDrawable {
     // We need to manually handle removal here (in the opposite order to how the screens were pushed to ensure bindable sanity).
     if (this.#exited[0]?.isAlive === false) {
       for (const s of this.#exited) {
+        console.log('dispose');
         this.removeInternal(s, true);
       }
 
