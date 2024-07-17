@@ -53,7 +53,11 @@ export class CompositeDrawable extends Drawable {
     //TODO: drawable.removeCompletedTransforms = removeCompletedTransforms;
 
     if (this.loadState >= LoadState.Loading) {
-      this.#loadChild(drawable);
+      if (drawable.loadState >= LoadState.Ready) {
+        drawable.parent = this;
+      } else {
+        this.#loadChild(drawable);
+      }
     }
 
     this.internalChildren.push(drawable);
