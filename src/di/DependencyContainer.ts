@@ -28,6 +28,10 @@ export class DependencyContainer implements ReadonlyDependencyContainer {
     const value = this.resolveOptional<T>(key);
 
     if (value === undefined) {
+      if (typeof key === 'object' && 'name' in key) {
+        key = key.name;
+      }
+
       throw new Error(`Could not resolve dependency for key: ${key}`);
     }
 
