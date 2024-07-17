@@ -767,6 +767,8 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     isDirectAsyncContext: boolean = false,
   ) {
     try {
+      if (this.loadState !== LoadState.NotLoaded) return;
+
       this.updateClock(clock);
 
       pushDrawableScope(this);
@@ -792,11 +794,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
           throw new Error('Cannot load async dependencies in a non-async context');
         }
 
-        await Promise.all(
-          asyncDependencyLoaders.map((key) => {
-            (this as any)[key]();
-          }),
-        );
+        await Promise.all(asyncDependencyLoaders.map((key) => (this as any)[key]()));
       }
 
       this.#loadState = LoadState.Ready;
@@ -1020,7 +1018,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
       return this.#scheduler;
     }
 
-    this.#scheduler = new Scheduler(this.clock);
+    this.#scheduler = new Scheduler(this.#clock);
     return this.#scheduler;
   }
 
@@ -1075,7 +1073,9 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   update() {}
 
-  #transformBacking = new LayoutMember(Invalidation.Transform | Invalidation.RequiredParentSizeToFit | Invalidation.Presence);
+  #transformBacking = new LayoutMember(
+    Invalidation.Transform | Invalidation.RequiredParentSizeToFit | Invalidation.Presence,
+  );
 
   #colorBacking = new LayoutMember(Invalidation.Color);
 
