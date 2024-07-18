@@ -891,7 +891,9 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   dispose(): boolean {
     if (this.isDisposed) return false;
 
-    debugAssert(!this.parent, 'Cannot dispose drawable with parent');
+    this.#parent = null;
+    this.childId = 0;
+    this.invalidated.removeAllListeners();
 
     this.drawNode?.destroy({ children: true });
     for (const callback of this.#onDispose) {
