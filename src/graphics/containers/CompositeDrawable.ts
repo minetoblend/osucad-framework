@@ -661,6 +661,13 @@ export class CompositeDrawable extends Drawable {
 
     this.#maskingContainer?.scale.copyFrom(this.drawSize);
   }
+
+  override dispose(): boolean {
+    this.#disposalAbortController?.abort();
+    this.internalChildren.forEach((c) => c.dispose());
+
+    return super.dispose();
+  }
 }
 
 const enum ChildLifeStateChange {
