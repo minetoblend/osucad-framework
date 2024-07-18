@@ -86,6 +86,12 @@ export class KeyboardHandler extends InputHandler {
       case 'r':
         // allow ctrl + r to refresh
         return !event.ctrlKey && !event.metaKey;
+      case 'F5':
+        // allow F5 to refresh
+        return true;
+      case 'F11':
+        // allow F11 to toggle fullscreen
+        return true;
     }
 
     return true;
