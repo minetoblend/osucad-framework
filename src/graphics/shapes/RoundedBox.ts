@@ -1,6 +1,7 @@
 import { Color, PIXIGraphics, type ColorSource } from '../../pixi';
-import { LayoutMember } from '../drawables';
+import { FillMode, LayoutMember } from '../drawables';
 import { Drawable, Invalidation, type DrawableOptions } from '../drawables/Drawable';
+import { Matrix, type Texture } from 'pixi.js';
 
 export interface RoundedBoxOptions extends DrawableOptions {
   cornerRadius?: number;
@@ -8,6 +9,8 @@ export interface RoundedBoxOptions extends DrawableOptions {
   outlines?: OutlineInfo[];
   fillColor?: ColorSource;
   fillAlpha?: number;
+  texture?: Texture;
+  textureFillMode?: FillMode;
 }
 
 export interface OutlineInfo {
@@ -43,6 +46,34 @@ export class RoundedBox extends Drawable {
   #graphics!: PIXIGraphics;
 
   #graphicsBacking = new LayoutMember(Invalidation.DrawSize);
+
+  get texture(): Texture | null {
+    return this.#texture;
+  }
+
+  set texture(value: Texture | null) {
+    if (this.#texture === value) return;
+
+    this.#texture = value;
+
+    this.#graphicsBacking.invalidate();
+  }
+
+  #texture: Texture | null = null;
+
+  get textureFillMode(): FillMode {
+    return this.#textureFillMode;
+  }
+
+  set textureFillMode(value: FillMode) {
+    if (this.#textureFillMode === value) return;
+
+    this.#textureFillMode = value;
+
+    this.#graphicsBacking.invalidate();
+  }
+
+  #textureFillMode: FillMode = FillMode.Stretch;
 
   get outlines(): OutlineInfo[] {
     return this.#outlines;
@@ -113,7 +144,36 @@ export class RoundedBox extends Drawable {
       g.rect(0, 0, this.drawSize.x, this.drawSize.y);
     }
 
-    g.fill({ color: this.fillColor, alpha: this.#fillAlpha });
+    if (this.#texture) {
+      let width = this.drawSize.x / this.#texture.width;
+      let height = this.drawSize.y / this.#texture.height;
+
+      const aspectRatio = this.drawSize.x / this.drawSize.y;
+
+      if (this.#textureFillMode === FillMode.Fill) {
+        width = height = Math.max(width, height * aspectRatio);
+      } else if (this.#textureFillMode === FillMode.Fit) {
+        width = height = Math.min(width, height * aspectRatio);
+      }
+      height /= aspectRatio;
+
+      g.fill({
+        texture: this.#texture,
+        color: this.#fillColor,
+        alpha: this.#fillAlpha,
+        matrix: new Matrix()
+          .scale(width, height)
+          .translate(
+            (this.drawSize.x - this.#texture.width * width) / 2,
+            (this.drawSize.y - this.#texture.height * height) / 2,
+          ),
+      });
+    } else {
+      g.fill({
+        color: this.fillColor,
+        alpha: this.#fillAlpha,
+      });
+    }
 
     for (const outline of this.#outlines) {
       if (this.#cornerRadius > 0) {
