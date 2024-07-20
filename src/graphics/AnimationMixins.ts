@@ -76,12 +76,15 @@ export const animationMixins: Partial<Drawable> = {
         ease: options.easing ?? 'linear',
       });
     } else {
-      gsap.to(this, {
-        x: options.x ?? this.x,
-        y: options.y ?? this.y,
+      const gsapOptions: gsap.TweenVars = {
         duration: (options.duration ?? 0) / 1000,
         ease: options.easing ?? 'linear',
-      });
+      };
+
+      if ('x' in options) gsapOptions.x = options.x;
+      if ('y' in options) gsapOptions.y = options.y;
+
+      gsap.to(this, gsapOptions);
     }
   },
   rotateTo(options: RotateToOptions) {
