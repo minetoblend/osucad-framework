@@ -11,6 +11,7 @@ export interface AnimationMixins {
   rotateTo(options: RotateToOptions): void;
   fadeColorTo(options: FadeColorToOptions): void;
   flashColorTo(options: FadeColorToOptions): void;
+  scaleTo(options: ScaleToOptions): void;
 }
 
 export interface AnimationOptions {
@@ -30,6 +31,17 @@ export type MoveToOptions = AnimationOptions &
     | {
         x?: number;
         y?: number;
+      }
+  );
+
+export type ScaleToOptions = AnimationOptions &
+  (
+    | {
+        scale: number;
+      }
+    | {
+        scaleX?: number;
+        scaleY?: number;
       }
   );
 
@@ -142,5 +154,19 @@ export const animationMixins: Partial<Drawable> = {
         repeat: 1,
       })
       .yoyo(true);
+  },
+  scaleTo(options: ScaleToOptions) {
+    const scaleX = 'scale' in options ? options.scale : options.scaleX;
+    const scaleY = 'scale' in options ? options.scale : options.scaleY;
+
+    const gsapOptions: gsap.TweenVars = {
+      duration: (options.duration ?? 0) / 1000,
+      ease: options.easing ?? 'linear',
+    };
+
+    if (scaleX !== undefined) gsapOptions.scaleX = scaleX;
+    if (scaleY !== undefined) gsapOptions.scaleY = scaleY;
+
+    gsap.to(this, gsapOptions);
   },
 } as Drawable;
