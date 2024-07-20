@@ -145,17 +145,27 @@ export class RoundedBox extends Drawable {
     }
 
     if (this.#texture) {
-      let width = this.drawSize.x / this.#texture.width;
-      let height = this.drawSize.y / this.#texture.height;
+      let width = this.#texture.width;
+      let height = this.#texture.height;
 
       const aspectRatio = this.drawSize.x / this.drawSize.y;
 
       if (this.#textureFillMode === FillMode.Fill) {
-        width = height = Math.max(width, height * aspectRatio);
+        if (width / height > aspectRatio) {
+          width = height * aspectRatio;
+        } else {
+          height = width / aspectRatio;
+        }
       } else if (this.#textureFillMode === FillMode.Fit) {
-        width = height = Math.min(width, height * aspectRatio);
+        if (width / height > aspectRatio) {
+          height = width / aspectRatio;
+        } else {
+          width = height * aspectRatio;
+        }
       }
-      height /= aspectRatio;
+
+      width = this.drawSize.x / width;
+      height = this.drawSize.y / height;
 
       g.fill({
         texture: this.#texture,
