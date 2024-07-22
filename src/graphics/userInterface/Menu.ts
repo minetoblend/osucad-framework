@@ -18,6 +18,7 @@ import { Box } from '../shapes';
 import type { MenuItem } from './MenuItem';
 import type { FillFlowContainerOptions } from '../containers/FillFlowContainer';
 import type { FocusLostEvent } from '../../input/events/FocusLostEvent';
+import { List } from '../../utils';
 
 export abstract class Menu extends CompositeDrawable {
   readonly stateChanged = new Action<MenuState>();
@@ -751,7 +752,7 @@ export abstract class DrawableMenuItem extends CompositeDrawable {
     return super.onHoverLost?.(e) ?? true;
   }
 
-  override buildPositionalInputQueue(screenSpacePos: Vec2, queue: Drawable[]): boolean {
+  override buildPositionalInputQueue(screenSpacePos: Vec2, queue: List<Drawable>): boolean {
     return super.buildPositionalInputQueue(screenSpacePos, queue);
   }
 

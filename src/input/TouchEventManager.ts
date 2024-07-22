@@ -7,6 +7,7 @@ import { TouchMoveEvent } from './events/TouchMoveEvent';
 import { TouchUpEvent } from './events/TouchUpEvent';
 import { Touch, TouchSource } from './handlers/Touch';
 import type { InputState } from './state/InputState';
+import { List } from '../utils';
 
 export class TouchEventManager extends ButtonEventManager<TouchSource> {
   touchDownPosition: Vec2 | null = null;
@@ -28,7 +29,7 @@ export class TouchEventManager extends ButtonEventManager<TouchSource> {
     );
   }
 
-  override handleButtonDown(state: InputState, targets: Drawable[]): Drawable | null {
+  override handleButtonDown(state: InputState, targets: List<Drawable>): Drawable | null {
     debugAssert(this.heldDrawable === null);
 
     debugAssert(this.touchDownPosition === null);

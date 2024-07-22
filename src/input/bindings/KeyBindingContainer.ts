@@ -12,6 +12,7 @@ import { InputState } from '../state/InputState';
 import type { IKeyBinding } from './IKeyBinding';
 import { isKeyBindingHandler } from './IKeyBindingHandler';
 import { KeyCombination, KeyCombinationMatchingMode } from './KeyCombination';
+import { List } from '../../utils';
 
 export abstract class BaseKeyBindingContainer extends Container {
   protected keyBindings: IKeyBinding[] | null = null;
@@ -62,10 +63,10 @@ export abstract class KeyBindingContainer<T extends KeyBindingAction> extends Ba
 
   readonly #keyBindingQueues = new Map<IKeyBinding, Drawable[]>();
 
-  #queue: Drawable[] = [];
+  #queue = new List<Drawable>(250);
 
-  protected get keyBindingInputQueue(): Drawable[] {
-    this.#queue.length = 0;
+  protected get keyBindingInputQueue(): List<Drawable> {
+    this.#queue.clear();
     this.buildNonPositionalInputQueue(this.#queue, false);
     this.#queue.reverse();
 
@@ -75,14 +76,14 @@ export abstract class KeyBindingContainer<T extends KeyBindingAction> extends Ba
   override update(): void {
     super.update();
 
-    this.#queue.length = 0;
+    this.#queue.clear();
   }
 
   protected get prioritised() {
     return false;
   }
 
-  override buildNonPositionalInputQueue(queue: Drawable[], allowBlocking: boolean = true): boolean {
+  override buildNonPositionalInputQueue(queue: List<Drawable>, allowBlocking: boolean = true): boolean {
     if (!super.buildNonPositionalInputQueue(queue, allowBlocking)) return false;
 
     if (this.prioritised) {
@@ -96,7 +97,7 @@ export abstract class KeyBindingContainer<T extends KeyBindingAction> extends Ba
     return true;
   }
 
-  override buildPositionalInputQueue(screenSpacePos: Vec2, queue: Drawable[]): boolean {
+  override buildPositionalInputQueue(screenSpacePos: Vec2, queue: List<Drawable>): boolean {
     if (!super.buildPositionalInputQueue(screenSpacePos, queue)) return false;
 
     if (this.prioritised) {
@@ -263,7 +264,7 @@ export abstract class KeyBindingContainer<T extends KeyBindingAction> extends Ba
   }
 
   protected propagatePressed(
-    drawables: Drawable[],
+    drawables: Drawable[] | List<Drawable>,
     state: InputState,
     pressed: T,
     scrollAmount: number = 0,
@@ -332,7 +333,7 @@ export abstract class KeyBindingContainer<T extends KeyBindingAction> extends Ba
     }
   }
 
-  protected propagateReleased(drawables: Drawable[], state: InputState, released: T) {
+  protected propagateReleased(drawables: Drawable[] | List<Drawable>, state: InputState, released: T) {
     if (
       this.#simultaneousMode === SimultaneousBindingMode.All ||
       (this.#pressedActions.includes(released) && this.#pressedBindings.every((b) => b.getAction() === released))

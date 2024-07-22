@@ -3,6 +3,7 @@ import type { InputManager } from './InputManager';
 import type { UIEvent } from './events/UIEvent';
 import type { InputState } from './state/InputState';
 import { ButtonStateChangeKind } from './stateChanges/events/ButtonStateChangeKind';
+import { List } from '../utils/List.ts';
 
 export abstract class ButtonEventManager<TButton> {
   handleButtonStateChange(state: InputState, kind: ButtonStateChangeKind) {
@@ -16,7 +17,7 @@ export abstract class ButtonEventManager<TButton> {
   constructor(public button: TButton) {}
 
   inputManager!: InputManager;
-  getInputQueue!: () => Drawable[];
+  getInputQueue!: () => List<Drawable>;
 
   buttonDownInputQueue: Drawable[] | null = null;
 
@@ -35,7 +36,7 @@ export abstract class ButtonEventManager<TButton> {
     return handledBy != null;
   }
 
-  abstract handleButtonDown(state: InputState, targets: Drawable[]): Drawable | null;
+  abstract handleButtonDown(state: InputState, targets: List<Drawable>): Drawable | null;
 
   #handleButtonUp(state: InputState) {
     if (this.buttonDownInputQueue === null) return;
@@ -49,7 +50,7 @@ export abstract class ButtonEventManager<TButton> {
 
   abstract handleButtonUp(state: InputState, targets: Drawable[]): void;
 
-  protected propagateButtonEvent(drawables: Drawable[], e: UIEvent): Drawable | null {
+  protected propagateButtonEvent(drawables: Iterable<Drawable>, e: UIEvent): Drawable | null {
     let handledBy: Drawable | null = null;
 
     for (const target of drawables) {

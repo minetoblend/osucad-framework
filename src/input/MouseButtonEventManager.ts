@@ -10,6 +10,7 @@ import { MouseDownEvent } from './events/MouseDownEvent';
 import { MouseUpEvent } from './events/MouseUpEvent';
 import type { InputState } from './state/InputState';
 import type { MouseButton } from './state/MouseButton';
+import { List } from '../utils';
 
 export abstract class MouseButtonEventManager extends ButtonEventManager<MouseButton> {
   abstract get enableDrag(): boolean;
@@ -45,7 +46,7 @@ export abstract class MouseButtonEventManager extends ButtonEventManager<MouseBu
     }
   }
 
-  override handleButtonDown(state: InputState, targets: Drawable[]): Drawable | null {
+  override handleButtonDown(state: InputState, targets: List<Drawable>): Drawable | null {
     debugAssert(state.mouse.isPressed(this.button), 'Mouse button must be pressed');
 
     if (state.mouse.isPositionValid) this.mouseDownPosition = state.mouse.position;

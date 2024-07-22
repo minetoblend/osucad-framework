@@ -17,6 +17,7 @@ import { MarginPadding, type MarginPaddingOptions } from '../drawables/MarginPad
 import type { Scheduler } from '../../scheduling/Scheduler.ts';
 import { DependencyContainer } from '../../di';
 import { Anchor } from '../drawables';
+import type { List } from '../../utils/List.ts';
 
 export interface CompositeDrawableOptions extends DrawableOptions {
   padding?: MarginPaddingOptions;
@@ -413,7 +414,7 @@ export class CompositeDrawable extends Drawable {
     return state;
   }
 
-  override buildPositionalInputQueue(screenSpacePos: Vec2, queue: Drawable[]): boolean {
+  override buildPositionalInputQueue(screenSpacePos: Vec2, queue: List<Drawable>): boolean {
     if (!super.buildPositionalInputQueue(screenSpacePos, queue)) return false;
 
     if (!this.receivePositionalInputAtSubTree(screenSpacePos)) return false;
@@ -433,7 +434,7 @@ export class CompositeDrawable extends Drawable {
     return child.loadState == LoadState.Loaded;
   }
 
-  override buildNonPositionalInputQueue(queue: Drawable[], allowBlocking?: boolean): boolean {
+  override buildNonPositionalInputQueue(queue: List<Drawable>, allowBlocking?: boolean): boolean {
     if (!super.buildNonPositionalInputQueue(queue, allowBlocking)) return false;
 
     for (let i = 0; i < this.aliveInternalChildren.length; ++i) {

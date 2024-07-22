@@ -46,6 +46,7 @@ import type { TouchUpEvent } from '../../input/events/TouchUpEvent';
 import { Scheduler } from '../../scheduling/Scheduler.ts';
 import { FrameStatistics } from '../../statistics/FrameStatistics.ts';
 import { StatisticsCounterType } from '../../statistics/StatisticsCounterType.ts';
+import type { List } from '../../utils/List.ts';
 
 export interface DrawableOptions {
   position?: IVec2;
@@ -108,7 +109,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   get drawNode() {
     this.#drawNode ??= this.createDrawNode();
-    this.#drawNode.label = this.label ?? this.name;
+    this.#drawNode.label = this.label ?? '';
     return this.#drawNode;
   }
 
@@ -1084,13 +1085,18 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   #colorBacking = new LayoutMember(Invalidation.Color);
 
   updateDrawNodeTransform() {
-    let pos = this.drawPosition.add(this.anchorPosition);
+    const drawPosition = this.drawPosition;
+    const anchorPosition = this.anchorPosition;
+
+    let x = drawPosition.x + anchorPosition.x;
+    let y = drawPosition.y + anchorPosition.y;
 
     if (this.parent) {
-      pos = pos.add(this.parent.childOffset);
+      x += this.parent.padding.left;
+      y += this.parent.padding.top;
     }
 
-    this.drawNode.position.copyFrom(pos);
+    this.drawNode.position.set(x, y);
     this.drawNode.pivot.copyFrom(this.originPosition);
     this.drawNode.scale.copyFrom(this.drawScale);
     this.drawNode.skew.copyFrom(this.skew);
@@ -1182,7 +1188,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   validateSuperTree(invalidation: Invalidation) {
     if (this.#invalidationState.validate(invalidation)) {
-      this.parent?.validateSuperTree(invalidation);
+      this.#parent?.validateSuperTree(invalidation);
     }
   }
 
@@ -1242,7 +1248,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     return this.findClosestParent((d): d is InputManager => isFocusManager(d));
   }
 
-  buildPositionalInputQueue(screenSpacePos: Vec2, queue: Drawable[]): boolean {
+  buildPositionalInputQueue(screenSpacePos: Vec2, queue: List<Drawable>): boolean {
     if (!this.propagatePositionalInputSubTree) return false;
 
     if (this.handlePositionalInput && this.receivePositionalInputAt(screenSpacePos)) {
@@ -1260,7 +1266,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     return this.isPresent && this.requestsNonPositionalInputSubTree;
   }
 
-  buildNonPositionalInputQueue(queue: Drawable[], allowBlocking = true) {
+  buildNonPositionalInputQueue(queue: List<Drawable>, allowBlocking = true) {
     if (!this.propagateNonPositionalInputSubTree) return false;
 
     if (this.handleNonPositionalInput) queue.push(this);

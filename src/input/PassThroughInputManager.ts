@@ -12,6 +12,7 @@ import type { MouseButton } from './state/MouseButton';
 import { ButtonInputEntry } from './stateChanges/ButtonInput';
 import { MouseButtonInput } from './stateChanges/MouseButtonInput';
 import { MousePositionAbsoluteInput } from './stateChanges/MousePositionAbsoluteInput';
+import { List } from '../utils';
 
 export class PassThroughInputManager extends CustomInputManager {
   get useParentInput(): boolean {
@@ -34,7 +35,7 @@ export class PassThroughInputManager extends CustomInputManager {
     return super.handleHoverEvents;
   }
 
-  override buildPositionalInputQueue(screenSpacePos: Vec2, queue: Drawable[]) {
+  override buildPositionalInputQueue(screenSpacePos: Vec2, queue: List<Drawable>) {
     if (!this.propagatePositionalInputSubTree) return false;
 
     queue.push(this);

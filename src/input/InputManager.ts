@@ -37,6 +37,7 @@ import { MousePositionAbsoluteInputFromTouch } from './stateChanges/MousePositio
 import { MouseButtonInputFromTouch } from './stateChanges/MouseButtonInputFromTouch';
 import { FrameStatistics } from '../statistics/FrameStatistics.ts';
 import { StatisticsCounterType } from '../statistics/StatisticsCounterType.ts';
+import { List } from '../utils/List.ts';
 
 const repeat_tick_rate = 70;
 const repeat_initial_delay = 250;
@@ -114,8 +115,8 @@ export abstract class InputManager extends Container implements IInputStateChang
 
   override update(): void {
     this.#unfocusIfNoLongerValid();
-    this.#inputQueue.length = 0;
-    this.#positionalInputQueue.length = 0;
+    this.#inputQueue.clear();
+    this.#positionalInputQueue.clear();
 
     const pendingInputs = this.getPendingInputs();
 
@@ -383,19 +384,19 @@ export abstract class InputManager extends Container implements IInputStateChang
   #lastMouseMove: MouseMoveEvent | null = null;
   #hoverEventsUpdated = false;
 
-  #inputQueue: Drawable[] = [];
-  #positionalInputQueue: Drawable[] = [];
+  #inputQueue = new List<Drawable>(250);
+  #positionalInputQueue = new List<Drawable>(100);
 
-  get positionalInputQueue(): Drawable[] {
+  get positionalInputQueue(): List<Drawable> {
     return this.#buildPositionalInputQueue(this.currentState.mouse.position);
   }
 
-  get nonPositionalInputQueue(): Drawable[] {
+  get nonPositionalInputQueue(): List<Drawable> {
     return this.#buildNonPositionalInputQueue();
   }
 
-  #buildPositionalInputQueue(screenSpacePos: Vec2): Drawable[] {
-    this.#positionalInputQueue.length = 0;
+  #buildPositionalInputQueue(screenSpacePos: Vec2): List<Drawable> {
+    this.#positionalInputQueue.clear();
 
     if (this.name === 'UserInputManager') {
       FrameStatistics.increment(StatisticsCounterType.PositionalIQ);
@@ -412,8 +413,8 @@ export abstract class InputManager extends Container implements IInputStateChang
     return this.#positionalInputQueue;
   }
 
-  #buildNonPositionalInputQueue(): Drawable[] {
-    this.#inputQueue.length = 0;
+  #buildNonPositionalInputQueue(): List<Drawable> {
+    this.#inputQueue.clear();
 
     if (this.name === 'UserInputManager') {
       FrameStatistics.increment(StatisticsCounterType.InputQueue);
@@ -440,11 +441,11 @@ export abstract class InputManager extends Container implements IInputStateChang
     return this.#inputQueue;
   }
 
-  override buildPositionalInputQueue(screenSpacePos: Vec2, queue: Drawable[]): boolean {
+  override buildPositionalInputQueue(screenSpacePos: Vec2, queue: List<Drawable>): boolean {
     return false;
   }
 
-  override buildNonPositionalInputQueue(queue: Drawable[], allowBlocking: boolean = true) {
+  override buildNonPositionalInputQueue(queue: List<Drawable>, allowBlocking: boolean = true) {
     if (!allowBlocking) super.buildNonPositionalInputQueue(queue, false);
 
     return false;
@@ -452,7 +453,7 @@ export abstract class InputManager extends Container implements IInputStateChang
 
   private readonly highFrequencyDrawables: Drawable[] = [];
 
-  propagateBlockableEvent(drawables: Drawable[], e: UIEvent): boolean {
+  propagateBlockableEvent(drawables: Iterable<Drawable>, e: UIEvent): boolean {
     for (const d of drawables) {
       if (!d.triggerEvent(e)) continue;
 

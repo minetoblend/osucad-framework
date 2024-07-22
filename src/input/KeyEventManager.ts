@@ -4,6 +4,7 @@ import type { InputState } from './state/InputState';
 import { Key } from './state/Key';
 import { KeyDownEvent } from './events/KeyDownEvent';
 import { KeyUpEvent } from './events/KeyUpEvent';
+import { List } from '../utils';
 
 export class KeyEventManager extends ButtonEventManager<Key> {
   public handleRepeat(state: InputState) {
@@ -14,7 +15,7 @@ export class KeyEventManager extends ButtonEventManager<Key> {
     this.propagateButtonEvent(drawables, new KeyDownEvent(state, this.button, true));
   }
 
-  handleButtonDown(state: InputState, targets: Drawable[]): Drawable | null {
+  handleButtonDown(state: InputState, targets: List<Drawable>): Drawable | null {
     return this.propagateButtonEvent(targets, new KeyDownEvent(state, this.button));
   }
 
