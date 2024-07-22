@@ -68,6 +68,8 @@ export interface DrawableOptions {
   label?: string;
   filters?: Filter[];
   blendMode?: BLEND_MODES;
+  fillMode?: FillMode;
+  fillAspectRatio?: number;
 }
 
 export const LOAD = Symbol('load');
