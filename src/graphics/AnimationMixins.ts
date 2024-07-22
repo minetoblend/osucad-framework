@@ -12,6 +12,7 @@ export interface AnimationMixins {
   fadeColorTo(options: FadeColorToOptions): void;
   flashColorTo(options: FadeColorToOptions): void;
   scaleTo(options: ScaleToOptions): void;
+  animateTo(options: AnimateToOptions): void;
 }
 
 export interface AnimationOptions {
@@ -37,7 +38,7 @@ export type MoveToOptions = AnimationOptions &
 export type ScaleToOptions = AnimationOptions &
   (
     | {
-        scale: number;
+        scale: number | IVec2;
       }
     | {
         scaleX?: number;
@@ -58,6 +59,14 @@ export type RotateToOptions = AnimationOptions &
 export type FadeColorToOptions = AnimationOptions & {
   color: ColorSource;
 };
+
+export interface AnimateToOptions extends AnimationOptions {
+  position?: IVec2;
+  rotation?: number;
+  alpha?: number;
+  scale?: number | IVec2;
+  color?: ColorSource;
+}
 
 export const animationMixins: Partial<Drawable> = {
   fadeTo(options: FadeOptions) {
@@ -156,8 +165,16 @@ export const animationMixins: Partial<Drawable> = {
       .yoyo(true);
   },
   scaleTo(options: ScaleToOptions) {
-    const scaleX = 'scale' in options ? options.scale : options.scaleX;
-    const scaleY = 'scale' in options ? options.scale : options.scaleY;
+    let scaleX: number | undefined;
+    let scaleY: number | undefined;
+
+    if ('scale' in options) {
+      scaleX = typeof options.scale === 'number' ? options.scale : options.scale.x;
+      scaleY = typeof options.scale === 'number' ? options.scale : options.scale.y;
+    } else {
+      scaleX = options.scaleX;
+      scaleY = options.scaleY;
+    }
 
     const gsapOptions: gsap.TweenVars = {
       duration: (options.duration ?? 0) / 1000,
@@ -168,5 +185,28 @@ export const animationMixins: Partial<Drawable> = {
     if (scaleY !== undefined) gsapOptions.scaleY = scaleY;
 
     gsap.to(this, gsapOptions);
+  },
+  animateTo(options: AnimateToOptions) {
+    const { duration, easing } = options;
+
+    if (options.position !== undefined) {
+      this.moveTo({ position: options.position, duration, easing });
+    }
+
+    if (options.rotation !== undefined) {
+      this.rotateTo({ rotation: options.rotation, duration, easing });
+    }
+
+    if (options.alpha !== undefined) {
+      this.fadeTo({ alpha: options.alpha, duration, easing });
+    }
+
+    if (options.scale !== undefined) {
+      this.scaleTo({ scale: options.scale, duration, easing });
+    }
+
+    if (options.color !== undefined) {
+      this.fadeColorTo({ color: options.color, duration, easing });
+    }
   },
 } as Drawable;
