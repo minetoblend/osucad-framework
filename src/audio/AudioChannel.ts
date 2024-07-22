@@ -18,6 +18,10 @@ export class AudioChannel implements IDisposable {
     return this.#input;
   }
 
+  get output() {
+    return this.#output;
+  }
+
   get volume(): number {
     return this.#output.gain.value;
   }
