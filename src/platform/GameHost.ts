@@ -85,10 +85,14 @@ export abstract class GameHost {
     throw new Error('Not implemented');
   }
 
+  container!: HTMLElement;
+
   async run(game: Game, container: HTMLElement = document.body) {
     if (this.executionState !== ExecutionState.Idle) {
       throw new Error('GameHost is already running');
     }
+
+    this.container = container;
 
     window.addEventListener('error', (event) => {
       this.onUnhandledError(event.error);
