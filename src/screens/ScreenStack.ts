@@ -279,7 +279,6 @@ export class ScreenStack extends CompositeDrawable {
     // We need to manually handle removal here (in the opposite order to how the screens were pushed to ensure bindable sanity).
     if (this.#exited[0]?.isAlive === false) {
       for (const s of this.#exited) {
-        console.log('dispose');
         this.removeInternal(s, true);
       }
 
