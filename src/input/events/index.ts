@@ -12,6 +12,7 @@ export * from './FocusEvent';
 export * from './FocusLostEvent';
 export * from './KeyDownEvent';
 export * from './KeyUpEvent';
+export * from './DropEvent';
 export * from './UIEvent';
 
 export * from './KeyBindingEvent';

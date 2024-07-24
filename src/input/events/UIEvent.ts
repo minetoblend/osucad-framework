@@ -34,4 +34,8 @@ export class UIEvent {
   get metaPressed() {
     return this.state.keyboard.metaPressed;
   }
+
+  get draggedFiles() {
+    return this.state.draggedFiles;
+  }
 }

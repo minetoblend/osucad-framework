@@ -47,6 +47,7 @@ import { Scheduler } from '../../scheduling/Scheduler.ts';
 import { FrameStatistics } from '../../statistics/FrameStatistics.ts';
 import { StatisticsCounterType } from '../../statistics/StatisticsCounterType.ts';
 import type { List } from '../../utils/List.ts';
+import type { DropEvent } from '../../input/events/DropEvent.ts';
 
 export interface DrawableOptions {
   position?: IVec2;
@@ -1321,6 +1322,8 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   onTouchDown?(e: TouchDownEvent): boolean;
 
   onTouchUp?(e: TouchUpEvent): boolean;
+
+  onDrop?(e: DropEvent): boolean;
 
   get dragBlocksClick() {
     return true;

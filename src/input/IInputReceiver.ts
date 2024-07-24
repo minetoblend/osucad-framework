@@ -14,6 +14,7 @@ import type { ScrollEvent } from './events/ScrollEvent';
 import type { TouchDownEvent } from './events/TouchDownEvent';
 import type { TouchMoveEvent } from './events/TouchMoveEvent';
 import type { TouchUpEvent } from './events/TouchUpEvent';
+import type { DropEvent } from './events/DropEvent.ts';
 
 export interface IInputReceiver {
   onMouseMove?(e: MouseMoveEvent): boolean;
@@ -33,4 +34,5 @@ export interface IInputReceiver {
   onTouchMove?(e: TouchMoveEvent): boolean;
   onTouchDown?(e: TouchDownEvent): boolean;
   onTouchUp?(e: TouchUpEvent): boolean;
+  onDrop?(e: DropEvent): boolean;
 }

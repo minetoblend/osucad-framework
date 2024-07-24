@@ -38,6 +38,8 @@ import { MouseButtonInputFromTouch } from './stateChanges/MouseButtonInputFromTo
 import { FrameStatistics } from '../statistics/FrameStatistics.ts';
 import { StatisticsCounterType } from '../statistics/StatisticsCounterType.ts';
 import { List } from '../utils/List.ts';
+import { DropStateChangeEvent } from './stateChanges/events/DropStateChangeEvent.ts';
+import { DropEvent } from './events/DropEvent.ts';
 
 const repeat_tick_rate = 70;
 const repeat_initial_delay = 250;
@@ -257,6 +259,12 @@ export abstract class InputManager extends Container implements IInputStateChang
       const touchIsHandled = manager.heldDrawable !== null;
 
       if (!touchWasHandled && !touchIsHandled) this.handleMouseTouchStateChange(touchChange);
+      return;
+    }
+
+    if (event instanceof DropStateChangeEvent) {
+      const dropEvent = event as DropStateChangeEvent;
+      this.propagateBlockableEvent(this.positionalInputQueue, new DropEvent(dropEvent.state, dropEvent.files));
       return;
     }
   }

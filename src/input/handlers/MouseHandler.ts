@@ -6,6 +6,8 @@ import { MouseButtonInput } from '../stateChanges/MouseButtonInput';
 import { MousePositionAbsoluteInput } from '../stateChanges/MousePositionAbsoluteInput';
 import { MouseScrollRelativeInput } from '../stateChanges/MouseScrollRelativeInput';
 import { InputHandler } from './InputHandler';
+import { FileDropEnterInput } from '../stateChanges/FileDropEnterInput.ts';
+import { FileDropInput } from '../stateChanges/FileDropInput.ts';
 
 export class MouseHandler extends InputHandler {
   override initialize(host: GameHost): boolean {
@@ -22,14 +24,18 @@ export class MouseHandler extends InputHandler {
           host.renderer.canvas.addEventListener('pointermove', this.#handleMouseMove);
           host.renderer.canvas.addEventListener('mouseleave', this.#handleMouseLeave);
           host.renderer.canvas.addEventListener('wheel', this.#handleWheel);
-          host.renderer.canvas.addEventListener('contextmenu', this.#handleContextMenu);
+          host.renderer.canvas.addEventListener('contextmenu', this.#preventDefault);
+          host.renderer.canvas.addEventListener('dragover', this.#handleDragOver);
+          host.renderer.canvas.addEventListener('drop', this.#handleDrop);
         } else {
           host.renderer.canvas.removeEventListener('pointerdown', this.#handleMouseDown);
           host.renderer.canvas.removeEventListener('pointerup', this.#handleMouseUp);
           host.renderer.canvas.removeEventListener('pointermove', this.#handleMouseMove);
           host.renderer.canvas.removeEventListener('mouseleave', this.#handleMouseLeave);
           host.renderer.canvas.removeEventListener('wheel', this.#handleWheel);
-          host.renderer.canvas.removeEventListener('contextmenu', this.#handleContextMenu);
+          host.renderer.canvas.removeEventListener('contextmenu', this.#preventDefault);
+          host.renderer.canvas.removeEventListener('dragover', this.#handleDragOver);
+          host.renderer.canvas.removeEventListener('drop', this.#handleDrop);
         }
       },
       { immediate: true },
@@ -115,7 +121,32 @@ export class MouseHandler extends InputHandler {
     this.#enqueueInput(new MouseScrollRelativeInput(new Vec2(event.deltaX / 100, -event.deltaY / 100), false));
   };
 
-  #handleContextMenu = (event: MouseEvent) => {
+  #preventDefault = (event: MouseEvent) => {
     event.preventDefault();
+  };
+
+  #handleDragOver = (event: DragEvent) => {
+    event.preventDefault();
+    if (event.dataTransfer) {
+      if (event.dataTransfer.files) {
+        this.#enqueueInput(new FileDropEnterInput(event.dataTransfer.files));
+      }
+    }
+
+    const rect = (event.target as HTMLCanvasElement).getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    this.#enqueueInput(new MousePositionAbsoluteInput(new Vec2(x, y)));
+  };
+
+  #handleDrop = (event: DragEvent) => {
+    event.preventDefault();
+
+    if (event.dataTransfer) {
+      if (event.dataTransfer.files) {
+        this.#enqueueInput(new FileDropInput(event.dataTransfer.files));
+      }
+    }
   };
 }

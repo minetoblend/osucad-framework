@@ -81,6 +81,8 @@ export abstract class MouseButtonEventManager extends ButtonEventManager<MouseBu
       this.#handleDragDrawableEnd(state);
     }
 
+    state.draggedFiles = null;
+
     this.mouseDownPosition = null;
   }
 
