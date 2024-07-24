@@ -52,6 +52,7 @@ export class HandleInputCache {
     'onScroll',
     'onFocus',
     'onFocusLost',
+    'onDrop',
   ];
 
   private static computeViaReflection(drawable: Drawable, positional: boolean): boolean {
