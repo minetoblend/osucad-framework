@@ -26,6 +26,7 @@ export class MouseHandler extends InputHandler {
           host.renderer.canvas.addEventListener('wheel', this.#handleWheel);
           host.renderer.canvas.addEventListener('contextmenu', this.#preventDefault);
           host.renderer.canvas.addEventListener('dragover', this.#handleDragOver);
+          host.renderer.canvas.addEventListener('dragleave', this.#handleDragLeave);
           host.renderer.canvas.addEventListener('drop', this.#handleDrop);
         } else {
           host.renderer.canvas.removeEventListener('pointerdown', this.#handleMouseDown);
@@ -138,6 +139,11 @@ export class MouseHandler extends InputHandler {
     const y = event.clientY - rect.top;
 
     this.#enqueueInput(new MousePositionAbsoluteInput(new Vec2(x, y)));
+  };
+
+  #handleDragLeave = (event: DragEvent) => {
+    event.preventDefault();
+    this.#enqueueInput(new FileDropEnterInput(null));
   };
 
   #handleDrop = (event: DragEvent) => {
