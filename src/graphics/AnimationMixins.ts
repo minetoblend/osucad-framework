@@ -70,6 +70,7 @@ export interface AnimateToOptions extends AnimationOptions {
 
 export const animationMixins: Partial<Drawable> = {
   fadeTo(options: FadeOptions) {
+    gsap.killTweensOf(this, 'alpha');
     if (!options.duration) {
       this.alpha = options.alpha;
       return;
