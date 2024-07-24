@@ -264,7 +264,10 @@ export abstract class InputManager extends Container implements IInputStateChang
 
     if (event instanceof DropStateChangeEvent) {
       const dropEvent = event as DropStateChangeEvent;
+
       this.propagateBlockableEvent(this.positionalInputQueue, new DropEvent(dropEvent.state, dropEvent.files));
+      this.currentState.draggedFiles = null;
+
       return;
     }
   }
