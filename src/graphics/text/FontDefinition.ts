@@ -16,6 +16,9 @@ export class FontDefinition {
   #font: BitmapFont | null = null;
 
   async load(): Promise<void> {
-    this.#font = await Assets.load(this.fontUrl);
+    this.#font = await Assets.load({
+      src: this.fontUrl,
+      loadParser: 'loadBitmapFont',
+    });
   }
 }
