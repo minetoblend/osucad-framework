@@ -499,7 +499,7 @@ export abstract class ScrollbarContainer extends Container {
 
     const dim = this.scrollDirection == Direction.Horizontal ? 'x' : 'y';
 
-    this.#dragOffset = this.toLocalSpace(e.screenSpaceMousePosition)[dim] - this.position[dim];
+    this.#dragOffset = this.parent!.toLocalSpace(e.screenSpaceMousePosition)[dim] - this.position[dim];
     return true;
   }
 
@@ -515,7 +515,7 @@ export abstract class ScrollbarContainer extends Container {
 
   override onDrag(e: DragEvent): boolean {
     const dim = this.scrollDirection == Direction.Horizontal ? 'x' : 'y';
-    this.dragged.emit(this.toLocalSpace(e.screenSpaceMousePosition)[dim] - this.#dragOffset);
+    this.dragged.emit(this.parent!.toLocalSpace(e.screenSpaceMousePosition)[dim] - this.#dragOffset);
     return true;
   }
 }
