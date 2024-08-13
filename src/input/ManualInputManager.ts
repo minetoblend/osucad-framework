@@ -42,12 +42,12 @@ export class ManualInputManager extends PassThroughInputManager {
 
     this.addHandler((this.#handler = new ManualInputHandler()));
 
-    this.internalChildren = [
+    this.addAllInternal(
       (this.#content = Container.create({
         relativeSizeAxes: Axes.Both,
       })),
       (this.#testCursor = new TestCursorContainer()),
-    ];
+    );
 
     this.useParentInput = true;
   }

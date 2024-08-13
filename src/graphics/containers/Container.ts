@@ -39,7 +39,7 @@ export class Container extends CompositeDrawable {
     return this;
   }
 
-  get children(): Drawable[] {
+  get children(): ReadonlyArray<Drawable> {
     if (this.content === this) {
       return this.internalChildren;
     }
