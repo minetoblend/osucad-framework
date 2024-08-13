@@ -72,6 +72,7 @@ export interface DrawableOptions {
   blendMode?: BLEND_MODES;
   fillMode?: FillMode;
   fillAspectRatio?: number;
+  depth?: number;
 }
 
 export const LOAD = Symbol('load');
@@ -961,7 +962,27 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   childId = 0;
 
+  protected get isPartOfComposite() {
+    return this.childId !== 0;
+  }
+
   #parent: CompositeDrawable | null = null;
+
+  #depth = 0;
+
+  get depth() {
+    return this.#depth;
+  }
+
+  set depth(value: number) {
+    if (this.isPartOfComposite) {
+      throw new Error('May not change depth while inside a parent CompositeDrawable.');
+    }
+
+    this.#depth = value;
+
+    this.drawNode.zIndex = -value;
+  }
 
   get parent() {
     return this.#parent;

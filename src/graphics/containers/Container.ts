@@ -90,4 +90,12 @@ export class Container extends CompositeDrawable {
     this.clear();
     this.add(child);
   }
+
+  changeChildDepth(child: Drawable, depth: number) {
+    if (this.content === this) {
+      this.changeInternalChildDepth(child, depth);
+    } else {
+      this.content.changeChildDepth(child, depth);
+    }
+  }
 }

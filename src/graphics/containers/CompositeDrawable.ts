@@ -18,6 +18,8 @@ import type { Scheduler } from '../../scheduling/Scheduler.ts';
 import { DependencyContainer } from '../../di';
 import { Anchor } from '../drawables';
 import type { List } from '../../utils/List.ts';
+import { SortedList, type Comparer } from '../../utils/SortedList.ts';
+import { Action } from '../../bindables/Action.ts';
 
 export interface CompositeDrawableOptions extends DrawableOptions {
   padding?: MarginPaddingOptions;
@@ -25,9 +27,23 @@ export interface CompositeDrawableOptions extends DrawableOptions {
   masking?: boolean;
 }
 
+export class ChildComparer implements Comparer<Drawable> {
+  constructor(private readonly owner: CompositeDrawable) {}
+
+  compare = (a: Drawable, b: Drawable) => {
+    return this.owner.compare(a, b);
+  };
+}
+
 export class CompositeDrawable extends Drawable {
   constructor() {
     super();
+
+    const comparer = new ChildComparer(this);
+
+    this.#internalChildren = new SortedList<Drawable>(comparer);
+    this.#aliveInternalChildren = new SortedList<Drawable>(comparer);
+
     this.addLayout(this.#childrenSizeDependencies);
   }
 
@@ -35,9 +51,17 @@ export class CompositeDrawable extends Drawable {
     return new PIXIContainer();
   }
 
-  protected internalChildren: Drawable[] = [];
+  #internalChildren: SortedList<Drawable>;
 
-  protected aliveInternalChildren: Drawable[] = [];
+  #aliveInternalChildren: SortedList<Drawable>;
+
+  get internalChildren(): ReadonlyArray<Drawable> {
+    return this.#internalChildren.items;
+  }
+
+  get aliveInternalChildren(): ReadonlyArray<Drawable> {
+    return this.#aliveInternalChildren.items;
+  }
 
   #currentChildId = 0;
 
@@ -61,13 +85,64 @@ export class CompositeDrawable extends Drawable {
       }
     }
 
-    this.internalChildren.push(drawable);
+    this.#internalChildren.add(drawable);
 
     if (this.autoSizeAxes !== Axes.None)
       this.invalidate(Invalidation.RequiredParentSizeToFit, InvalidationSource.Child);
 
     return drawable;
   }
+
+  compare(a: Drawable, b: Drawable) {
+    const i = b.depth - a.depth;
+    if (i !== 0) return i;
+
+    return a.childId - b.childId;
+  }
+
+  changeInternalChildDepth(child: Drawable, newDepth: number) {
+    if (child.depth == newDepth) return;
+
+    const index = this.indexOfInternal(child);
+    if (index < 0)
+      throw new Error('Can not change depth of drawable which is not contained within this CompositeDrawable.');
+
+    this.#internalChildren.removeAt(index);
+    const aliveIndex = this.#aliveInternalChildren.indexOf(child);
+    if (aliveIndex >= 0) {
+      this.#aliveInternalChildren.removeAt(aliveIndex);
+    }
+
+    const childId = child.childId;
+    child.childId = 0;
+    child.depth = newDepth;
+    child.childId = childId;
+
+    this.#internalChildren.add(child);
+    if (aliveIndex >= 0) {
+      this.#aliveInternalChildren.add(child);
+    }
+
+    this.childDepthChanged.emit(child);
+  }
+
+  protected indexOfInternal(drawable: Drawable) {
+    if (drawable.parent && drawable.parent !== this) {
+      throw new Error('Cannot call indexOfInternal for a drawable that already is a child of a different parent.');
+    }
+
+    const index = this.#internalChildren.indexOf(drawable);
+
+    if (index >= 0 && this.#internalChildren.get(index)!.childId !== drawable.childId) {
+      throw new Error(
+        `A non-matching Drawable was returned. Please ensure ${this.name}'s compare function override implements a stable sort algorithm.`,
+      );
+    }
+
+    return index;
+  }
+
+  childDepthChanged = new Action<Drawable>();
 
   #loadChild(child: Drawable) {
     if (this.isDisposed) return;
@@ -160,12 +235,12 @@ export class CompositeDrawable extends Drawable {
       const index = this.internalChildren.indexOf(drawable);
       if (index < 0) return false;
 
-      this.internalChildren.splice(index, 1);
+      this.#internalChildren.removeAt(index);
 
       if (drawable.isAlive) {
         const aliveIndex = this.aliveInternalChildren.indexOf(drawable);
         debugAssert(aliveIndex >= 0, 'Drawable is alive but not in aliveInternalChildren');
-        this.aliveInternalChildren.splice(aliveIndex, 1);
+        this.#aliveInternalChildren.removeAt(aliveIndex);
 
         // TODO: this.childDied?.emit(drawable);
       }
@@ -467,7 +542,7 @@ export class CompositeDrawable extends Drawable {
       }
     }
 
-    this.aliveInternalChildren.push(child);
+    this.#aliveInternalChildren.add(child);
     child.isAlive = true;
 
     child.invalidate(Invalidation.Layout, InvalidationSource.Parent);
@@ -481,7 +556,7 @@ export class CompositeDrawable extends Drawable {
     if (child.isAlive) {
       const index = this.aliveInternalChildren.indexOf(child);
       debugAssert(index !== -1, 'Child is alive but not in aliveInternalChildren');
-      this.aliveInternalChildren.splice(index, 1);
+      this.#aliveInternalChildren.removeAt(index);
       child.isAlive = false;
 
       // ChildDied?.Invoke(child);
