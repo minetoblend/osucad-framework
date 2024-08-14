@@ -822,7 +822,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     return true;
   }
 
-  #clock!: IFrameBasedClock;
+  #clock: IFrameBasedClock | null = null;
 
   #customClock?: IFrameBasedClock;
 
@@ -839,7 +839,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   }
 
   get time(): FrameTimeInfo {
-    return this.#clock.timeInfo;
+    return this.#clock!.timeInfo;
   }
 
   expire(calculateLifetimeStart: boolean = false) {
