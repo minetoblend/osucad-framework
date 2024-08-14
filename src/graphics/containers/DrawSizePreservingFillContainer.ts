@@ -1,19 +1,20 @@
 import { Vec2, type IVec2 } from '../../math/Vec2';
+import type { Drawable } from '../drawables';
 import { Axes } from '../drawables/Axes';
 import { Container, type ContainerOptions } from './Container';
 
-export interface DrawSizePreservingFillContainerOptions extends ContainerOptions {
+export interface DrawSizePreservingFillContainerOptions<T extends Drawable = Drawable> extends ContainerOptions<T> {
   strategy?: DrawSizePreservationStrategy;
   targetDrawSize?: IVec2;
 }
 
-export class DrawSizePreservingFillContainer extends Container {
+export class DrawSizePreservingFillContainer<T extends Drawable = Drawable> extends Container<T> {
   strategy: DrawSizePreservationStrategy = DrawSizePreservationStrategy.Minimum;
   targetDrawSize = new Vec2(1024, 768);
 
-  readonly #content: Container;
+  readonly #content: Container<T>;
 
-  constructor(options: DrawSizePreservingFillContainerOptions = {}) {
+  constructor(options: DrawSizePreservingFillContainerOptions<T> = {}) {
     super({
       relativeSizeAxes: Axes.Both,
     });
@@ -21,7 +22,7 @@ export class DrawSizePreservingFillContainer extends Container {
     this.apply(options);
 
     this.addInternal(
-      (this.#content = new Container({
+      (this.#content = new Container<T>({
         relativeSizeAxes: Axes.Both,
       })),
     );

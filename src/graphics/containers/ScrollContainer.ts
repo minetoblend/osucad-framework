@@ -21,7 +21,7 @@ import { Anchor, Axes, Direction, Drawable, Invalidation, LayoutComputed, Margin
 
 const distance_decay_clamping = 0.012;
 
-export abstract class ScrollContainer extends Container {
+export abstract class ScrollContainer<T extends Drawable = Drawable> extends Container<T> {
   get scrollbarAnchor(): Anchor {
     return this.scrollbar.anchor;
   }
@@ -100,7 +100,7 @@ export abstract class ScrollContainer extends Container {
     return Math.max(Math.min(position, this.scrollableExtent + extension), -extension);
   }
 
-  override get content(): Container {
+  override get content(): Container<T> {
     return this.scrollContent;
   }
 
@@ -112,7 +112,7 @@ export abstract class ScrollContainer extends Container {
     return almostBigger(this.target, this.scrollableExtent, lenience);
   }
 
-  readonly scrollContent: Container;
+  readonly scrollContent: Container<T>;
 
   #isDragging = false;
 
@@ -140,7 +140,7 @@ export abstract class ScrollContainer extends Container {
     const scrollAxis = this.scrollDirection == Direction.Horizontal ? Axes.X : Axes.Y;
 
     this.addAllInternal(
-      (this.scrollContent = new Container({
+      (this.scrollContent = new Container<T>({
         relativeSizeAxes: Axes.Both & ~scrollAxis,
         autoSizeAxes: scrollAxis,
       })),

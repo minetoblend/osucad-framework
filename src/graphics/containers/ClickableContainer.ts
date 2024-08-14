@@ -1,9 +1,10 @@
 import { Bindable } from '../../bindables/Bindable';
 import type { MouseDownEvent } from '../../input';
 import type { ClickEvent } from '../../input/events/ClickEvent';
+import type { Drawable } from '../drawables';
 import { Container } from './Container';
 
-export class ClickableContainer extends Container {
+export class ClickableContainer<T extends Drawable = Drawable> extends Container<T> {
   #action?: () => void;
 
   get action() {

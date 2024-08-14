@@ -1,6 +1,6 @@
 import { Container } from '../../graphics/containers/Container';
 import { Axes } from '../../graphics/drawables/Axes';
-import { Drawable } from '../../graphics/drawables/Drawable';
+import { Drawable, LOAD } from '../../graphics/drawables/Drawable';
 import type { Vec2 } from '../../math';
 import type { KeyBindingAction } from '../KeyBindingAction';
 import { KeyDownEvent, KeyUpEvent, MouseDownEvent, MouseUpEvent, ScrollEvent, type UIEvent } from '../events';
@@ -13,6 +13,7 @@ import type { IKeyBinding } from './IKeyBinding';
 import { isKeyBindingHandler } from './IKeyBindingHandler';
 import { KeyCombination, KeyCombinationMatchingMode } from './KeyCombination';
 import { List } from '../../utils';
+import { Box, RoundedBox } from '../../graphics';
 
 export abstract class BaseKeyBindingContainer extends Container {
   protected keyBindings: IKeyBinding[] | null = null;
@@ -411,10 +412,4 @@ export abstract class KeyBindingContainer<T extends KeyBindingAction> extends Ba
         throw new Error('Invalid event type:' + e.constructor.name);
     }
   }
-}
-
-export enum SimultaneousBindingMode {
-  None,
-  Unique,
-  All,
 }

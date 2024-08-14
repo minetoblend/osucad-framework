@@ -4,7 +4,7 @@ import { Vec2, type IVec2 } from '../../math';
 import { Drawable, Invalidation, InvalidationSource, LayoutMember } from '../drawables';
 import { Container } from './Container';
 
-export abstract class FlowContainer extends Container {
+export abstract class FlowContainer<T extends Drawable = Drawable> extends Container<T> {
   readonly onLayout = new Action();
 
   protected constructor() {
@@ -58,23 +58,23 @@ export abstract class FlowContainer extends Container {
     this.#layout.invalidate();
   }
 
-  readonly #layoutChildren = new Map<Drawable, number>();
+  readonly #layoutChildren = new Map<T, number>();
 
-  protected override addInternal<T extends Drawable>(drawable: T): T | undefined {
+  protected override addInternal<U extends Drawable>(drawable: U & T): U | undefined {
     this.#layoutChildren.set(drawable, 0);
 
     this.invalidateLayout();
     return super.addInternal(drawable);
   }
 
-  protected override removeInternal(drawable: Drawable, disposeImmediately?: boolean): boolean {
+  protected override removeInternal(drawable: T, disposeImmediately?: boolean): boolean {
     this.#layoutChildren.delete(drawable);
 
     this.invalidateLayout();
     return super.removeInternal(drawable, disposeImmediately);
   }
 
-  setLayoutPosition(drawable: Drawable, newPosition: number): void {
+  setLayoutPosition(drawable: T, newPosition: number): void {
     if (!this.#layoutChildren.has(drawable)) {
       throw new Error(
         `Cannot change layout position of drawable which is not contained within this ${this.constructor.name}.`,
@@ -85,12 +85,12 @@ export abstract class FlowContainer extends Container {
     this.invalidateLayout();
   }
 
-  insert(position: number, drawable: Drawable): void {
+  insert(position: number, drawable: T): void {
     this.add(drawable);
     this.setLayoutPosition(drawable, position);
   }
 
-  getLayoutPosition(drawable: Drawable): number {
+  getLayoutPosition(drawable: T): number {
     if (!this.#layoutChildren.has(drawable)) {
       throw new Error(
         `Cannot get layout position of drawable which is not contained within this ${this.constructor.name}.`,
@@ -111,7 +111,7 @@ export abstract class FlowContainer extends Container {
   }
 
   get flowingChildren() {
-    return this.aliveInternalChildren
+    return (this.aliveInternalChildren as ReadonlyArray<T>)
       .filter((d) => d.isPresent)
       .sort((a, b) => {
         const aPosition = this.#layoutChildren.get(a)!;

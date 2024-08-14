@@ -5,7 +5,7 @@ import { FillMode } from '../drawables/FillMode';
 import type { ContainerOptions } from './Container';
 import { FlowContainer } from './FlowContainer';
 
-export interface FillFlowContainerOptions extends ContainerOptions {
+export interface FillFlowContainerOptions<T extends Drawable = Drawable> extends ContainerOptions<T> {
   direction?: FillDirection;
   spacing?: IVec2;
   maxSize?: IVec2;
@@ -13,8 +13,8 @@ export interface FillFlowContainerOptions extends ContainerOptions {
   layoutEasing?: gsap.EaseString | gsap.EaseFunction;
 }
 
-export class FillFlowContainer extends FlowContainer {
-  constructor(options: FillFlowContainerOptions = {}) {
+export class FillFlowContainer<T extends Drawable = Drawable> extends FlowContainer {
+  constructor(options: FillFlowContainerOptions<T> = {}) {
     super();
 
     this.apply(options);

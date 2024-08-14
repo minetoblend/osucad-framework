@@ -1,22 +1,22 @@
 import { CompositeDrawable, type CompositeDrawableOptions } from './CompositeDrawable';
 import type { Drawable } from '../drawables/Drawable';
 
-export interface ContainerOptions extends CompositeDrawableOptions {
-  children?: Drawable[];
-  child?: Drawable;
+export interface ContainerOptions<T extends Drawable = Drawable> extends CompositeDrawableOptions {
+  children?: T[];
+  child?: T;
 }
 
-export class Container extends CompositeDrawable {
-  constructor(options: ContainerOptions = {}) {
+export class Container<T extends Drawable = Drawable> extends CompositeDrawable {
+  constructor(options: ContainerOptions<T> = {}) {
     super();
     this.apply(options);
   }
 
-  static create(options: ContainerOptions = {}): Container {
+  static create<T extends Drawable = Drawable>(options: ContainerOptions<T> = {}): Container {
     return new Container().apply(options);
   }
 
-  override apply(options: ContainerOptions): this {
+  override apply(options: ContainerOptions<T>): this {
     const { children, child, ...rest } = options;
     super.apply(rest);
 
@@ -35,18 +35,18 @@ export class Container extends CompositeDrawable {
     return this;
   }
 
-  get content(): Container {
+  get content(): Container<T> {
     return this;
   }
 
-  get children(): ReadonlyArray<Drawable> {
+  get children(): ReadonlyArray<T> {
     if (this.content === this) {
-      return this.internalChildren;
+      return this.internalChildren as ReadonlyArray<T>;
     }
     return this.content.children;
   }
 
-  add<T extends Drawable>(child: T): T | undefined {
+  add<U extends T>(child: U): U | undefined {
     if (this.content === this) {
       return this.addInternal(child);
     } else {
@@ -54,14 +54,14 @@ export class Container extends CompositeDrawable {
     }
   }
 
-  addAll(...children: Drawable[]): this {
+  addAll(...children: T[]): this {
     for (const child of children) {
       this.add(child);
     }
     return this;
   }
 
-  remove(child: Drawable, disposeImmediately: boolean = true): boolean {
+  remove(child: T, disposeImmediately: boolean = true): boolean {
     if (this.content === this) {
       return this.removeInternal(child, disposeImmediately);
     } else {
@@ -76,7 +76,7 @@ export class Container extends CompositeDrawable {
     }
   }
 
-  get child(): Drawable {
+  get child(): T {
     if (this.children.length !== 1) {
       throw new Error('Cannot get child when there are multiple children');
     }
@@ -84,14 +84,14 @@ export class Container extends CompositeDrawable {
     return this.children[0];
   }
 
-  set child(child: Drawable) {
+  set child(child: T) {
     if (this.isDisposed) return;
 
     this.clear();
     this.add(child);
   }
 
-  changeChildDepth(child: Drawable, depth: number) {
+  changeChildDepth(child: T, depth: number) {
     if (this.content === this) {
       this.changeInternalChildDepth(child, depth);
     } else {
