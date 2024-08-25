@@ -1,8 +1,8 @@
-import gsap from 'gsap';
 import { Vec2 } from '../../math';
 import { Axes, Direction } from '../drawables';
 import { Box } from '../shapes';
-import { ScrollContainer, ScrollbarContainer } from './ScrollContainer';
+import { ScrollbarContainer, ScrollContainer } from './ScrollContainer';
+import { EasingFunction } from '../transforms/EasingFunction.ts';
 
 export class BasicScrollContainer extends ScrollContainer {
   constructor(direction: Direction = Direction.Vertical) {
@@ -26,7 +26,7 @@ class BasicScrollbar extends ScrollbarContainer {
     });
   }
 
-  override resizeTo(val: number, duration: number = 0, easing: gsap.EaseFunction | gsap.EaseString = 'none'): void {
+  override resizeScrollbarTo(val: number, duration: number = 0, easing: EasingFunction = EasingFunction.Default): void {
     let size: Vec2;
     if (this.scrollDirection === Direction.Vertical) {
       size = new Vec2(dim_size, val);
@@ -34,16 +34,11 @@ class BasicScrollbar extends ScrollbarContainer {
       size = new Vec2(val, dim_size);
     }
 
-    if (duration === 0 || easing === 'none') {
+    if (duration === 0) {
       this.size = size;
       return;
     }
 
-    gsap.to(this, {
-      width: size.x,
-      height: size.y,
-      duration: duration / 1000,
-      ease: easing,
-    });
+    this.resizeTo(size, duration, easing);
   }
 }

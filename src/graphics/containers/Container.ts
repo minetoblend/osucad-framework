@@ -46,6 +46,11 @@ export class Container<T extends Drawable = Drawable> extends CompositeDrawable 
     return this.content.children;
   }
 
+  set children(value: T[]) {
+    this.clear();
+    this.addAll(...value);
+  }
+
   add<U extends T>(child: U): U | undefined {
     if (this.content === this) {
       return this.addInternal(child);

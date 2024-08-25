@@ -6,6 +6,7 @@ export { InputHandler } from './handlers/InputHandler';
 export { ManualInputHandler } from './handlers/ManualInputHandler';
 export { MouseButton } from './state/MouseButton';
 export { Key } from './state/Key';
+export { TextInputSource } from './TextInputSource';
 
 export { PlatformAction } from './PlatformAction';
 export { PlatformActionContainer } from './PlatformActionContainer';

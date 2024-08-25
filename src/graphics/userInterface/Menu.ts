@@ -619,7 +619,7 @@ export abstract class DrawableMenuItem extends CompositeDrawable {
       if ('text' in this.content) {
         this.content.text = item.text.value;
         item.text.addOnChangeListener((e) => {
-          (this.content as unknown as { text: string }).text = e;
+          (this.content as unknown as { text: string }).text = e.value;
         });
       }
     });
@@ -715,15 +715,11 @@ export abstract class DrawableMenuItem extends CompositeDrawable {
   }
 
   updateBackgroundColor() {
-    this.background.fadeColorTo({
-      color: this.isHovered && this.isActionable ? this.backgroundColorHover : this.backgroundColor,
-    });
+    this.background.fadeColor(this.isHovered && this.isActionable ? this.backgroundColorHover : this.backgroundColor);
   }
 
   updateForegroundColor() {
-    this.foreground.fadeColorTo({
-      color: this.isHovered && this.isActionable ? this.foregroundColorHover : this.foregroundColor,
-    });
+    this.foreground.fadeColor(this.isHovered && this.isActionable ? this.foregroundColorHover : this.foregroundColor);
   }
 
   override loadComplete(): void {

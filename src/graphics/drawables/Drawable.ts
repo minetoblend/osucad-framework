@@ -18,13 +18,12 @@ import type { MouseUpEvent } from '../../input/events/MouseUpEvent';
 import type { UIEvent } from '../../input/events/UIEvent';
 import { Quad } from '../../math/Quad';
 import { Rectangle } from '../../math/Rectangle';
-import { Vec2, type IVec2 } from '../../math/Vec2';
-import { Color, Filter, PIXIContainer, type BLEND_MODES, type ColorSource } from '../../pixi';
+import { type IVec2, Vec2 } from '../../math/Vec2';
+import { type BLEND_MODES, Color, type ColorSource, Filter, PIXIContainer } from '../../pixi';
 import type { IFrameBasedClock } from '../../timing/IFrameBasedClock';
 import type { IDisposable } from '../../types/IDisposable';
 import { almostEquals } from '../../utils/almostEquals';
 import { debugAssert } from '../../utils/debugAssert';
-import { animationMixins } from '../AnimationMixins';
 import type { CompositeDrawable } from '../containers/CompositeDrawable';
 import { Anchor } from './Anchor';
 import { Axes } from './Axes';
@@ -32,8 +31,6 @@ import { InvalidationState } from './InvalidationState';
 import { LayoutComputed } from './LayoutComputed';
 import { LayoutMember } from './LayoutMember';
 import { MarginPadding, type MarginPaddingOptions } from './MarginPadding';
-import type { FrameTimeInfo } from '../../timing';
-import gsap from 'gsap';
 import { FillMode } from './FillMode';
 import type { ScrollEvent } from '../../input/events/ScrollEvent';
 import type { FocusLostEvent } from '../../input/events/FocusLostEvent';
@@ -48,6 +45,12 @@ import { FrameStatistics } from '../../statistics/FrameStatistics.ts';
 import { StatisticsCounterType } from '../../statistics/StatisticsCounterType.ts';
 import type { List } from '../../utils/List.ts';
 import type { DropEvent } from '../../input/events/DropEvent.ts';
+import { FocusEvent } from '../../input/events/FocusEvent.ts';
+import { Transformable } from '../transforms/Transformable.ts';
+import { EasingFunction } from '../transforms/EasingFunction.ts';
+import { TransformCustom } from '../transforms/TransformCustom.ts';
+import { TypedTransform } from '../transforms/Transform.ts';
+import { DrawableTransformSequence } from '../transforms/DrawableTransformSequence.ts';
 
 export interface DrawableOptions {
   position?: IVec2;
@@ -78,14 +81,15 @@ export interface DrawableOptions {
 export const LOAD = Symbol('load');
 export const LOAD_FROM_ASYNC = Symbol('loadFromAsync');
 
-export interface Drawable extends OsucadFrameworkMixins.Drawable {}
-
-export abstract class Drawable implements IDisposable, IInputReceiver {
+export abstract class Drawable extends Transformable implements IDisposable, IInputReceiver {
   constructor() {
+    super();
     this.addLayout(this.#transformBacking);
     this.addLayout(this.#drawSizeBacking);
     this.addLayout(this.#colorBacking);
     this.addLayout(this.#requiredParentSizeToFitBacking);
+
+    this.label = this.constructor.name;
   }
 
   apply(options: DrawableOptions): this {
@@ -721,11 +725,11 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   #lifeTimeEnd = Infinity;
 
   hide() {
-    this.fadeOut({});
+    this.fadeOut();
   }
 
   show() {
-    this.fadeIn({});
+    this.fadeIn();
   }
 
   isAlive = false;
@@ -741,8 +745,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   }
 
   get disposeOnDeathRemoval() {
-    // TODO: return this.removeCompletedTransforms
-    return true;
+    return this.removeCompletedTransforms;
   }
 
   #loadState: LoadState = LoadState.NotLoaded;
@@ -762,8 +765,16 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   }
 
   #loadComplete() {
+    if (this.#loadState < LoadState.Ready) return false;
+
     this.#loadState = LoadState.Loaded;
+
+    this.invalidate(Invalidation.Layout, InvalidationSource.Parent);
+
     this.loadComplete();
+
+    this.onLoadComplete.emit(this);
+    this.onLoadComplete.removeAllListeners();
   }
 
   async [LOAD](
@@ -828,8 +839,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   processCustomClock = true;
 
-  get clock() {
-    if (!this.#clock) throw new Error('Drawable is not loaded');
+  override get clock(): IFrameBasedClock | null {
     return this.#clock;
   }
 
@@ -838,32 +848,24 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     this.updateClock(value);
   }
 
-  get time(): FrameTimeInfo {
-    return this.#clock!.timeInfo;
-  }
-
   expire(calculateLifetimeStart: boolean = false) {
     if (this.#clock === null) {
-      this.lifetimeEnd = -Infinity;
+      this.lifetimeEnd = Number.MIN_VALUE;
       return;
     }
 
-    const tweens = gsap.getTweensOf(this);
+    this.lifetimeEnd = this.latestTransformEndTime;
 
-    this.lifetimeEnd =
-      this.time.current + tweens.reduce((max, t) => Math.max(max, (t.totalDuration() - t.time()) * 1000), -Infinity);
+    console.log(this.latestTransformEndTime - this.time.current);
 
     if (calculateLifetimeStart) {
       let min = Infinity;
 
-      for (const t of tweens) {
-        if (t.time() < min) min = t.time();
+      for (const t of this.transforms) {
+        if (t.startTime < min) min = t.startTime;
       }
 
-      min *= 1000;
-      min += this.time.current;
-
-      this.lifetimeStart = min < Infinity ? min : -Infinity;
+      this.lifetimeStart = min < Infinity ? min : Number.MIN_VALUE;
     }
   }
 
@@ -904,8 +906,6 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     for (const callback of this.#onDispose) {
       callback();
     }
-
-    gsap.killTweensOf(this);
 
     this.#isDisposed = true;
     return true;
@@ -1064,8 +1064,9 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
     if (this.loadState === LoadState.Ready) {
       this.#loadComplete();
-      this.onLoadComplete.emit(this);
     }
+
+    this.updateTransforms();
 
     if (!this.isPresent) {
       return true;
@@ -1078,6 +1079,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
     }
 
     this.update();
+    this.onUpdate.emit(this);
 
     return true;
   }
@@ -1099,6 +1101,8 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
   }
 
   update() {}
+
+  onUpdate = new Action<Drawable>();
 
   #transformBacking = new LayoutMember(
     Invalidation.Transform | Invalidation.RequiredParentSizeToFit | Invalidation.Presence,
@@ -1312,7 +1316,7 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   onMouseDown?(e: MouseDownEvent): boolean;
 
-  onMouseUp?(e: MouseUpEvent): boolean;
+  onMouseUp?(e: MouseUpEvent): void;
 
   onClick?(e: ClickEvent): boolean;
 
@@ -1320,29 +1324,29 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   onDragStart?(e: DragStartEvent): boolean;
 
-  onDragEnd?(e: DragEndEvent): boolean;
+  onDragEnd?(e: DragEndEvent): void;
 
   onMouseMove?(e: MouseMoveEvent): boolean;
 
   onHover?(e: HoverEvent): boolean;
 
-  onHoverLost?(e: HoverLostEvent): boolean;
+  onHoverLost?(e: HoverLostEvent): void;
 
   onScroll?(e: ScrollEvent): boolean;
 
-  onFocus?(e: FocusEvent): boolean;
+  onFocus?(e: FocusEvent): void;
 
-  onFocusLost?(e: FocusLostEvent): boolean;
+  onFocusLost?(e: FocusLostEvent): void;
 
   onKeyDown?(e: KeyDownEvent): boolean;
 
-  onKeyUp?(e: KeyUpEvent): boolean;
+  onKeyUp?(e: KeyUpEvent): void;
 
   onTouchMove?(e: TouchMoveEvent): boolean;
 
   onTouchDown?(e: TouchDownEvent): boolean;
 
-  onTouchUp?(e: TouchUpEvent): boolean;
+  onTouchUp?(e: TouchUpEvent): void;
 
   onDrop?(e: DropEvent): boolean;
 
@@ -1366,6 +1370,129 @@ export abstract class Drawable implements IDisposable, IInputReceiver {
 
   get changeFocusOnClick() {
     return true;
+  }
+
+  //#endregion
+
+  //#region transforms
+  fadeTo(alpha: number, duration: number = 0, easing: EasingFunction = EasingFunction.Default) {
+    return this.transformTo('alpha', alpha, duration, easing);
+  }
+
+  fadeIn(duration: number = 0, easing: EasingFunction = EasingFunction.Default) {
+    return this.fadeTo(1, duration, easing);
+  }
+
+  fadeInFromZero(duration: number = 0, easing: EasingFunction = EasingFunction.Default) {
+    return this.fadeTo(0).fadeIn(duration, easing);
+  }
+
+  fadeOut(duration: number = 0, easing: EasingFunction = EasingFunction.Default) {
+    return this.fadeTo(0, duration, easing);
+  }
+
+  fadeOutFromOne(duration: number = 0, easing: EasingFunction = EasingFunction.Default) {
+    return this.fadeTo(1).fadeOut(duration, easing);
+  }
+
+  fadeColor(color: ColorSource, duration: number = 0, easing: EasingFunction = EasingFunction.Default) {
+    return this.transformTo('color', new Color(color), duration, easing);
+  }
+
+  flashColorTo(color: ColorSource, duration: number = 0, easing: EasingFunction = EasingFunction.Default) {
+    const endValue = this.color;
+    return this.fadeColor(color, duration, easing).fadeColor(endValue, duration, easing);
+  }
+
+  moveTo(newPosition: Vec2, duration: number, easing: EasingFunction = EasingFunction.Default) {
+    return this.transformTo('position', newPosition, duration, easing);
+  }
+
+  moveToX(newX: number, duration: number, easing: EasingFunction = EasingFunction.Default) {
+    return this.transformTo('x', newX, duration, easing, 'position');
+  }
+
+  moveToY(newY: number, duration: number, easing: EasingFunction = EasingFunction.Default) {
+    return this.transformTo('y', newY, duration, easing, 'position');
+  }
+
+  rotateTo(newRotation: number, duration: number = 0, easing: EasingFunction = EasingFunction.Default) {
+    return this.transformTo('rotation', newRotation, duration, easing);
+  }
+
+  scaleTo(newScale: number | Vec2, duration: number = 0, easing: EasingFunction = EasingFunction.Default) {
+    if (typeof newScale === 'number') newScale = new Vec2(newScale);
+
+    return this.transformTo('scale', newScale, duration, easing);
+  }
+
+  resizeTo(newSize: number | Vec2, duration: number = 0, easing: EasingFunction = EasingFunction.Default) {
+    if (typeof newSize === 'number') newSize = new Vec2(newSize);
+
+    return this.transformTo('size', newSize, duration, easing);
+  }
+
+  resizeWidthTo(newWidth: number, duration: number = 0, easing: EasingFunction = EasingFunction.Default) {
+    return this.transformTo('width', newWidth, duration, easing, 'size');
+  }
+
+  resizeHeightTo(newHeight: number, duration: number = 0, easing: EasingFunction = EasingFunction.Default) {
+    return this.transformTo('height', newHeight, duration, easing, 'size');
+  }
+
+  transformTo<TProperty extends string & keyof this>(
+    propertyOrFieldName: TProperty,
+    newValue: this[TProperty],
+    duration: number = 0,
+    easing: EasingFunction = EasingFunction.Default,
+    grouping?: string,
+  ) {
+    const result = new DrawableTransformSequence(this);
+    const transform = this.makeTransform(propertyOrFieldName, newValue, duration, easing, grouping);
+
+    result.add(transform);
+    this.addTransform(transform);
+
+    return result;
+  }
+
+  protected makeTransform<TValue>(
+    propertyOrFieldName: string,
+    newValue: TValue,
+    duration: number,
+    easing: EasingFunction,
+    grouping?: string,
+  ) {
+    return this.populateTransform<TValue>(
+      new TransformCustom(propertyOrFieldName, grouping),
+      newValue,
+      duration,
+      easing,
+    );
+  }
+
+  protected populateTransform<TValue>(
+    transform: TypedTransform<TValue, this>,
+    newValue: TValue,
+    duration: number,
+    easing: EasingFunction = EasingFunction.Default,
+  ) {
+    if (duration < 0) throw new Error('Duration must be greater than or equal to 0');
+
+    if (transform.target) {
+      throw new Error('Transform already has a target');
+    }
+
+    transform.target = this;
+
+    const startTime = this.transformStartTime;
+
+    transform.startTime = startTime;
+    transform.endTime = startTime + duration;
+    transform.endValue = newValue;
+    transform.easing = easing;
+
+    return transform;
   }
 
   //#endregion
@@ -1410,5 +1537,3 @@ export const enum InvalidationSource {
   Child = 1 << 2,
   Default = Self | Parent,
 }
-
-Drawable.mixin(animationMixins);

@@ -15,24 +15,25 @@ import type { TouchDownEvent } from './events/TouchDownEvent';
 import type { TouchMoveEvent } from './events/TouchMoveEvent';
 import type { TouchUpEvent } from './events/TouchUpEvent';
 import type { DropEvent } from './events/DropEvent.ts';
+import type { FocusEvent } from './events/FocusEvent.ts';
 
 export interface IInputReceiver {
   onMouseMove?(e: MouseMoveEvent): boolean;
   onHover?(e: HoverEvent): boolean;
   onMouseDown?(e: MouseDownEvent): boolean;
-  onMouseUp?(e: MouseUpEvent): boolean;
+  onMouseUp?(e: MouseUpEvent): void;
   onClick?(e: ClickEvent): boolean;
-  onHoverLost?(e: HoverLostEvent): boolean;
+  onHoverLost?(e: HoverLostEvent): void;
   onDragStart?(e: DragStartEvent): boolean;
   onDrag?(e: DragEvent): boolean;
-  onDragEnd?(e: DragEndEvent): boolean;
+  onDragEnd?(e: DragEndEvent): void;
   onScroll?(e: ScrollEvent): boolean;
-  onFocus?(e: FocusEvent): boolean;
-  onFocusLost?(e: FocusLostEvent): boolean;
+  onFocus?(e: FocusEvent): void;
+  onFocusLost?(e: FocusLostEvent): void;
   onKeyDown?(e: KeyDownEvent): boolean;
-  onKeyUp?(e: KeyUpEvent): boolean;
+  onKeyUp?(e: KeyUpEvent): void;
   onTouchMove?(e: TouchMoveEvent): boolean;
   onTouchDown?(e: TouchDownEvent): boolean;
-  onTouchUp?(e: TouchUpEvent): boolean;
+  onTouchUp?(e: TouchUpEvent): void;
   onDrop?(e: DropEvent): boolean;
 }

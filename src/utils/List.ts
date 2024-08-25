@@ -1,13 +1,13 @@
 export class List<T> implements Iterable<T> {
   readonly #items: (T | undefined)[];
 
-  readonly #capacity: number;
-
   #length = 0;
+
+  #initialCapacity: number;
 
   constructor(capacity: number) {
     this.#items = new Array(capacity);
-    this.#capacity = capacity;
+    this.#initialCapacity = capacity;
   }
 
   get(index: number): T | undefined {
@@ -19,19 +19,33 @@ export class List<T> implements Iterable<T> {
   }
 
   get capacity() {
-    return this.#capacity;
+    return this.#items.length;
+  }
+
+  ensureCapacity(capacity: number) {
+    if (this.capacity < capacity) {
+      this.#items.length = capacity;
+    }
+  }
+
+  get last(): T | undefined {
+    return this.#items[this.#length - 1];
+  }
+
+  get first(): T | undefined {
+    return this.#items[0];
   }
 
   push(item: T) {
-    if (this.#capacity < this.#length + 1) {
-      this.#items.length = this.#length * 2;
+    if (this.capacity < this.#length + 1) {
+      this.#items.length = this.#items.length * 2;
     }
 
     this.#items[this.#length++] = item;
   }
 
   pushAll(item: T[]) {
-    if (this.#capacity < this.#length + item.length) {
+    if (this.capacity < this.#length + item.length) {
       this.#items.length = this.#length * 2;
     }
 
@@ -45,7 +59,7 @@ export class List<T> implements Iterable<T> {
 
     const item = this.#items[--this.#length];
 
-    if (this.#length < this.#capacity / 2) {
+    if (this.#length < this.capacity / 2) {
       this.#items.length = this.#length;
     }
 
@@ -53,18 +67,18 @@ export class List<T> implements Iterable<T> {
   }
 
   clear() {
-    this.#items.length = this.#capacity;
+    this.#items.length = this.#initialCapacity;
     this.#length = 0;
 
-    for (let i = 0; i < this.#capacity; i++) {
+    for (let i = 0; i < this.#items.length; i++) {
       this.#items[i] = undefined;
     }
   }
 
   reverse() {
     const items = this.#items;
-    let left = null;
-    let right = null;
+    let left: number | undefined;
+    let right: number | undefined;
     const length = this.#length;
     for (left = 0, right = length - 1; left < right; left += 1, right -= 1) {
       const temporary = items[left];
@@ -79,6 +93,10 @@ export class List<T> implements Iterable<T> {
     }
 
     return -1;
+  }
+
+  contains(item: T): boolean {
+    return this.#items.includes(item);
   }
 
   splice(start: number, deleteCount: number, ...items: T[]): T[] {

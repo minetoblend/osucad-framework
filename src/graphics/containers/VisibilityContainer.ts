@@ -1,4 +1,4 @@
-import { Bindable } from '../../bindables/Bindable';
+import { Bindable, type ValueChangedEvent } from '../../bindables/Bindable';
 import { Container } from './Container';
 
 export abstract class VisibilityContainer extends Container {
@@ -10,8 +10,10 @@ export abstract class VisibilityContainer extends Container {
   }
 
   override loadComplete() {
-    this.state.addOnChangeListener(this.updateState, {
-      immediate: this.state.value === Visibility.Visible || !this.#didInitialHide,
+    this.withScope(() => {
+      this.state.addOnChangeListener(this.updateState, {
+        immediate: this.state.value === Visibility.Visible || !this.#didInitialHide,
+      });
     });
 
     super.loadComplete();
@@ -41,8 +43,8 @@ export abstract class VisibilityContainer extends Container {
 
   abstract popOut(): void;
 
-  updateState = (state: Visibility) => {
-    switch (state) {
+  updateState = (event: ValueChangedEvent<Visibility>) => {
+    switch (event.value) {
       case Visibility.Visible:
         this.popIn();
         break;

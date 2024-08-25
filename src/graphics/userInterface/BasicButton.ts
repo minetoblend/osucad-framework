@@ -7,6 +7,8 @@ import { type DrawableOptions } from '../drawables/Drawable';
 import { Box } from '../shapes/Box';
 import { SpriteText } from '../text/SpriteText';
 import { Button } from './Button';
+import type { ValueChangedEvent } from '../../bindables/Bindable.ts';
+import { EasingFunction } from '../transforms/EasingFunction.ts';
 
 export interface BasicButtonOptions extends DrawableOptions {
   text?: string;
@@ -120,10 +122,7 @@ export class BasicButton extends Button {
 
   override onClick(e: ClickEvent): boolean {
     if (this.enabled.value) {
-      this.background.flashColorTo({
-        color: this.flashColor,
-        duration: this.flashDuration,
-      });
+      this.background.flashColorTo(this.flashColor, this.flashDuration);
     }
 
     return super.onClick(e);
@@ -131,7 +130,7 @@ export class BasicButton extends Button {
 
   override onHover(e: HoverEvent): boolean {
     if (this.enabled.value) {
-      this.hover.fadeIn({ duration: this.hoverFadeDuration });
+      this.hover.fadeIn(this.hoverFadeDuration);
     }
 
     return super.onHover?.(e) ?? true;
@@ -139,19 +138,15 @@ export class BasicButton extends Button {
 
   override onHoverLost(e: HoverEvent): boolean {
     if (this.enabled.value) {
-      this.hover.fadeOut({ duration: this.hoverFadeDuration });
+      this.hover.fadeOut(this.hoverFadeDuration);
     }
 
     return super.onHoverLost?.(e) ?? true;
   }
 
-  #enabledChanged = (enabled: boolean) => {
-    const color = enabled ? 0xffffff : this.disabledColor;
+  #enabledChanged = (event: ValueChangedEvent<boolean>) => {
+    const color = event.value ? 0xffffff : this.disabledColor;
 
-    this.fadeColorTo({
-      color,
-      duration: this.disabledFadeDuration,
-      easing: 'power4.out',
-    });
+    this.fadeColor(color, this.disabledFadeDuration, EasingFunction.OutQuart);
   };
 }

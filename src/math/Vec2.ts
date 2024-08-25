@@ -173,6 +173,12 @@ export class Vec2 implements ILerp<Vec2> {
   static closerThanSq(a: IVec2, b: IVec2, threshold: number): boolean {
     return Vec2.distanceSq(a, b) < threshold;
   }
+
+  rotate(angle: number): Vec2 {
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+    return new Vec2(this.x * cos - this.y * sin, this.x * sin + this.y * cos);
+  }
 }
 
 export interface IVec2 {

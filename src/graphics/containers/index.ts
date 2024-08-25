@@ -8,3 +8,4 @@ export { ScrollContainer, ScrollbarContainer } from './ScrollContainer';
 export { BasicScrollContainer } from './BasicScrollContainer';
 export { VisibilityContainer, Visibility } from './VisibilityContainer';
 export { BlurContainer, type BlurContainerOptions } from './BlurContainer';
+export { Component } from './Component';

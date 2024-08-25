@@ -47,4 +47,35 @@ export class PlatformAction extends KeyBindingAction {
   static readonly ZoomIn = new PlatformAction('ZoomIn');
   static readonly ZoomOut = new PlatformAction('ZoomOut');
   static readonly ZoomDefault = new PlatformAction('ZoomDefault');
+
+  isCommonTextEditingAction() {
+    switch (this) {
+      case PlatformAction.Cut:
+      case PlatformAction.Copy:
+      case PlatformAction.Paste:
+      case PlatformAction.SelectAll:
+      case PlatformAction.MoveBackwardChar:
+      case PlatformAction.MoveForwardChar:
+      case PlatformAction.MoveBackwardWord:
+      case PlatformAction.MoveForwardWord:
+      case PlatformAction.MoveBackwardLine:
+      case PlatformAction.MoveForwardLine:
+      case PlatformAction.DeleteBackwardChar:
+      case PlatformAction.DeleteForwardChar:
+      case PlatformAction.DeleteBackwardWord:
+      case PlatformAction.DeleteForwardWord:
+      case PlatformAction.DeleteBackwardLine:
+      case PlatformAction.DeleteForwardLine:
+      case PlatformAction.SelectBackwardChar:
+      case PlatformAction.SelectForwardChar:
+      case PlatformAction.SelectBackwardWord:
+      case PlatformAction.SelectForwardWord:
+      case PlatformAction.SelectBackwardLine:
+      case PlatformAction.SelectForwardLine:
+        return true;
+
+      default:
+        return false;
+    }
+  }
 }

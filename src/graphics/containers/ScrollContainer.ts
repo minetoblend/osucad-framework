@@ -18,6 +18,7 @@ import { clamp } from '../../utils/clamp';
 import { debugAssert } from '../../utils/debugAssert';
 import { Container } from '.';
 import { Anchor, Axes, Direction, Drawable, Invalidation, LayoutComputed, MarginPadding } from '../drawables';
+import { EasingFunction } from '../transforms/EasingFunction.ts';
 
 const distance_decay_clamping = 0.012;
 
@@ -435,12 +436,9 @@ export abstract class ScrollContainer<T extends Drawable = Drawable> extends Con
             1,
           ),
           200,
-          'power4.out',
+          EasingFunction.OutQuart,
         );
-      this.scrollbar.fadeTo({
-        alpha: this.scrollbarVisible && this.availableContent - 1 > this.displayableContent ? 1 : 0,
-        duration: 200,
-      });
+      this.scrollbar.fadeTo(this.scrollbarVisible && this.availableContent - 1 > this.displayableContent ? 1 : 0, 200);
       this.#updatePadding();
 
       this.#scrollbarCache.validate();
@@ -488,7 +486,7 @@ export abstract class ScrollbarContainer extends Container {
     this.relativeSizeAxes = direction === Direction.Horizontal ? Axes.X : Axes.Y;
   }
 
-  abstract resizeTo(val: number, duration?: number, easing?: gsap.EaseFunction | gsap.EaseString): void;
+  abstract resizeScrollbarTo(val: number, duration?: number, easing?: EasingFunction): void;
 
   override onClick(e: ClickEvent): boolean {
     return true;

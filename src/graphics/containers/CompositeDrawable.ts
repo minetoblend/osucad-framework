@@ -1,25 +1,28 @@
 import gsap from 'gsap';
-import { Vec2, type IVec2 } from '../../math/Vec2';
+import { type IVec2, Vec2 } from '../../math/Vec2';
 import { PIXIContainer, PIXIGraphics } from '../../pixi';
 import { debugAssert } from '../../utils/debugAssert';
 import { Axes } from '../drawables/Axes';
 import {
   Drawable,
+  type DrawableOptions,
   Invalidation,
   InvalidationSource,
-  LoadState,
   loadDrawable,
-  type DrawableOptions,
   loadDrawableFromAsync,
+  LoadState,
 } from '../drawables/Drawable';
 import { LayoutMember } from '../drawables/LayoutMember';
 import { MarginPadding, type MarginPaddingOptions } from '../drawables/MarginPadding';
 import type { Scheduler } from '../../scheduling/Scheduler.ts';
 import { DependencyContainer } from '../../di';
 import { Anchor } from '../drawables';
-import type { List } from '../../utils/List.ts';
-import { SortedList, type Comparer } from '../../utils/SortedList.ts';
+import { List } from '../../utils/List.ts';
+import { type Comparer, SortedList } from '../../utils/SortedList.ts';
 import { Action } from '../../bindables/Action.ts';
+import { EasingFunction } from '../transforms/EasingFunction.ts';
+import { AbsoluteSequenceSender } from '../transforms/AbsoluteSequenceSender.ts';
+import { type IUsable, ValueInvokeOnDisposal } from '../../types/IUsable.ts';
 
 export interface CompositeDrawableOptions extends DrawableOptions {
   padding?: MarginPaddingOptions;
@@ -75,7 +78,7 @@ export class CompositeDrawable extends Drawable {
     }
 
     drawable.childId = ++this.#currentChildId;
-    //TODO: drawable.removeCompletedTransforms = removeCompletedTransforms;
+    drawable.removeCompletedTransforms = this.removeCompletedTransforms;
 
     if (this.loadState >= LoadState.Loading) {
       if (drawable.loadState >= LoadState.Ready) {
@@ -147,7 +150,7 @@ export class CompositeDrawable extends Drawable {
   #loadChild(child: Drawable) {
     if (this.isDisposed) return;
 
-    loadDrawable(child, this.clock, this.dependencies);
+    loadDrawable(child, this.clock!, this.dependencies);
     child.parent = this;
   }
 
@@ -206,7 +209,7 @@ export class CompositeDrawable extends Drawable {
     for (let i = 0; i < components.length; i++) {
       if (signal.aborted) break;
 
-      if (!(await loadDrawableFromAsync(components[i], this.clock, dependencies, isDirectAsyncContext))) {
+      if (!(await loadDrawableFromAsync(components[i], this.clock!, dependencies, isDirectAsyncContext))) {
         components.splice(i--, 1);
       }
     }
@@ -378,7 +381,7 @@ export class CompositeDrawable extends Drawable {
 
   autoSizeDuration = 0;
 
-  autoSizeEasing: gsap.EaseString | gsap.EaseFunction = 'linear';
+  autoSizeEasing: EasingFunction = EasingFunction.Default;
 
   #childrenSizeDependencies = new LayoutMember(
     Invalidation.RequiredParentSizeToFit | Invalidation.Presence,
@@ -743,6 +746,88 @@ export class CompositeDrawable extends Drawable {
     this.internalChildren.forEach((c) => c.dispose());
 
     return super.dispose();
+  }
+
+  override applyTransformsAt(time: number, propagateChildren: boolean = false) {
+    super.applyTransformsAt(time, propagateChildren);
+    if (!propagateChildren) {
+      return;
+    }
+
+    for (const child of this.#internalChildren) {
+      child.applyTransformsAt(time, true);
+    }
+  }
+
+  override clearTransformsAfter(time: number, propagateChildren: boolean = false, targetMember?: string) {
+    super.clearTransformsAfter(time, propagateChildren, targetMember);
+    if (this.autoSizeAxes !== 0 && this.autoSizeDuration > 0) {
+      this.#childrenSizeDependencies.invalidate();
+    }
+
+    if (!propagateChildren) {
+      return;
+    }
+
+    for (const child of this.#internalChildren) {
+      child.clearTransformsAfter(time, true, targetMember);
+    }
+  }
+
+  override addDelay(duration: number, propagateChildren: boolean = false) {
+    if (duration === 0) {
+      return;
+    }
+
+    super.addDelay(duration, propagateChildren);
+    if (!propagateChildren) {
+      return;
+    }
+
+    for (const child of this.#internalChildren) {
+      child.addDelay(duration, true);
+    }
+  }
+
+  override beginAbsoluteSequence(newTransformStartTime: number, recursive: boolean = true): IUsable {
+    if (!recursive || this.internalChildren.length === 0) {
+      return super.beginAbsoluteSequence(newTransformStartTime, false);
+    }
+
+    const absoluteSequenceActions = new List<AbsoluteSequenceSender>(this.internalChildren.length + 1);
+
+    super.collectAbsoluteSequenceActionsFromSubTree(newTransformStartTime, absoluteSequenceActions);
+    for (const c of this.internalChildren)
+      c.collectAbsoluteSequenceActionsFromSubTree(newTransformStartTime, absoluteSequenceActions);
+
+    return new ValueInvokeOnDisposal(() => {
+      for (const a of absoluteSequenceActions) {
+        a.dispose();
+      }
+    });
+  }
+
+  override get removeCompletedTransforms() {
+    return super.removeCompletedTransforms;
+  }
+
+  override set removeCompletedTransforms(value) {
+    if (this.removeCompletedTransforms === value) return;
+
+    super.removeCompletedTransforms = value;
+    for (const child of this.internalChildren) {
+      child.removeCompletedTransforms = value;
+    }
+  }
+
+  override collectAbsoluteSequenceActionsFromSubTree(
+    newTransformStartTime: number,
+    actions: List<AbsoluteSequenceSender>,
+  ) {
+    super.collectAbsoluteSequenceActionsFromSubTree(newTransformStartTime, actions);
+
+    for (const child of this.internalChildren)
+      child.collectAbsoluteSequenceActionsFromSubTree(newTransformStartTime, actions);
   }
 }
 

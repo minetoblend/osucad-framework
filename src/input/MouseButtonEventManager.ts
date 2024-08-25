@@ -102,7 +102,7 @@ export abstract class MouseButtonEventManager extends ButtonEventManager<MouseBu
       this.clickedDrawable = null;
     }
 
-    if (this.changeFocusOnClick && clicked?.changeFocusOnClick) {
+    if (this.changeFocusOnClick) {
       this.inputManager.changeFocusFromClick(clicked);
     }
   }

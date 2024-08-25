@@ -18,6 +18,7 @@ import { Renderer } from '../renderers/Renderer';
 import { FramedClock } from '../timing/FramedClock';
 import type { IFrameBasedClock } from '../timing/IFrameBasedClock';
 import { FrameStatistics } from '../statistics/FrameStatistics.ts';
+import { TextInputSource } from '../input/TextInputSource.ts';
 
 export interface GameHostOptions {
   friendlyGameName?: string;
@@ -113,6 +114,7 @@ export abstract class GameHost {
 
     this.dependencies.provide(this.renderer);
     this.dependencies.provide(this.audioManager);
+    this.dependencies.provide(TextInputSource, this.createTextInput());
 
     this.#bootstrapSceneGraph(game);
 
@@ -208,6 +210,10 @@ export abstract class GameHost {
 
   get platformKeyBindings(): KeyBinding[] {
     return autoDetectPlatformActions();
+  }
+
+  createTextInput(): TextInputSource {
+    return new TextInputSource();
   }
 }
 

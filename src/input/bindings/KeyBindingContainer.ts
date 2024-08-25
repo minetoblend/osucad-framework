@@ -65,6 +65,8 @@ export abstract class KeyBindingContainer<T extends KeyBindingAction> extends Ba
 
   #queue = new List<Drawable>(250);
 
+  #keyRepeatInputQueue: Drawable[] = [];
+
   protected get keyBindingInputQueue(): List<Drawable> {
     this.#queue.clear();
     this.buildNonPositionalInputQueue(this.#queue, false);
@@ -131,7 +133,7 @@ export abstract class KeyBindingContainer<T extends KeyBindingAction> extends Ba
       case KeyDownEvent: {
         const keyDown = e as KeyDownEvent;
         if (keyDown.repeat) {
-          // TODO: Handle key repeats
+          this.#handleRepeat(state);
           return false;
         }
         const inputKey = KeyCombination.fromKey(keyDown.key);
@@ -225,6 +227,7 @@ export abstract class KeyBindingContainer<T extends KeyBindingAction> extends Ba
       }
 
       const inputQueue = this.#getInputQueue(newBinding, true);
+
       const handledBy = this.propagatePressed(inputQueue, state, newBinding.getAction(), scrollAmount, isPrecise);
 
       if (handledBy !== null) {
@@ -235,7 +238,7 @@ export abstract class KeyBindingContainer<T extends KeyBindingAction> extends Ba
         handled = true;
       }
 
-      // TODO: this.#keyRepeatInputQueue = inputQueue;
+      this.#keyRepeatInputQueue = inputQueue;
 
       // we only want to handle the first valid binding (the one with the most keys) in non-simultaneous mode.
       if (this.#simultaneousMode === SimultaneousBindingMode.None && handled) break;
@@ -410,6 +413,30 @@ export abstract class KeyBindingContainer<T extends KeyBindingAction> extends Ba
       default:
         throw new Error('Invalid event type:' + e.constructor.name);
     }
+  }
+
+  get handleRepeats() {
+    return true;
+  }
+
+  #handleRepeat(state: InputState) {
+    if (!this.handleRepeats) {
+      return false;
+    }
+
+    if (this.#pressedActions.length === 0) {
+      return false;
+    }
+
+    const action = this.#pressedActions[this.#pressedActions.length - 1];
+
+    const pressEvent = new KeyBindingPressEvent<T>(state, action, true);
+
+    const drawables = this.#keyRepeatInputQueue.filter(
+      (d) => this.keyBindingInputQueue.indexOf(d) >= 0 && d.isAlive && d.isPresent,
+    );
+
+    return drawables.find((d) => this.#triggerKeyBindingEvent(d, pressEvent)) !== undefined;
   }
 }
 

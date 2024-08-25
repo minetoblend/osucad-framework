@@ -109,6 +109,14 @@ export class SortedList<T> {
     return this.binarySearch(item);
   }
 
+  get first(): T | undefined {
+    return this.#items[0];
+  }
+
+  get last(): T | undefined {
+    return this.#items[this.#items.length - 1];
+  }
+
   [Symbol.iterator]() {
     return this.#items[Symbol.iterator]();
   }
