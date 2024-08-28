@@ -74,10 +74,10 @@ export class Container<T extends Drawable = Drawable> extends CompositeDrawable 
     }
   }
 
-  clear() {
+  clear(disposeImmediately: boolean = true) {
     // TODO: Add more efficient clear method
     while (this.children.length > 0) {
-      this.remove(this.children[0]);
+      this.remove(this.children[0], disposeImmediately);
     }
   }
 
