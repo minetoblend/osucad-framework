@@ -1,37 +1,57 @@
 import { getCurrentDrawablScope } from './lifetimeScope';
 
-export class Action<T = void> {
-  #listeners = new Set<(value: T) => void>();
+class Listener<T> {
+  constructor(
+    readonly fn: (value: T) => void,
+    readonly receiver?: any,
+    readonly once: boolean = false,
+  ) {}
+}
 
-  addListener(listener: (value: T) => void, scoped: boolean = true) {
-    this.#listeners.add(listener);
+export class Action<T = void> {
+  #listeners: Listener<T>[] = [];
+
+  addListener(fn: (value: T) => void, receiver?: any, scoped: boolean = true) {
+    this.#listeners.push(new Listener(fn, receiver));
     if (scoped) {
       const scope = getCurrentDrawablScope();
       if (scope) {
-        scope.onDispose(() => this.removeListener(listener));
+        scope.onDispose(() => this.removeListener(fn));
       }
     }
   }
 
-  removeListener(listener: (value: T) => void): boolean {
-    return this.#listeners.delete(listener);
+  removeListener(fn: (value: T) => void): boolean {
+    for (let i = 0; i < this.#listeners.length; i++) {
+      if (this.#listeners[i].fn === fn) {
+        this.#listeners.splice(i, 1);
+        return true;
+      }
+    }
+
+    return false;
   }
 
   removeAllListeners() {
-    this.#listeners.clear();
+    this.#listeners.length = 0;
   }
 
-  once(listener: (value: T) => void) {
-    const newListener = (value: T) => {
-      this.removeListener(newListener);
-      listener(value);
-    };
-    this.addListener(newListener);
+  once(listener: (value: T) => void, receiver?: any) {
+    this.#listeners.push(new Listener(listener, receiver, true));
   }
 
   emit(value: T) {
-    for (const listener of this.#listeners) {
-      listener(value);
+    for (let i = 0; i < this.#listeners.length; i++) {
+      const listener = this.#listeners[i];
+      if (listener.receiver) {
+        listener.fn.call(listener.receiver, value);
+      } else {
+        listener.fn(value);
+      }
+
+      if (listener.once) {
+        this.#listeners.splice(i--, 1);
+      }
     }
   }
 }
