@@ -93,7 +93,7 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
     this.label = this.constructor.name;
   }
 
-  apply(options: DrawableOptions): this {
+  with(options: DrawableOptions): this {
     Object.assign(this, options);
     return this;
   }
@@ -721,9 +721,9 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
     this.lifetimeChanged.emit(this);
   }
 
-  #lifeTimeStart = -Infinity;
+  #lifeTimeStart = Number.MIN_VALUE;
 
-  #lifeTimeEnd = Infinity;
+  #lifeTimeEnd = Number.MAX_VALUE;
 
   hide() {
     this.fadeOut();
@@ -736,7 +736,7 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
   isAlive = false;
 
   get shouldBeAlive() {
-    if (this.lifetimeStart == -Infinity && this.lifetimeEnd === Infinity) return true;
+    if (this.lifetimeStart == Number.MIN_VALUE && this.lifetimeEnd === Number.MAX_VALUE) return true;
 
     return this.time.current >= this.lifetimeStart && this.time.current < this.lifetimeEnd;
   }
@@ -791,8 +791,8 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
       pushDrawableScope(this);
       this.#loadState = LoadState.Loading;
 
-      this.requestsNonPositionalInput = HandleInputCache.requestsNonPositionalInput(this);
-      this.requestsPositionalInput = HandleInputCache.requestsPositionalInput(this);
+      this.#requestsNonPositionalInput = HandleInputCache.requestsNonPositionalInput(this);
+      this.#requestsPositionalInput = HandleInputCache.requestsPositionalInput(this);
 
       this.requestsNonPositionalInputSubTree = this.requestsNonPositionalInput;
       this.requestsPositionalInputSubTree = this.requestsPositionalInput;
@@ -802,7 +802,7 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
       const dependencyLoaders = getDependencyLoaders(this);
 
       for (const key of dependencyLoaders) {
-        (this as any)[key]();
+        (this as any)[key](this.dependencies);
       }
 
       const asyncDependencyLoaders = getAsyncDependencyLoaders(this);
@@ -811,8 +811,10 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
           throw new Error('Cannot load async dependencies in a non-async context');
         }
 
-        await Promise.all(asyncDependencyLoaders.map((key) => (this as any)[key]()));
+        await Promise.all(asyncDependencyLoaders.map((key) => (this as any)[key](this.dependencies)));
       }
+
+      this.loadAsyncComplete();
 
       this.#loadState = LoadState.Ready;
     } finally {
@@ -857,8 +859,6 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
 
     this.lifetimeEnd = this.latestTransformEndTime;
 
-    console.log(this.latestTransformEndTime - this.time.current);
-
     if (calculateLifetimeStart) {
       let min = Infinity;
 
@@ -878,6 +878,8 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
   protected onLoad() {}
 
   protected loadComplete() {}
+
+  protected loadAsyncComplete() {}
 
   onLoadComplete = new Action<Drawable>();
 
@@ -908,8 +910,8 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
     return this.#isDisposed;
   }
 
-  dispose(): boolean {
-    if (this.isDisposed) return false;
+  dispose(isDisposing = true): void {
+    if (this.isDisposed) return;
 
     this.#parent = null;
     this.childId = 0;
@@ -928,7 +930,6 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
     }
 
     this.#isDisposed = true;
-    return true;
   }
 
   #onDispose: (() => void)[] = [];
@@ -1242,9 +1243,17 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
 
   //#region input
 
-  requestsNonPositionalInput: boolean = false;
+  #requestsNonPositionalInput: boolean = false;
 
-  requestsPositionalInput: boolean = false;
+  get requestsNonPositionalInput() {
+    return this.#requestsNonPositionalInput;
+  }
+
+  #requestsPositionalInput: boolean = false;
+
+  get requestsPositionalInput() {
+    return this.#requestsPositionalInput;
+  }
 
   requestsNonPositionalInputSubTree: boolean = false;
 
@@ -1395,6 +1404,10 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
   //#endregion
 
   //#region transforms
+  delay(duration: number) {
+    return new DrawableTransformSequence(this).delay(duration);
+  }
+
   fadeTo(alpha: number, duration: number = 0, easing: EasingFunction = EasingFunction.Default) {
     return this.transformTo('alpha', alpha, duration, easing);
   }
@@ -1424,15 +1437,15 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
     return this.fadeColor(color, duration, easing).fadeColor(endValue, duration, easing);
   }
 
-  moveTo(newPosition: Vec2, duration: number, easing: EasingFunction = EasingFunction.Default) {
+  moveTo(newPosition: Vec2, duration: number = 0, easing: EasingFunction = EasingFunction.Default) {
     return this.transformTo('position', newPosition, duration, easing);
   }
 
-  moveToX(newX: number, duration: number, easing: EasingFunction = EasingFunction.Default) {
+  moveToX(newX: number, duration: number = 0, easing: EasingFunction = EasingFunction.Default) {
     return this.transformTo('x', newX, duration, easing, 'position');
   }
 
-  moveToY(newY: number, duration: number, easing: EasingFunction = EasingFunction.Default) {
+  moveToY(newY: number, duration: number = 0, easing: EasingFunction = EasingFunction.Default) {
     return this.transformTo('y', newY, duration, easing, 'position');
   }
 
