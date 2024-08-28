@@ -18,5 +18,7 @@ export class AbsoluteSequenceSender extends Usable {
           `(begin=${this.newTransformDelay} end=${this.sender.transformDelay})`,
       );
     }
+
+    this.sender.transformDelay = this.oldTransformDelay;
   }
 }
