@@ -15,7 +15,7 @@ export class SpriteText extends Drawable {
 
     super();
 
-    this.apply(rest);
+    this.with(rest);
 
     this.text = text ?? '';
 

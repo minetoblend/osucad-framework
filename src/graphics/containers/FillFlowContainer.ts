@@ -17,7 +17,7 @@ export class FillFlowContainer<T extends Drawable = Drawable> extends FlowContai
   constructor(options: FillFlowContainerOptions<T> = {}) {
     super();
 
-    this.apply(options);
+    this.with(options);
   }
 
   #direction = FillDirection.Full;
