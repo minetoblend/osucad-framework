@@ -4,7 +4,14 @@ import type { Comparer } from '../../utils';
 
 export abstract class Transform {
   static COMPARER: Comparer<Transform> = {
-    compare: (a, b) => a.startTime - b.startTime,
+    compare: (a, b) => {
+      let compare = a.startTime - b.startTime;
+      if (compare !== 0) return compare;
+
+      compare = a.transformID - b.transformID;
+
+      return compare;
+    },
   };
 
   transformID: number = 0;
