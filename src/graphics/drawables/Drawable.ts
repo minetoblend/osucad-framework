@@ -2,7 +2,7 @@ import { Matrix } from 'pixi.js';
 import { Action } from '../../bindables/Action';
 import { popDrawableScope, pushDrawableScope } from '../../bindables/lifetimeScope';
 import { DependencyContainer, type ReadonlyDependencyContainer } from '../../di/DependencyContainer';
-import { getAsyncDependencyLoaders, getDependencyLoaders, getInjections } from '../../di/decorators';
+import { getAsyncDependencyLoaders, getDependencyLoaders, getInjections, getProviders } from '../../di/decorators';
 import { HandleInputCache } from '../../input/HandleInputCache';
 import type { IInputReceiver } from '../../input/IInputReceiver';
 import type { InputManager } from '../../input/InputManager';
@@ -886,6 +886,18 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
     const injections = getInjections(this);
     for (const { key, type, optional } of injections) {
       Reflect.set(this, key, optional ? this.dependencies.resolveOptional(type) : this.dependencies.resolve(type));
+    }
+
+    const providers = getProviders(this);
+    for (const { key, type } of providers) {
+      // if no key was provided the decorator was added to the class itself
+      const value = key ? Reflect.get(this, key) : this;
+
+      if (type) {
+        this.dependencies.provide(type, value);
+      } else {
+        this.dependencies.provide(value);
+      }
     }
   }
 
