@@ -51,6 +51,7 @@ import { EasingFunction } from '../transforms/EasingFunction.ts';
 import { TransformCustom } from '../transforms/TransformCustom.ts';
 import { TypedTransform } from '../transforms/Transform.ts';
 import { DrawableTransformSequence } from '../transforms/DrawableTransformSequence.ts';
+import { Bindable } from '../../bindables';
 
 export interface DrawableOptions {
   position?: IVec2;
@@ -917,6 +918,13 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
     this.drawNode?.destroy({ children: true });
     for (const callback of this.#onDispose) {
       callback();
+    }
+
+    for (const key in this) {
+      const value = this[key];
+      if (value && typeof value === 'object' && value instanceof Bindable) {
+        value.unbindAll();
+      }
     }
 
     this.#isDisposed = true;
