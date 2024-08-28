@@ -1,6 +1,7 @@
 import { TypedTransform } from './Transform.ts';
 import type { ITransformable } from './ITransformable.ts';
 import { Interpolation } from './Interpolation.ts';
+import { Color } from 'pixi.js';
 
 export class TransformCustom<TValue, T extends ITransformable> extends TypedTransform<TValue, T> {
   constructor(propertyOrFieldName: string, grouping?: string) {
@@ -36,6 +37,8 @@ export class TransformCustom<TValue, T extends ITransformable> extends TypedTran
 
     if (startValue && typeof startValue === 'object' && 'clone' in startValue) {
       startValue = startValue.clone() as TValue;
+    } else if (typeof startValue === 'object' && startValue instanceof Color) {
+      startValue = new Color(startValue);
     }
 
     this.startValue = startValue;
