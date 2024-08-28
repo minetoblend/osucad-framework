@@ -1,11 +1,11 @@
-import type { Texture } from 'pixi.js';
+import { Texture } from 'pixi.js';
 import { PIXIContainer, PIXISprite } from '../../pixi';
 import { Drawable, type DrawableOptions } from './Drawable';
 import { Vec2 } from '../../math';
 import { Axes } from './Axes';
 
 export interface DrawableSpriteOptions extends DrawableOptions {
-  texture?: Texture;
+  texture?: Texture | null;
 }
 
 export class DrawableSprite extends Drawable {
@@ -22,11 +22,14 @@ export class DrawableSprite extends Drawable {
         (options.relativeSizeAxes ?? Axes.None) === Axes.None
       ) {
         this.size = new Vec2(options.texture.width, options.texture.height);
+        this.resizeToTexture = true;
       }
     }
   }
 
   #sprite!: PIXISprite;
+
+  resizeToTexture = false;
 
   override createDrawNode() {
     return new PIXIContainer({
@@ -34,13 +37,13 @@ export class DrawableSprite extends Drawable {
     });
   }
 
-  #texture?: Texture;
+  #texture: Texture | null = null;
 
-  get texture(): Texture | undefined {
+  get texture(): Texture | null {
     return this.#texture;
   }
 
-  set texture(value: Texture) {
+  set texture(value: Texture | null) {
     if (this.#texture === value) return;
 
     this.#texture = value;
@@ -48,7 +51,7 @@ export class DrawableSprite extends Drawable {
     // ensure the draw node is created
     this.drawNode;
 
-    this.#sprite.texture = value;
+    this.#sprite.texture = value || Texture.EMPTY;
   }
 
   override updateDrawNodeTransform(): void {
