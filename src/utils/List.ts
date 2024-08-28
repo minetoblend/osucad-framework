@@ -108,6 +108,27 @@ export class List<T> implements Iterable<T> {
     return deletedItems as T[];
   }
 
+  remove(item: T): boolean {
+    const index = this.indexOf(item);
+    if (index === -1) return false;
+
+    this.splice(index, 1);
+    return true;
+  }
+
+  removeAll(predicate: (value: T, index: number, obj: T[]) => unknown): T[] {
+    const removedItems: T[] = [];
+    for (let i = 0; i < this.#length; i++) {
+      if (predicate(this.#items[i]!, i, this.#items as T[])) {
+        removedItems.push(this.#items[i]!);
+        this.splice(i, 1);
+        i--;
+      }
+    }
+
+    return removedItems;
+  }
+
   find(predicate: (value: T, index: number, obj: T[]) => unknown): T | undefined {
     for (let i = 0; i < this.#length; i++) {
       if (predicate(this.#items[i]!, i, this.#items as T[])) return this.#items[i];
