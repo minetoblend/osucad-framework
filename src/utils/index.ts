@@ -6,3 +6,4 @@ export * from './loadTexture';
 export * from './List';
 export * from './SortedList';
 export * from './ObservableSortedList';
+export * from './Lazy';
