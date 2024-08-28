@@ -154,6 +154,28 @@ export class CompositeDrawable extends Drawable {
     child.parent = this;
   }
 
+  protected loadComponent<T extends Drawable>(component: T) {
+    this.loadComponents([component]);
+  }
+
+  protected loadComponents<T extends Drawable>(components: T[]) {
+    if (this.loadState < LoadState.Loading) {
+      throw Error('May not invoke LoadComponentAsync prior to this CompositeDrawable being loaded.');
+    }
+
+    if (this.isDisposed) {
+      throw Error('May not invoke LoadComponentAsync on a disposed CompositeDrawable.');
+    }
+
+    this.#loadComponents(components, this.dependencies);
+  }
+
+  #loadComponents<T extends Drawable>(components: T[], dependencies: DependencyContainer) {
+    for (let i = 0; i < components.length; i++) {
+      loadDrawable(components[i], this.clock!, dependencies);
+    }
+  }
+
   loadComponentAsync<TLoadable extends Drawable>(
     component: TLoadable,
     signal?: AbortSignal,
