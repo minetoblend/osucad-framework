@@ -142,7 +142,7 @@ export class Scheduler {
     this.#timedTasks.length = 0;
   }
 
-  add(task: (() => void) | ScheduledDelegate, forceScheduled = true): ScheduledDelegate | null {
+  add<T>(task: (() => void) | ScheduledDelegate, receiver?: T, forceScheduled = true): ScheduledDelegate | null {
     if (task instanceof ScheduledDelegate) {
       if (task.completed) {
         throw new Error('Task has already been completed');
@@ -161,6 +161,8 @@ export class Scheduler {
 
     const del = new ScheduledDelegate(task);
 
+    del.receiver = receiver;
+
     this.#enqueue(del);
 
     return del;
@@ -172,14 +174,17 @@ export class Scheduler {
     return del;
   }
 
-  addOnce(task: () => void): boolean {
+  addOnce<T>(task: () => void, receiver?: T): boolean {
     const existing = this.#runQueue.find((sd) => sd.task === task);
 
     if (!existing) {
       return false;
     }
 
-    this.#enqueue(new ScheduledDelegate(task));
+    const sd = new ScheduledDelegate(task);
+    sd.receiver = receiver;
+
+    this.#enqueue(sd);
 
     return true;
   }

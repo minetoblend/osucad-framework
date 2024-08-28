@@ -5,6 +5,7 @@ export class ScheduledDelegate {
     readonly task: () => void,
     public executionTime: number = 0,
     public repeatInterval: number = -1,
+    public receiver?: any,
   ) {}
 
   get performRepeatCatchUpExecutions() {
@@ -53,7 +54,11 @@ export class ScheduledDelegate {
   }
 
   protected invokeTask() {
-    this.task();
+    if (this.receiver) {
+      this.task.call(this.receiver);
+    } else {
+      this.task();
+    }
   }
 
   cancel() {
