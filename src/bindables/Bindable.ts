@@ -226,6 +226,12 @@ export class Bindable<T> implements ReadonlyBindable<T> {
     this.triggerValueChange(this.#value, this, false);
     this.triggerDisabledChange(this, false);
   }
+
+  getBoundCopy(): Bindable<T> {
+    const copy = new Bindable(this.default);
+    copy.bindTo(this);
+    return copy;
+  }
 }
 
 export interface AddOnChangeListenerOptions {
@@ -256,4 +262,6 @@ export interface ReadonlyBindable<T> {
   addOnChangeListener(listener: BindableListener<ValueChangedEvent<T>>, options?: AddOnChangeListenerOptions): void;
 
   removeOnChangeListener(listener: BindableListener<ValueChangedEvent<T>>): boolean;
+
+  getBoundCopy(): ReadonlyBindable<T>;
 }
