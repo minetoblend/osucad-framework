@@ -26,7 +26,7 @@ export class RoundedBox extends Drawable {
 
     this.addLayout(this.#graphicsBacking);
 
-    this.apply(options);
+    this.with(options);
   }
 
   get cornerRadius(): number {

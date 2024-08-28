@@ -106,7 +106,7 @@ export class BasicButton extends Button {
       });
     });
 
-    this.apply(options);
+    this.with(options);
   }
 
   createText(): SpriteText {

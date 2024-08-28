@@ -9,16 +9,16 @@ export interface ContainerOptions<T extends Drawable = Drawable> extends Composi
 export class Container<T extends Drawable = Drawable> extends CompositeDrawable {
   constructor(options: ContainerOptions<T> = {}) {
     super();
-    this.apply(options);
+    this.with(options);
   }
 
   static create<T extends Drawable = Drawable>(options: ContainerOptions<T> = {}): Container {
-    return new Container().apply(options);
+    return new Container().with(options);
   }
 
-  override apply(options: ContainerOptions<T>): this {
+  override with(options: ContainerOptions<T>): this {
     const { children, child, ...rest } = options;
-    super.apply(rest);
+    super.with(rest);
 
     if (child && children) {
       throw new Error('Cannot set both child and children');

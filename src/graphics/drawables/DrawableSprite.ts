@@ -12,7 +12,7 @@ export class DrawableSprite extends Drawable {
   constructor(options: DrawableSpriteOptions = {}) {
     super();
 
-    this.apply(options);
+    this.with(options);
 
     if (options.texture) {
       if (

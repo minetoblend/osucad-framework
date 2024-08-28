@@ -12,7 +12,7 @@ export class BasicMenu extends Menu {
   }
 
   protected override createSubmenu(): Menu {
-    return new BasicMenu(Direction.Vertical).apply({
+    return new BasicMenu(Direction.Vertical).with({
       anchor: this.direction === Direction.Horizontal ? Anchor.BottomLeft : Anchor.TopRight,
     });
   }

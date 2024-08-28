@@ -19,7 +19,7 @@ export class DrawSizePreservingFillContainer<T extends Drawable = Drawable> exte
       relativeSizeAxes: Axes.Both,
     });
 
-    this.apply(options);
+    this.with(options);
 
     this.addInternal(
       (this.#content = new Container<T>({

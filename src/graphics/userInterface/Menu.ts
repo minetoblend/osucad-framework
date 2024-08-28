@@ -83,7 +83,7 @@ export abstract class Menu extends CompositeDrawable {
         masking: true,
         children: [
           (this.#background = this.createBackground()),
-          (this.contentContainer = this.createScrollContainer(direction).apply({
+          (this.contentContainer = this.createScrollContainer(direction).with({
             relativeSizeAxes: Axes.Both,
             masking: false,
             child: (this.#itemsFlow = this.createItemsFlow(

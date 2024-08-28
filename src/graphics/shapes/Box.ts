@@ -4,7 +4,7 @@ import { PIXIContainer, PIXISprite, PIXITexture } from '../../pixi';
 export class Box extends Drawable {
   constructor(options: DrawableOptions = {}) {
     super();
-    this.apply(options);
+    this.with(options);
   }
 
   #sprite!: PIXISprite;
