@@ -19,7 +19,6 @@ export class TransformSequence<T extends ITransformable> {
 
   #last: Transform | null = null;
 
-  // @ts-expect-error unused property
   get #hasEnd() {
     return this.#endTime !== Infinity;
   }
@@ -43,9 +42,10 @@ export class TransformSequence<T extends ITransformable> {
 
   append(generator: (o: T) => TransformSequence<T>) {
     let child: TransformSequence<T>;
-    this.#origin.beginAbsoluteSequence(this.#currentTime, false).use(() => {
+    {
+      using _ = this.#origin.beginAbsoluteSequence(this.#currentTime, false);
       child = generator(this.#origin);
-    });
+    }
 
     if (child!.origin !== this.#origin)
       throw new Error('Child sequence does not target the same origin as the parent sequence');
@@ -63,5 +63,20 @@ export class TransformSequence<T extends ITransformable> {
 
   get transforms(): ReadonlyArray<Transform> {
     return this.#transforms;
+  }
+
+  delay(duration: number) {
+    this.#currentTime += duration;
+
+    return this;
+  }
+
+  then(delay = 0) {
+    if (!this.#hasEnd) {
+      throw Error('Can not perform then on an endless TransformSequence.');
+    }
+
+    this.#currentTime = this.#endTime;
+    return this.delay(delay);
   }
 }
