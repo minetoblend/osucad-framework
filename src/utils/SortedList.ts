@@ -35,7 +35,7 @@ export class SortedList<T> {
   }
 
   remove(item: T) {
-    const index = this.indexOf(item);
+    const index = this.#items.indexOf(item);
 
     if (index < 0) {
       return false;
