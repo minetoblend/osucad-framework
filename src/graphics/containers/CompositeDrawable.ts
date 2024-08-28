@@ -54,12 +54,33 @@ export class CompositeDrawable extends Drawable {
     return new PIXIContainer();
   }
 
-  #internalChildren: SortedList<Drawable>;
+  readonly childBecameAlive = new Action<Drawable>();
+
+  readonly childDied = new Action<Drawable>();
+
+  readonly #internalChildren: SortedList<Drawable>;
 
   #aliveInternalChildren: SortedList<Drawable>;
 
   get internalChildren(): ReadonlyArray<Drawable> {
     return this.#internalChildren.items;
+  }
+
+  get internalChild(): Drawable {
+    if (this.internalChildren.length !== 1) {
+      throw new Error(
+        `Cannot call internalChild unless there's exactly one Drawable in internalChildren (currently ${this.internalChildren.length})!`,
+      );
+    }
+
+    return this.internalChildren[0];
+  }
+
+  set internalChild(value: Drawable) {
+    if (this.isDisposed) return;
+
+    this.clearInternal();
+    this.addInternal(value);
   }
 
   get aliveInternalChildren(): ReadonlyArray<Drawable> {
@@ -267,7 +288,7 @@ export class CompositeDrawable extends Drawable {
         debugAssert(aliveIndex >= 0, 'Drawable is alive but not in aliveInternalChildren');
         this.#aliveInternalChildren.removeAt(aliveIndex);
 
-        // TODO: this.childDied?.emit(drawable);
+        this.childDied.emit(drawable);
       }
 
       drawable.parent = null;
@@ -284,6 +305,40 @@ export class CompositeDrawable extends Drawable {
         drawable.dispose();
       }
     }
+  }
+
+  protected clearInternal(disposeChildren: boolean = true) {
+    if (super.isDisposed || this.internalChildren.length === 0) {
+      return;
+    }
+
+    for (const internalChild of this.#internalChildren) {
+      if (internalChild.isAlive) {
+        this.childDied.emit(internalChild);
+      }
+
+      internalChild.isAlive = false;
+      internalChild.parent = null;
+
+      if (disposeChildren) {
+        this.disposeChildAsync(internalChild);
+      }
+    }
+
+    this.#internalChildren.clear();
+    this.#aliveInternalChildren.clear();
+
+    this.requestsNonPositionalInputSubTree = super.requestsNonPositionalInput;
+    this.requestsPositionalInputSubTree = super.requestsPositionalInput;
+
+    if (this.autoSizeAxes !== Axes.None) {
+      this.invalidate(Invalidation.RequiredParentSizeToFit, InvalidationSource.Child);
+    }
+  }
+
+  protected disposeChildAsync(child: Drawable) {
+    // TODO: disposeChildAsync
+    child.dispose();
   }
 
   get childSize(): Vec2 {
@@ -570,6 +625,8 @@ export class CompositeDrawable extends Drawable {
     this.#aliveInternalChildren.add(child);
     child.isAlive = true;
 
+    this.childBecameAlive.emit(child);
+
     child.invalidate(Invalidation.Layout, InvalidationSource.Parent);
 
     this.drawNode.addChild(child.drawNode);
@@ -584,7 +641,7 @@ export class CompositeDrawable extends Drawable {
       this.#aliveInternalChildren.removeAt(index);
       child.isAlive = false;
 
-      // ChildDied?.Invoke(child);
+      this.childDied.emit(child);
     }
 
     let removed = false;
