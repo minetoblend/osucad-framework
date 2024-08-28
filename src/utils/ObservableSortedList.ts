@@ -34,9 +34,13 @@ export class ObservableSortedList<T> extends SortedList<T> {
   }
 
   override removeAt(index: number) {
+    const item = this.get(index);
+
     super.removeAt(index);
 
-    this.onRemoved(this.get(index)!);
+    if (item) {
+      this.onRemoved(item);
+    }
   }
 
   override removeAll(match: (item: T) => boolean) {
