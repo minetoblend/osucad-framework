@@ -4,13 +4,14 @@ import { Anchor, Axes, axesToString, type Drawable } from '../drawables';
 import { FillMode } from '../drawables/FillMode';
 import type { ContainerOptions } from './Container';
 import { FlowContainer } from './FlowContainer';
+import type { EasingFunction } from '../transforms';
 
 export interface FillFlowContainerOptions<T extends Drawable = Drawable> extends ContainerOptions<T> {
   direction?: FillDirection;
   spacing?: IVec2;
   maxSize?: IVec2;
   layoutDuration?: number;
-  layoutEasing?: gsap.EaseString | gsap.EaseFunction;
+  layoutEasing?: EasingFunction;
 }
 
 export class FillFlowContainer<T extends Drawable = Drawable> extends FlowContainer {
