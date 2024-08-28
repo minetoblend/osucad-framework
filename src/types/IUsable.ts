@@ -1,19 +1,15 @@
 import type { IDisposable } from './IDisposable.ts';
 
 export interface IUsable extends IDisposable {
-  use(block: () => void): void;
+  [Symbol.dispose](): void;
 }
 
 export abstract class Usable implements IUsable {
-  use(block: () => void): void {
-    try {
-      block();
-    } finally {
-      this.dispose();
-    }
-  }
-
   abstract dispose(): void;
+
+  [Symbol.dispose](): void {
+    this.dispose();
+  }
 }
 
 export class ValueInvokeOnDisposal extends Usable {
