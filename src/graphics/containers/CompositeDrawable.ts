@@ -820,11 +820,11 @@ export class CompositeDrawable extends Drawable {
     this.#maskingContainer?.scale.copyFrom(this.drawSize);
   }
 
-  override dispose(): boolean {
+  override dispose(isDisposing: boolean = true) {
     this.#disposalAbortController?.abort();
     this.internalChildren.forEach((c) => c.dispose());
 
-    return super.dispose();
+    super.dispose(isDisposing);
   }
 
   override applyTransformsAt(time: number, propagateChildren: boolean = false) {
