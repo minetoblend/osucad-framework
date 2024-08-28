@@ -25,7 +25,7 @@ export abstract class InputHandler implements IDisposable {
     return this.#isDisposed;
   }
 
-  dispose(): void {
+  dispose(isDisposing: boolean = true): void {
     this.#isDisposed = true;
   }
 

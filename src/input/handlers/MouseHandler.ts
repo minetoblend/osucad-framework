@@ -112,8 +112,8 @@ export class MouseHandler extends InputHandler {
     this.pendingInputs.push(input);
   }
 
-  override dispose(): void {
-    super.dispose();
+  override dispose(isDisposing: boolean = true): void {
+    super.dispose(isDisposing);
     this.enabled.value = false;
   }
 

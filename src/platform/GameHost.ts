@@ -173,7 +173,7 @@ export abstract class GameHost {
     // TODO: add root containers for input handling & safe area insets
     const root = new UserInputManager();
 
-    root.child = new PlatformActionContainer().apply({
+    root.child = new PlatformActionContainer().with({
       child: game,
     });
 
@@ -202,7 +202,7 @@ export abstract class GameHost {
     return this.#isDisposed;
   }
 
-  dispose() {
+  dispose(disposing: boolean = true) {
     if (this.isDisposed) return false;
 
     this.root?.dispose();

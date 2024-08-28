@@ -288,7 +288,7 @@ export class ScreenStack extends CompositeDrawable {
     return true;
   }
 
-  override dispose(): boolean {
+  override dispose(isDisposing: boolean = true) {
     for (const s of this.#exited) {
       s.dispose();
     }
@@ -301,6 +301,6 @@ export class ScreenStack extends CompositeDrawable {
 
     this.#stack.length = 0;
 
-    return super.dispose();
+    super.dispose(isDisposing);
   }
 }

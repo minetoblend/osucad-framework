@@ -14,11 +14,11 @@ export class CustomInputManager extends InputManager {
     this.inputHandlers = this.inputHandlers.filter((h) => h !== handler);
   }
 
-  override dispose(): boolean {
+  override dispose(isDisposing: boolean = true) {
     for (const handler of this.inputHandlers) {
       handler.dispose();
     }
 
-    return super.dispose();
+    super.dispose(isDisposing);
   }
 }
