@@ -1,3 +1,3 @@
-export function almostEquals(a: number, b: number, epsilon = Number.EPSILON): boolean {
+export function almostEquals(a: number, b: number, epsilon = 1e-3): boolean {
   return Math.abs(a - b) < epsilon;
 }
