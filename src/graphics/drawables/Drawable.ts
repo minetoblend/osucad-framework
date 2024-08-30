@@ -77,6 +77,8 @@ export interface DrawableOptions {
   fillMode?: FillMode;
   fillAspectRatio?: number;
   depth?: number;
+  clock?: IFrameBasedClock;
+  processCustomClock?: boolean;
 }
 
 export const LOAD = Symbol('load');
