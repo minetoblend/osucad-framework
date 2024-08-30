@@ -1012,7 +1012,15 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
   }
 
   set parent(value: CompositeDrawable | null) {
+    if (value === null) {
+      this.childId = 0;
+    }
+
+    if (this.#parent === value) return;
+
     this.#parent = value;
+
+    this.invalidate(this.invalidationFromParentSize | Invalidation.Presence | Invalidation.Parent);
   }
 
   findClosestParent<T extends Drawable>(predicate: (d: Drawable) => d is T): T | null {
