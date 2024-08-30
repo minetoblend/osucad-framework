@@ -41,10 +41,4 @@ export abstract class Game extends Container {
   }
 
   readonly isActive = new Bindable(false);
-
-  override dispose(): boolean {
-    if (this.isDisposed) return false;
-
-    return true;
-  }
 }
