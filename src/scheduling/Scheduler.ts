@@ -177,7 +177,7 @@ export class Scheduler {
   addOnce<T>(task: () => void, receiver?: T): boolean {
     const existing = this.#runQueue.find((sd) => sd.task === task);
 
-    if (!existing) {
+    if (existing) {
       return false;
     }
 
