@@ -66,6 +66,11 @@ export class CompositeDrawable extends Drawable {
     return this.#internalChildren.items;
   }
 
+  set internalChildren(value) {
+    this.clearInternal();
+    this.addAllInternal(...value);
+  }
+
   get internalChild(): Drawable {
     if (this.internalChildren.length !== 1) {
       throw new Error(
