@@ -1,11 +1,10 @@
-import { Bindable } from '../../bindables/Bindable';
-import type { MouseDownEvent } from '../../input';
-import type { ClickEvent } from '../../input/events/ClickEvent';
+import { ClickEvent, MouseButton, type MouseDownEvent } from '../../input';
 import type { Drawable } from '../drawables';
 import { Container } from './Container';
+import { BindableBoolean } from '../../bindables';
 
 export class ClickableContainer<T extends Drawable = Drawable> extends Container<T> {
-  #action?: () => void;
+  #action: (() => void) | null = null;
 
   get action() {
     return this.#action;
@@ -13,21 +12,28 @@ export class ClickableContainer<T extends Drawable = Drawable> extends Container
 
   set action(value) {
     this.#action = value;
-    if (value) this.enabled.value = true;
+    this.enabled.value = this.#action !== null;
   }
 
   public trigger = ButtonTrigger.Click;
 
-  public readonly enabled = new Bindable(false);
+  public readonly enabled = new BindableBoolean();
 
   override onClick(e: ClickEvent): boolean {
-    if (this.enabled.value && this.trigger === ButtonTrigger.Click) this.action?.();
+    if (this.enabled.value && this.trigger === ButtonTrigger.Click) this.triggerAction();
     return true;
   }
 
   override onMouseDown(e: MouseDownEvent): boolean {
-    if (this.enabled.value && this.trigger === ButtonTrigger.MouseDown) this.action?.();
+    if (this.enabled.value && this.trigger === ButtonTrigger.MouseDown && e.button === MouseButton.Left) {
+      this.triggerAction();
+    }
+
     return true;
+  }
+
+  protected triggerAction() {
+    this.action?.();
   }
 }
 

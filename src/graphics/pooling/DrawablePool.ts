@@ -70,7 +70,7 @@ export class DrawablePool<T extends PoolableDrawable> extends CompositeDrawable 
     if (!drawable) {
       drawable = this.#create();
 
-      if (this.#maximumSize == null || this.#currentPoolSize < this.#maximumSize) {
+      if (this.#maximumSize === null || this.#currentPoolSize < this.#maximumSize) {
         this.#currentPoolSize++;
       } else {
         this.#countExcessConstructed++;

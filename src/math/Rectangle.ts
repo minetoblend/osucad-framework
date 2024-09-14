@@ -56,4 +56,8 @@ export class Rectangle {
   contains(point: IVec2) {
     return point.x >= this.left && point.x <= this.right && point.y >= this.top && point.y <= this.bottom;
   }
+
+  equals(rect: Rectangle) {
+    return this.x === rect.x && this.y === rect.y && this.width === rect.width && this.height === rect.height;
+  }
 }

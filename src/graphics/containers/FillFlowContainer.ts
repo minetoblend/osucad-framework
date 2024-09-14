@@ -14,7 +14,7 @@ export interface FillFlowContainerOptions<T extends Drawable = Drawable> extends
   layoutEasing?: EasingFunction;
 }
 
-export class FillFlowContainer<T extends Drawable = Drawable> extends FlowContainer {
+export class FillFlowContainer<T extends Drawable = Drawable> extends FlowContainer<T> {
   constructor(options: FillFlowContainerOptions<T> = {}) {
     super();
 
@@ -72,7 +72,7 @@ export class FillFlowContainer<T extends Drawable = Drawable> extends FlowContai
     }
 
     const children = this.flowingChildren;
-    if (children.length == 0) return [];
+    if (children.length === 0) return [];
 
     const layoutPositions = new Array<Vec2>(children.length);
 
@@ -123,7 +123,7 @@ export class FillFlowContainer<T extends Drawable = Drawable> extends FlowContai
         );
       }
 
-      if (i == 0) {
+      if (i === 0) {
         size = c.boundingBox.size;
         rowBeginOffset = this.#spacingFactor(c).x * size.x;
       }
@@ -131,8 +131,8 @@ export class FillFlowContainer<T extends Drawable = Drawable> extends FlowContai
       const rowWidth = rowBeginOffset + current.x + (1 - this.#spacingFactor(c).x) * size.x;
 
       if (
-        this.#direction != FillDirection.Horizontal &&
-        (definitelyBigger(rowWidth, max.x) || this.#direction == FillDirection.Vertical || this.forceNewRow(c))
+        this.#direction !== FillDirection.Horizontal &&
+        (definitelyBigger(rowWidth, max.x) || this.#direction === FillDirection.Vertical || this.forceNewRow(c))
       ) {
         current.x = 0;
         current.y += rowHeight;
@@ -178,7 +178,7 @@ export class FillFlowContainer<T extends Drawable = Drawable> extends FlowContai
         case FillDirection.Vertical:
           if (c.relativeAnchorPosition.y !== ourRelativeAnchor.y) {
             throw new Error(
-              `All drawables in a FillFlowContainer must use the same RelativeAnchorPosition for the given FillDirection(${this.direction}) (${ourRelativeAnchor.y} != ${c.relativeAnchorPosition.y}). Consider using multiple instances of FillFlowContainer if this is intentional.`,
+              `All drawables in a FillFlowContainer must use the same RelativeAnchorPosition for the given FillDirection(${this.direction}) (${ourRelativeAnchor.y} !== ${c.relativeAnchorPosition.y}). Consider using multiple instances of FillFlowContainer if this is intentional.`,
             );
           }
 
@@ -187,7 +187,7 @@ export class FillFlowContainer<T extends Drawable = Drawable> extends FlowContai
         case FillDirection.Horizontal:
           if (c.relativeAnchorPosition.x !== ourRelativeAnchor.x) {
             throw new Error(
-              `All drawables in a FillFlowContainer must use the same RelativeAnchorPosition for the given FillDirection(${this.direction}) (${ourRelativeAnchor.x} != ${c.relativeAnchorPosition.x}). Consider using multiple instances of FillFlowContainer if this is intentional.`,
+              `All drawables in a FillFlowContainer must use the same RelativeAnchorPosition for the given FillDirection(${this.direction}) (${ourRelativeAnchor.x} !== ${c.relativeAnchorPosition.x}). Consider using multiple instances of FillFlowContainer if this is intentional.`,
             );
           }
 
@@ -196,7 +196,7 @@ export class FillFlowContainer<T extends Drawable = Drawable> extends FlowContai
         default:
           if (!c.relativeAnchorPosition.equals(ourRelativeAnchor)) {
             throw new Error(
-              `All drawables in a FillFlowContainer must use the same RelativeAnchorPosition for the given FillDirection(${this.direction}) (${ourRelativeAnchor} != ${c.relativeAnchorPosition}). Consider using multiple instances of FillFlowContainer if this is intentional.`,
+              `All drawables in a FillFlowContainer must use the same RelativeAnchorPosition for the given FillDirection(${this.direction}) (${ourRelativeAnchor} !== ${c.relativeAnchorPosition}). Consider using multiple instances of FillFlowContainer if this is intentional.`,
             );
           }
 

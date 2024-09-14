@@ -160,9 +160,11 @@ export abstract class FlowContainer<T extends Drawable = Drawable> extends Conta
 
       if (currentTargetPos.equals(pos)) continue;
 
-      if (this.layoutDuration > 0) drawable.moveTo(pos, this.layoutDuration, this.layoutEasing);
+      if (this.layoutDuration > 0) {
+        drawable.moveTo(pos, this.layoutDuration, this.layoutEasing)
+      }
       else {
-        gsap.killTweensOf(drawable, 'x,y', true);
+        drawable.clearTransforms(false, 'position')
         drawable.position = pos;
       }
     }

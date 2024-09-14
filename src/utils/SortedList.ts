@@ -1,7 +1,9 @@
+import type { IComparer } from './IComparer.ts';
+
 export class SortedList<T> {
   #items: T[] = [];
 
-  constructor(private readonly comparer: Comparer<T>) {}
+  constructor(private readonly comparer: IComparer<T>) {}
 
   get length() {
     return this.#items.length;
@@ -124,8 +126,4 @@ export class SortedList<T> {
   get items(): ReadonlyArray<T> {
     return this.#items;
   }
-}
-
-export interface Comparer<T> {
-  compare(a: T, b: T): number;
 }

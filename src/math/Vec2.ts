@@ -7,7 +7,9 @@ export class Vec2 implements ILerp<Vec2> {
   constructor(
     public x: number = 0,
     public y: number = x,
-  ) {}
+  ) {
+  }
+
 
   readonly(): Readonly<Vec2> {
     return this;

@@ -33,7 +33,7 @@ export class Scheduler {
   updateClock(newClock: IClock) {
     if (newClock === this.#clock) return;
 
-    if (this.#clock == null) {
+    if (this.#clock === null) {
       // This is the first time we will get a valid time, so assume this is the
       // reference point everything scheduled so far starts from.
       for (const s of this.#timedTasks) {
@@ -64,14 +64,14 @@ export class Scheduler {
 
       task = this.#getNextTask();
 
-      if (++countRun == countToRun) break;
+      if (++countRun === countToRun) break;
     }
 
     return countRun;
   }
 
   #queueTimedTasks() {
-    if (this.#timedTasks.length != 0) {
+    if (this.#timedTasks.length !== 0) {
       const currentTimeLocal = this.#currentTime;
 
       for (const sd of this.#timedTasks) {

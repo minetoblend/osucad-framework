@@ -4,7 +4,7 @@ import { Container } from '../graphics/containers/Container';
 import { PIXIGraphics } from '../pixi';
 import { Visibility, VisibilityContainer } from '../graphics/containers/VisibilityContainer';
 import type { MouseMoveEvent } from './events/MouseMoveEvent';
-import type { Vec2 } from '../math';
+import  { Vec2 } from '../math';
 
 export class CursorContainer extends VisibilityContainer {
   activeCursor: Drawable;
@@ -44,6 +44,10 @@ export class CursorContainer extends VisibilityContainer {
 
   override receivePositionalInputAt(pos: Vec2): boolean {
     return true;
+  }
+
+  override receivePositionalInputAtLocal(localPosition: Vec2): boolean {
+    return true
   }
 }
 

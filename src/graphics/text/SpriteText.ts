@@ -2,6 +2,7 @@ import { PIXIBitmapText, PIXIContainer, PIXITextStyle, type PIXITextStyleOptions
 import { Drawable, Invalidation, type DrawableOptions } from '../drawables/Drawable';
 import { LayoutMember } from '../drawables/LayoutMember';
 import type { FontDefinition } from './FontDefinition';
+import { Cached } from '../../caching';
 
 export interface SpriteTextOptions extends DrawableOptions {
   text?: string;
@@ -42,7 +43,7 @@ export class SpriteText extends Drawable {
     });
   }
 
-  #textBacking = new LayoutMember(Invalidation.None);
+  #textBacking = new Cached();
 
   #textStyle: PIXITextStyle;
 

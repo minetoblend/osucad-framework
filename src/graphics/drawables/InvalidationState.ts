@@ -29,20 +29,20 @@ export class InvalidationState {
 
   #invalidateSelf(flags: Invalidation): boolean {
     const combined = this.#selfInvalidation | (flags & Invalidation.Layout);
-    const result = (this.#selfInvalidation & flags) != flags;
+    const result = (this.#selfInvalidation & flags) !== flags;
     this.#selfInvalidation = combined;
     return result;
   }
 
   #invalidateParent(flags: Invalidation): boolean {
     const combined = this.#parentInvalidation | (flags & Invalidation.Layout);
-    const result = (this.#parentInvalidation & flags) != flags;
+    const result = (this.#parentInvalidation & flags) !== flags;
     this.#parentInvalidation = combined;
     return result;
   }
 
   #invalidateChild(flags: Invalidation): boolean {
-    const result = (this.#childInvalidation & flags) != flags;
+    const result = (this.#childInvalidation & flags) !== flags;
     this.#childInvalidation |= flags & Invalidation.Layout;
     return result;
   }
@@ -62,19 +62,19 @@ export class InvalidationState {
   }
 
   #validateSelf(flags: Invalidation): boolean {
-    const result = (this.#selfInvalidation & flags) != flags;
+    const result = (this.#selfInvalidation & flags) !== flags;
     this.#selfInvalidation &= ~flags;
     return result;
   }
 
   #validateParent(flags: Invalidation): boolean {
-    const result = (this.#parentInvalidation & flags) != flags;
+    const result = (this.#parentInvalidation & flags) !== flags;
     this.#parentInvalidation &= ~flags;
     return result;
   }
 
   #validateChild(flags: Invalidation): boolean {
-    const result = (this.#childInvalidation & flags) != flags;
+    const result = (this.#childInvalidation & flags) !== flags;
     this.#childInvalidation &= ~flags;
     return result;
   }

@@ -6,7 +6,6 @@ export class TransformSequence<T extends ITransformable> {
 
   readonly #origin: T;
 
-  // @ts-expect-error unused property
   readonly #startTime: number;
 
   #currentTime: number;
@@ -65,18 +64,67 @@ export class TransformSequence<T extends ITransformable> {
     return this.#transforms;
   }
 
-  delay(duration: number) {
+  delay(duration: number): this {
     this.#currentTime += duration;
 
     return this;
   }
 
-  then(delay = 0) {
+  then(delay = 0): this {
     if (!this.#hasEnd) {
       throw Error('Can not perform then on an endless TransformSequence.');
     }
 
     this.#currentTime = this.#endTime;
+
     return this.delay(delay);
   }
+
+  asProxy(): TransformSequenceProxy<T> {
+    const isProxy = '__is_proxy__';
+    if ((this as any)[isProxy]) {
+      return this as any;
+    }
+
+    const proxy = new Proxy(this, {
+      get(target: TransformSequence<T>, p: string | symbol, receiver: any): any {
+        if (p === isProxy) {
+          return true;
+        }
+
+        const ownValue = Reflect.get(target, p, target);
+        if (ownValue !== undefined) {
+          if (typeof ownValue === 'function') {
+            return (...args: any[]) => {
+              const result = ownValue.apply(target, args);
+
+              return result === target ? proxy : result;
+            };
+          }
+
+          return ownValue;
+        }
+
+        const originValue = Reflect.get(target.origin, p, receiver);
+        if (originValue) {
+          if (typeof originValue === 'function') {
+            return (...args: any[]) => {
+              target.append((o: any) => {
+                const result = o[p](...args);
+                return result && result instanceof TransformSequence ? result : new TransformSequence(o);
+              });
+
+              return proxy;
+            };
+          }
+        }
+
+        return originValue;
+      },
+    }) as any;
+
+    return proxy;
+  }
 }
+
+export type TransformSequenceProxy<T extends ITransformable> = TransformSequence<T> & T;

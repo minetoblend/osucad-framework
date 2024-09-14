@@ -7,3 +7,6 @@ export * from './List';
 export * from './SortedList';
 export * from './ObservableSortedList';
 export * from './Lazy';
+export * from './IComparer.ts';
+export * from './Comparer.ts';
+export * from './WeakList.ts';

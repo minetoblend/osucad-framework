@@ -14,4 +14,6 @@ export * from './types';
 export * from './pixi';
 export * from './injectionTokens';
 export * from './utils';
+export * from './renderers/Renderer';
+export * from './io';
 export { Game } from './Game';

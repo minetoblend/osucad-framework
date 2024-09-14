@@ -6,7 +6,7 @@ export abstract class VisibilityContainer extends Container {
   #didInitialHide = false;
 
   protected get startHidden() {
-    return this.state.value == Visibility.Hidden;
+    return this.state.value === Visibility.Hidden;
   }
 
   override loadComplete() {
@@ -28,15 +28,15 @@ export abstract class VisibilityContainer extends Container {
   }
 
   toggleVisibility() {
-    this.state.value = this.state.value == Visibility.Visible ? Visibility.Hidden : Visibility.Visible;
+    this.state.value = this.state.value === Visibility.Visible ? Visibility.Hidden : Visibility.Visible;
   }
 
   override get propagateNonPositionalInputSubTree() {
-    return this.state.value == Visibility.Visible;
+    return this.state.value === Visibility.Visible;
   }
 
   override get propagatePositionalInputSubTree() {
-    return this.state.value == Visibility.Visible;
+    return this.state.value === Visibility.Visible;
   }
 
   abstract popIn(): void;

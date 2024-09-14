@@ -50,8 +50,10 @@ import { Transformable } from '../transforms/Transformable.ts';
 import { EasingFunction } from '../transforms/EasingFunction.ts';
 import { TransformCustom } from '../transforms/TransformCustom.ts';
 import { TypedTransform } from '../transforms/Transform.ts';
-import { DrawableTransformSequence } from '../transforms/DrawableTransformSequence.ts';
 import { Bindable } from '../../bindables';
+import { TransformSequence, type TransformSequenceProxy } from '../transforms/TransformSequence.ts';
+import { Rectangle as PIXIRectangle } from 'pixi.js';
+import { DoubleClickEvent } from '../../input/events/DoubleClickEvent.ts';
 
 export interface DrawableOptions {
   position?: IVec2;
@@ -84,6 +86,7 @@ export interface DrawableOptions {
 export const LOAD = Symbol('load');
 export const LOAD_FROM_ASYNC = Symbol('loadFromAsync');
 
+
 export abstract class Drawable extends Transformable implements IDisposable, IInputReceiver {
   constructor() {
     super();
@@ -92,7 +95,7 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
     this.addLayout(this.#colorBacking);
     this.addLayout(this.#requiredParentSizeToFitBacking);
 
-    this.label = this.constructor.name;
+    // this.label = this.constructor.name;
   }
 
   with(options: DrawableOptions): this {
@@ -256,7 +259,7 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
   }
 
   get drawScale() {
-    return this.scale;
+    return this.#scale;
   }
 
   get scaleX() {
@@ -348,7 +351,7 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
   }
 
   get tint() {
-    return this.#color.toHex();
+    return this.#color.toNumber()
   }
 
   set tint(value: ColorSource) {
@@ -390,7 +393,7 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
   }
 
   get isPresent() {
-    return this.alwaysPresent || (this.alpha > 0.0001 && this.drawScale.x !== 0 && this.drawScale.y !== 0);
+    return this.#alwaysPresent || (this.#alpha > 0.0001 && this.#scale.x !== 0 && this.#scale.y !== 0);
   }
 
   #alwaysPresent: boolean = false;
@@ -415,7 +418,8 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
 
   //#region layout
 
-  onSizingChanged() {}
+  onSizingChanged() {
+  }
 
   #relativeSizeAxes: Axes = Axes.None;
 
@@ -426,7 +430,7 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
   set relativeSizeAxes(value: Axes) {
     if (this.#relativeSizeAxes === value) return;
 
-    if (this.#fillMode != FillMode.Stretch && (value === Axes.Both || this.#relativeSizeAxes === Axes.Both))
+    if (this.#fillMode !== FillMode.Stretch && (value === Axes.Both || this.#relativeSizeAxes === Axes.Both))
       this.invalidate(Invalidation.DrawSize);
     else {
       const conversion = this.#relativeToAbsoluteFactor;
@@ -475,7 +479,7 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
     this.#updateBypassAutoSizeAxes();
   }
 
-  protected applyRelativeAxes(axes: Axes, v: Readonly<Vec2>, fillMode: FillMode): Readonly<Vec2> {
+  protected applyRelativeAxes(axes: Axes, v: Vec2, fillMode: FillMode): Readonly<Vec2> {
     if (axes === Axes.None) {
       return v;
     }
@@ -494,12 +498,15 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
     }
 
     if (this.relativeSizeAxes === Axes.Both && fillMode !== FillMode.Stretch) {
-      if (fillMode == FillMode.Fill) x = y = Math.max(x, y * this.#fillAspectRatio);
-      else if (fillMode == FillMode.Fit) x = y = Math.min(x, y * this.#fillAspectRatio);
+      if (fillMode === FillMode.Fill) x = y = Math.max(x, y * this.#fillAspectRatio);
+      else if (fillMode === FillMode.Fit) x = y = Math.min(x, y * this.#fillAspectRatio);
       y /= this.#fillAspectRatio;
     }
 
-    return new Vec2(x, y);
+    v.x = x;
+    v.y = y;
+
+    return v
   }
 
   #anchor: Anchor = Anchor.TopLeft;
@@ -615,7 +622,7 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
 
     this.#fillAspectRatio = value;
 
-    if (this.#fillMode != FillMode.Stretch && this.relativeSizeAxes == Axes.Both) {
+    if (this.#fillMode !== FillMode.Stretch && this.relativeSizeAxes === Axes.Both) {
       this.invalidate(Invalidation.DrawSize);
     }
   }
@@ -709,8 +716,14 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
     if (this.#lifeTimeStart === value) return;
 
     this.#lifeTimeStart = value;
+    this.#onLifetimeChanged()
     this.lifetimeChanged.emit(this);
   }
+
+  #onLifetimeChanged() {
+    this.#hasLifeTime = this.#lifeTimeStart !== Number.MIN_VALUE || this.#lifeTimeEnd !== Number.MAX_VALUE;
+  }
+
 
   get lifetimeEnd() {
     return this.#lifeTimeEnd;
@@ -720,12 +733,15 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
     if (this.#lifeTimeEnd === value) return;
 
     this.#lifeTimeEnd = value;
+    this.#onLifetimeChanged();
     this.lifetimeChanged.emit(this);
   }
 
   #lifeTimeStart = Number.MIN_VALUE;
 
   #lifeTimeEnd = Number.MAX_VALUE;
+
+  #hasLifeTime = false;
 
   hide() {
     this.fadeOut();
@@ -738,24 +754,20 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
   isAlive = false;
 
   get shouldBeAlive() {
-    if (this.lifetimeStart == Number.MIN_VALUE && this.lifetimeEnd === Number.MAX_VALUE) return true;
+    if (!this.#hasLifeTime) return true;
 
-    return this.time.current >= this.lifetimeStart && this.time.current < this.lifetimeEnd;
+    return this.clock!.timeInfo.current >= this.#lifeTimeStart && this.clock!.timeInfo.current < this.#lifeTimeEnd;
   }
 
   get removeWhenNotAlive() {
-    return this.parent === null || this.time.current > this.lifetimeStart;
+    return this.parent === null || this.clock!.timeInfo.current > this.#lifeTimeStart;
   }
 
   get disposeOnDeathRemoval() {
     return this.removeCompletedTransforms;
   }
 
-  #loadState: LoadState = LoadState.NotLoaded;
-
-  get loadState() {
-    return this.#loadState;
-  }
+  loadState: LoadState = LoadState.NotLoaded;
 
   get isLoaded() {
     return this.loadState === LoadState.Loaded;
@@ -764,13 +776,14 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
   dependencies!: DependencyContainer;
 
   removeFromParent(dispose = true) {
-    this.parent?.['removeInternal']?.(this, dispose);
+    this.#parent?.['removeInternal']?.(this, dispose);
   }
 
   #loadComplete() {
-    if (this.#loadState < LoadState.Ready) return false;
+    if (this.loadState < LoadState.Ready)
+      return;
 
-    this.#loadState = LoadState.Loaded;
+    this.loadState = LoadState.Loaded;
 
     this.invalidate(Invalidation.Layout, InvalidationSource.Parent);
 
@@ -791,7 +804,7 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
       this.updateClock(clock);
 
       pushDrawableScope(this);
-      this.#loadState = LoadState.Loading;
+      this.loadState = LoadState.Loading;
 
       this.#requestsNonPositionalInput = HandleInputCache.requestsNonPositionalInput(this);
       this.#requestsPositionalInput = HandleInputCache.requestsPositionalInput(this);
@@ -818,7 +831,7 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
 
       this.loadAsyncComplete();
 
-      this.#loadState = LoadState.Ready;
+      this.loadState = LoadState.Ready;
     } finally {
       popDrawableScope();
     }
@@ -877,11 +890,14 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
     this.#scheduler?.updateClock(this.#clock);
   }
 
-  protected onLoad() {}
+  protected onLoad() {
+  }
 
-  protected loadComplete() {}
+  protected loadComplete() {
+  }
 
-  protected loadAsyncComplete() {}
+  protected loadAsyncComplete() {
+  }
 
   onLoadComplete = new Action<Drawable>();
 
@@ -906,11 +922,7 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
     }
   }
 
-  #isDisposed: boolean = false;
-
-  get isDisposed() {
-    return this.#isDisposed;
-  }
+  isDisposed: boolean = false;
 
   dispose(isDisposing = true): void {
     if (this.isDisposed) return;
@@ -931,7 +943,7 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
       }
     }
 
-    this.#isDisposed = true;
+    this.isDisposed = true;
   }
 
   #onDispose: (() => void)[] = [];
@@ -939,7 +951,7 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
   #invalidateParentSizeDependencies(invalidation: Invalidation, changedAxes: Axes) {
     this.invalidate(invalidation, InvalidationSource.Self, false);
 
-    this.parent?.invalidateChildrenSizeDependencies(invalidation, changedAxes, this);
+    this.#parent?.invalidateChildrenSizeDependencies(invalidation, changedAxes, this);
   }
 
   #bypassAutoSizeAxes: Axes = Axes.None;
@@ -956,13 +968,13 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
   }
 
   #updateBypassAutoSizeAxes() {
-    const value = this.relativePositionAxes | this.relativeSizeAxes | this.#bypassAutoSizeAdditionalAxes;
+    const value = this.#relativePositionAxes | this.#relativeSizeAxes | this.#bypassAutoSizeAdditionalAxes;
 
     if (this.#bypassAutoSizeAxes !== value) {
       const changedAxes = this.#bypassAutoSizeAxes ^ value;
       this.#bypassAutoSizeAxes = value;
-      if ((this.parent?.autoSizeAxes ?? 0) & changedAxes)
-        this.parent?.invalidate(Invalidation.RequiredParentSizeToFit, InvalidationSource.Child);
+      if ((this.#parent?.autoSizeAxes ?? 0) & changedAxes)
+        this.#parent?.invalidate(Invalidation.RequiredParentSizeToFit, InvalidationSource.Child);
     }
   }
 
@@ -1120,6 +1132,7 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
 
     if (!this.#transformBacking.isValid) {
       this.updateDrawNodeTransform();
+      FrameStatistics.increment(StatisticsCounterType.DrawNodeTransforms);
       this.#transformBacking.validate();
     }
 
@@ -1128,10 +1141,13 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
       this.#colorBacking.validate();
     }
 
+
+
     return true;
   }
 
-  update() {}
+  update() {
+  }
 
   onUpdate = new Action<Drawable>();
 
@@ -1158,6 +1174,15 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
     this.drawNode.scale.copyFrom(this.drawScale);
     this.drawNode.skew.copyFrom(this.skew);
     this.drawNode.rotation = this.rotation;
+
+    if (!this.drawNode.boundsArea)
+      this.drawNode.boundsArea = new PIXIRectangle(-this.margin.left, -this.margin.top, this.drawSize.x, this.drawSize.y);
+    else {
+      this.drawNode.boundsArea.x = -this.margin.left;
+      this.drawNode.boundsArea.y = -this.margin.top;
+      this.drawNode.boundsArea.width = this.drawSize.x;
+      this.drawNode.boundsArea.height = this.drawSize.y;
+    }
   }
 
   updateDrawNodeColor() {
@@ -1274,11 +1299,15 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
   }
 
   get propagatePositionalInputSubTree() {
-    return this.isPresent && this.requestsPositionalInputSubTree;
+    return this.requestsPositionalInputSubTree && this.isPresent;
   }
 
   receivePositionalInputAt(screenSpacePosition: Vec2): boolean {
     return this.contains(screenSpacePosition);
+  }
+
+  receivePositionalInputAtLocal(localPosition: Vec2): boolean {
+    return this.containsLocal(localPosition);
   }
 
   toLocalSpace(screenSpacePosition: Vec2): Vec2 {
@@ -1300,7 +1329,11 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
   contains(screenSpacePosition: Vec2): boolean {
     const pos = this.toLocalSpace(screenSpacePosition);
 
-    return pos.x >= 0 && pos.x <= this.drawSize.x && pos.y >= 0 && pos.y <= this.drawSize.y;
+    return this.containsLocal(pos);
+  }
+
+  containsLocal(localPosition: Vec2): boolean {
+    return localPosition.x >= 0 && localPosition.x <= this.drawSize.x && localPosition.y >= 0 && localPosition.y <= this.drawSize.y;
   }
 
   getContainingInputManager(): InputManager | null {
@@ -1317,6 +1350,16 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
     if (!this.propagatePositionalInputSubTree) return false;
 
     if (this.handlePositionalInput && this.receivePositionalInputAt(screenSpacePos)) {
+      queue.push(this);
+    }
+
+    return true;
+  }
+
+  buildPositionalInputQueueLocal(localPos: Vec2, queue: List<Drawable>): boolean {
+    if (!this.propagatePositionalInputSubTree) return false;
+
+    if (this.handlePositionalInput && this.receivePositionalInputAtLocal(localPos)) {
       queue.push(this);
     }
 
@@ -1358,6 +1401,8 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
   onMouseUp?(e: MouseUpEvent): void;
 
   onClick?(e: ClickEvent): boolean;
+
+  onDoubleClick?(e: DoubleClickEvent): boolean;
 
   onDrag?(e: DragEvent): boolean;
 
@@ -1414,8 +1459,8 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
   //#endregion
 
   //#region transforms
-  delay(duration: number) {
-    return new DrawableTransformSequence(this).delay(duration);
+  delay(duration: number): TransformSequenceProxy<this> {
+    return new TransformSequence(this).delay(duration).asProxy();
   }
 
   fadeTo(alpha: number, duration: number = 0, easing: EasingFunction = EasingFunction.Default) {
@@ -1489,14 +1534,14 @@ export abstract class Drawable extends Transformable implements IDisposable, IIn
     duration: number = 0,
     easing: EasingFunction = EasingFunction.Default,
     grouping?: string,
-  ) {
-    const result = new DrawableTransformSequence(this);
+  ): TransformSequenceProxy<this> {
+    const result = new TransformSequence(this);
     const transform = this.makeTransform(propertyOrFieldName, newValue, duration, easing, grouping);
 
     result.add(transform);
     this.addTransform(transform);
 
-    return result;
+    return result.asProxy();
   }
 
   protected makeTransform<TValue>(

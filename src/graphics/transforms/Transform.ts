@@ -1,9 +1,9 @@
 import type { ITransformable } from './ITransformable.ts';
 import { EasingFunction } from './EasingFunction.ts';
-import type { Comparer } from '../../utils';
+import type { IComparer } from '../../utils';
 
 export abstract class Transform {
-  static COMPARER: Comparer<Transform> = {
+  static COMPARER: IComparer<Transform> = {
     compare: (a, b) => {
       let compare = a.startTime - b.startTime;
       if (compare !== 0) return compare;

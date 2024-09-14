@@ -1,8 +1,11 @@
 export { AudioManager } from './AudioManager';
 export { type ITrack } from './track/ITrack';
 export { Track } from './track/Track';
+export { AudioBufferTrack } from './track/AudioBufferTrack.ts';
 export { AudioChannel } from './AudioChannel';
 export { Sample, type SamplePlayOptions } from './sample/Sample';
 export { SamplePlayback } from './sample/SamplePlayback';
 export { AudioFilter } from './AudioFilter';
 export { LowpassFilter, type LowpassFilterOptions } from './LowpassFilter';
+export { SampleStore } from './sample/SampleStore.ts';
+export { type ISampleStore } from './sample/ISampleStore.ts';

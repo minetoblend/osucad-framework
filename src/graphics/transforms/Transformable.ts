@@ -76,7 +76,7 @@ export abstract class Transformable implements ITransformable {
   #getTrackerForGrouping(targetGrouping: string, createIfNotExisting: boolean) {
     if (this.#targetGroupingTrackers !== null) {
       for (const t of this.#targetGroupingTrackers) {
-        if (t.targetGrouping == targetGrouping) return t;
+        if (t.targetGrouping === targetGrouping) return t;
       }
     }
 
@@ -113,7 +113,7 @@ export abstract class Transformable implements ITransformable {
   }
 
   clearTransformsAfter(time: number, propagateChildren: boolean = false, targetMember?: string) {
-    if (this.#targetGroupingTrackers == null) return;
+    if (this.#targetGroupingTrackers === null) return;
 
     if (targetMember) {
       this.#getTrackerFor(targetMember)?.clearTransformsAfter(time, targetMember);
@@ -135,7 +135,7 @@ export abstract class Transformable implements ITransformable {
   finishTransforms(propagateChildren: boolean = false, targetMember?: string) {
     if (this.#targetGroupingTrackers === null) return;
 
-    if (targetMember != null) {
+    if (targetMember) {
       this.#getTrackerFor(targetMember)?.finishTransforms(targetMember);
     } else {
       // Use for over foreach as collection may grow due to abort / completion events.
@@ -153,7 +153,8 @@ export abstract class Transformable implements ITransformable {
 
   beginDelayedSequence(delay: number, recursive: boolean = true): IUsable {
     if (delay === 0) {
-      return new ValueInvokeOnDisposal(() => {});
+      return new ValueInvokeOnDisposal(() => {
+      });
     }
     this.addDelay(delay, recursive);
     const newTransformDelay = this.transformDelay;
@@ -173,12 +174,19 @@ export abstract class Transformable implements ITransformable {
     return this.createAbsoluteSequenceAction(newTransformStartTime);
   }
 
+  absoluteSequence(options: number | { time: number, recursive?: boolean }, block: () => void) {
+    options = typeof options === 'number' ? { time: options, recursive: true } : options;
+
+    using _ = this.beginAbsoluteSequence(options.time, options.recursive);
+    block();
+  }
+
   addTransform(transform: Transform, customTransformID?: number): void {
     if (transform.targetTransformable !== this) {
       throw new Error('Cannot add a transform to a Transformable that is not the target of the transform.');
     }
 
-    if (this.clock == null) {
+    if (this.clock === null) {
       if (!transform.hasStartValue) {
         transform.readIntoStartValue();
         transform.hasStartValue = true;

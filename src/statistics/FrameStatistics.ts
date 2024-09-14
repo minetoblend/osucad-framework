@@ -22,4 +22,10 @@ export class FrameStatistics {
   static get counters() {
     return this.COUNTERS as Readonly<BigUint64Array>;
   }
+
+  static drawTime = 0;
+
+  static inputQueue = 0;
+
+  static frameTime = 0;
 }

@@ -1,4 +1,5 @@
 import { Action } from './Action.ts';
+import { WeakList } from '../utils';
 
 export type BindableListener<T> = (value: T) => void;
 
@@ -56,7 +57,7 @@ export class Bindable<T> implements ReadonlyBindable<T> {
 
   setValue(previousValue: T, value: T, bypassChecks = false, source?: Bindable<T>) {
     this.#value = value;
-    this.triggerValueChange(previousValue, source ?? this, bypassChecks);
+    this.triggerValueChange(previousValue, source ?? this, true, bypassChecks);
   }
 
   get default() {
@@ -94,13 +95,10 @@ export class Bindable<T> implements ReadonlyBindable<T> {
     const beforePropagation = this.#value;
 
     if (propagateToBindings && this.bindings) {
-      for (const binding of this.bindings) {
-        const bindable = binding.deref();
+      for (const bindable of this.bindings) {
         if (bindable === source) continue;
 
-        if (bindable) {
-          bindable.setValue(beforePropagation, this.#value, bypassChecks, this);
-        }
+        bindable.setValue(beforePropagation, this.#value, bypassChecks, this);
       }
     }
 
@@ -116,13 +114,10 @@ export class Bindable<T> implements ReadonlyBindable<T> {
     const beforePropagation = this.#defaultValue;
 
     if (propagateToBindings && this.bindings) {
-      for (const binding of this.bindings) {
-        const bindable = binding.deref();
+      for (const bindable of this.bindings) {
         if (bindable === source) continue;
 
-        if (bindable) {
-          bindable.setDefaultValue(beforePropagation, this.#defaultValue, bypassChecks, this);
-        }
+        bindable.setDefaultValue(beforePropagation, this.#defaultValue, bypassChecks, this);
       }
     }
 
@@ -138,13 +133,10 @@ export class Bindable<T> implements ReadonlyBindable<T> {
     const beforePropagation = this.#disabled;
 
     if (propagateToBindings && this.bindings) {
-      for (const binding of this.bindings) {
-        const bindable = binding.deref();
+      for (const bindable of this.bindings) {
         if (bindable === source) continue;
 
-        if (bindable) {
-          bindable.setDisabled(this.#disabled, bypassChecks, this);
-        }
+        bindable.setDisabled(this.#disabled, bypassChecks, this);
       }
     }
 
@@ -162,11 +154,8 @@ export class Bindable<T> implements ReadonlyBindable<T> {
   unbindBindings() {
     if (!this.bindings) return;
 
-    for (const binding of this.bindings) {
-      const bindable = binding.deref();
-      if (bindable) {
-        this.unbindFrom(bindable);
-      }
+    for (const bindable of this.bindings) {
+      this.unbindFrom(bindable);
     }
   }
 
@@ -188,13 +177,13 @@ export class Bindable<T> implements ReadonlyBindable<T> {
     bindable.#removeWeakReference(this);
   }
 
-  protected bindings?: WeakRef<Bindable<T>>[];
+  protected bindings?: WeakList<Bindable<T>>;
 
   bindTo(bindable: Bindable<T>) {
     bindable.copyTo(this);
 
-    this.#addWeakReference(bindable);
-    bindable.#addWeakReference(this);
+    this.#addWeakReference(bindable.weakReference);
+    bindable.#addWeakReference(this.weakReference);
   }
 
   copyTo(bindable: Bindable<T>) {
@@ -203,19 +192,13 @@ export class Bindable<T> implements ReadonlyBindable<T> {
     bindable.setDisabled(this.disabled, true);
   }
 
-  #addWeakReference(bindable: Bindable<T>) {
-    this.bindings ??= [];
-    this.bindings.push(new WeakRef(bindable));
+  #addWeakReference(weakReference: WeakRef<Bindable<T>>) {
+    this.bindings ??= new WeakList();
+    this.bindings.add(weakReference);
   }
 
   #removeWeakReference(bindable: Bindable<T>) {
-    if (!this.bindings) return;
-
-    const index = this.bindings.findIndex((b) => b.deref() === bindable);
-
-    if (index !== -1) {
-      this.bindings.splice(index, 1);
-    }
+    this.bindings?.remove(bindable);
   }
 
   protected equals(a: T, b: T): boolean {
@@ -227,10 +210,24 @@ export class Bindable<T> implements ReadonlyBindable<T> {
     this.triggerDisabledChange(this, false);
   }
 
+  #weakReferenceInstance?: WeakRef<this>;
+
+  /** @internal */
+  get weakReference() {
+    return (this.#weakReferenceInstance ??= new WeakRef(this));
+  }
+
   getBoundCopy(): Bindable<T> {
-    const copy = new Bindable(this.default);
+    const copy = this.createInstance();
+
     copy.bindTo(this);
+
     return copy;
+  }
+
+  /** @internal */
+  createInstance(): Bindable<T> {
+    return new Bindable(this.default);
   }
 }
 

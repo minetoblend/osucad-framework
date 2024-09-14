@@ -82,6 +82,8 @@ export class KeyboardHandler extends InputHandler {
     switch (event.key) {
       case 'R':
       case 'r':
+      case 'w':
+      case 'W':
         return event.ctrlKey || event.metaKey;
     }
 

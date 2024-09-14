@@ -5,3 +5,4 @@ export * from './text';
 export * from './userInterface';
 export * from './transforms';
 export * from './pooling';
+export * from './animations';

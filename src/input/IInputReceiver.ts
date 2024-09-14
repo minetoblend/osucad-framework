@@ -16,6 +16,7 @@ import type { TouchMoveEvent } from './events/TouchMoveEvent';
 import type { TouchUpEvent } from './events/TouchUpEvent';
 import type { DropEvent } from './events/DropEvent.ts';
 import type { FocusEvent } from './events/FocusEvent.ts';
+import type { DoubleClickEvent } from './events/DoubleClickEvent.ts';
 
 export interface IInputReceiver {
   onMouseMove?(e: MouseMoveEvent): boolean;
@@ -23,6 +24,7 @@ export interface IInputReceiver {
   onMouseDown?(e: MouseDownEvent): boolean;
   onMouseUp?(e: MouseUpEvent): void;
   onClick?(e: ClickEvent): boolean;
+  onDoubleClick?(e: DoubleClickEvent): boolean;
   onHoverLost?(e: HoverLostEvent): void;
   onDragStart?(e: DragStartEvent): boolean;
   onDrag?(e: DragEvent): boolean;

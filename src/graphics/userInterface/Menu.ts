@@ -263,7 +263,7 @@ export abstract class Menu extends CompositeDrawable {
   #itemStateChanged(item: DrawableMenuItem, state: MenuItemState) {
     if (state !== MenuItemState.Selected) return;
 
-    if (item != this.selectedItem && this.selectedItem !== null) this.selectedItem.state = MenuItemState.NotSelected;
+    if (item !== this.selectedItem && this.selectedItem !== null) this.selectedItem.state = MenuItemState.NotSelected;
 
     this.selectedItem = item;
   }
@@ -338,7 +338,7 @@ export abstract class Menu extends CompositeDrawable {
 
       const parentSubmenuContainer = this.#parentMenu.submenuContainer;
 
-      if (this.#parentMenu.direction == Direction.Vertical) {
+      if (this.#parentMenu.direction === Direction.Vertical) {
         if (menuMaximumPosition.x > inputManager.drawSize.x && menuMinimumPosition.x > 0) {
           // switch the origin and position of the submenu container so that it's right-aligned to the left side of the triggering item.
           parentSubmenuContainer.origin = switchAxisAnchors(parentSubmenuContainer.origin, Anchor.x0, Anchor.x2);
@@ -401,8 +401,8 @@ export abstract class Menu extends CompositeDrawable {
         height = Math.max(height, item.contentDrawHeight);
       }
 
-      width = this.direction == Direction.Horizontal ? this.#itemsFlow.width : width;
-      height = this.direction == Direction.Vertical ? this.#itemsFlow.height : height;
+      width = this.direction === Direction.Horizontal ? this.#itemsFlow.width : width;
+      height = this.direction === Direction.Vertical ? this.#itemsFlow.height : height;
 
       width = Math.min(this.maxWidth, width);
       height = Math.min(this.maxHeight, height);
@@ -410,10 +410,10 @@ export abstract class Menu extends CompositeDrawable {
       width = this.relativeSizeAxes & Axes.X ? this.width : width;
       height = this.relativeSizeAxes & Axes.Y ? this.height : height;
 
-      if (this.state == MenuState.Closed && this.direction === Direction.Horizontal) {
+      if (this.state === MenuState.Closed && this.direction === Direction.Horizontal) {
         width = 0;
       }
-      if (this.state == MenuState.Closed && this.direction === Direction.Vertical) {
+      if (this.state === MenuState.Closed && this.direction === Direction.Vertical) {
         height = 0;
       }
 
@@ -746,10 +746,6 @@ export abstract class DrawableMenuItem extends CompositeDrawable {
     this.updateForegroundColor();
 
     return super.onHoverLost?.(e) ?? true;
-  }
-
-  override buildPositionalInputQueue(screenSpacePos: Vec2, queue: List<Drawable>): boolean {
-    return super.buildPositionalInputQueue(screenSpacePos, queue);
   }
 
   override onClick(): boolean {

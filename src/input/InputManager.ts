@@ -120,6 +120,8 @@ export abstract class InputManager extends Container implements IInputStateChang
     this.#inputQueue.clear();
     this.#positionalInputQueue.clear();
 
+    this.#hoverEventsUpdated = false;
+
     const pendingInputs = this.getPendingInputs();
 
     if (pendingInputs.length > 0) {
@@ -170,18 +172,18 @@ export abstract class InputManager extends Container implements IInputStateChang
 
     this.focusedDrawable = null;
 
-    if (previousFocus != null) {
+    if (previousFocus !== null) {
       previousFocus.hasFocus = false;
       previousFocus.triggerEvent(new FocusLostEvent(state, potentialFocusTarget));
 
-      if (this.focusedDrawable != null) {
+      if (this.focusedDrawable !== null) {
         throw new Error('Focus cannot be changed inside OnFocusLost.');
       }
     }
 
     this.focusedDrawable = potentialFocusTarget;
 
-    if (this.focusedDrawable != null) {
+    if (this.focusedDrawable !== null) {
       this.focusedDrawable.hasFocus = true;
       this.focusedDrawable.triggerEvent(new FocusEvent(state, previousFocus));
     }
@@ -196,7 +198,7 @@ export abstract class InputManager extends Container implements IInputStateChang
       //ensure we are visible
       let d = drawable.parent;
 
-      while (d != null) {
+      while (d !== null) {
         if (!d.isPresent || !d.isAlive) {
           valid = false;
           break;
@@ -326,7 +328,7 @@ export abstract class InputManager extends Container implements IInputStateChang
         }
 
         if (d.isHovered) {
-          if (d == lastHoverHandledDrawable) {
+          if (d === lastHoverHandledDrawable) {
             this.#hoverHandledDrawable = lastHoverHandledDrawable;
             break;
           }
@@ -364,7 +366,7 @@ export abstract class InputManager extends Container implements IInputStateChang
 
     this.getKeyEventManagerFor(key).handleButtonStateChange(state, kind);
 
-    if (kind == ButtonStateChangeKind.Pressed) {
+    if (kind === ButtonStateChangeKind.Pressed) {
       if (!this.#isModifierKey(key)) {
         this.#keyboardRepeatKey = key;
         this.#keyboardRepeatTime = repeat_initial_delay;
@@ -396,9 +398,12 @@ export abstract class InputManager extends Container implements IInputStateChang
   #hoverEventsUpdated = false;
 
   #inputQueue = new List<Drawable>(250);
-  #positionalInputQueue = new List<Drawable>(100);
+  #positionalInputQueue = new List<Drawable>(20);
 
   get positionalInputQueue(): List<Drawable> {
+    if (this.#positionalInputQueue.length > 0)
+      return this.#positionalInputQueue;
+
     return this.#buildPositionalInputQueue(this.currentState.mouse.position);
   }
 
@@ -407,6 +412,8 @@ export abstract class InputManager extends Container implements IInputStateChang
   }
 
   #buildPositionalInputQueue(screenSpacePos: Vec2): List<Drawable> {
+    performance.mark('InputManager#buildPositionalInputQueue');
+
     this.#positionalInputQueue.clear();
 
     if (this.name === 'UserInputManager') {
@@ -414,17 +421,31 @@ export abstract class InputManager extends Container implements IInputStateChang
     }
 
     const children = this.internalChildren;
+    const start = performance.now();
+
+    const position = this.toLocalSpace(screenSpacePos);
+
     for (let i = 0; i < children.length; i++) {
-      if (this.shouldBeConsideredForInput(children[i]))
-        children[i].buildPositionalInputQueue(screenSpacePos, this.#positionalInputQueue);
+      children[i].localTransform.applyInverse(position, position);
+
+      if (this.shouldBeConsideredForInput(children[i])) {
+        children[i].buildPositionalInputQueueLocal(position, this.#positionalInputQueue);
+      }
+    }
+
+    if (this.name === 'UserInputManager') {
+      FrameStatistics.inputQueue = performance.now() - start;
     }
 
     this.#positionalInputQueue.reverse();
+
+    performance.measure('InputManager#buildPositionalInputQueue', 'InputManager#buildPositionalInputQueue');
 
     return this.#positionalInputQueue;
   }
 
   #buildNonPositionalInputQueue(): List<Drawable> {
+    performance.mark('InputManager#buildNonPositionalInputQueue');
     this.#inputQueue.clear();
 
     if (this.name === 'UserInputManager') {
@@ -448,6 +469,8 @@ export abstract class InputManager extends Container implements IInputStateChang
     }
 
     this.#inputQueue.reverse();
+
+    performance.measure('InputManager#buildNonPositionalInputQueue', 'InputManager#buildNonPositionalInputQueue');
 
     return this.#inputQueue;
   }
@@ -588,7 +611,7 @@ export abstract class InputManager extends Container implements IInputStateChang
     }
 
     if (e.isActive !== null) {
-      if (e.isActive == true) {
+      if (e.isActive === true) {
         this.#mouseMappedTouchesDown.add(e.touch.source);
       } else {
         this.#mouseMappedTouchesDown.delete(e.touch.source);
@@ -613,7 +636,7 @@ export abstract class InputManager extends Container implements IInputStateChang
     if (!this.allowRightClickFromLongTouch) return;
 
     // if a touch was pressed/released in this event, reset gesture validity state.
-    if (e.isActive != null) this.#validForLongPress = e.isActive === true && this.#mouseMappedTouchesDown.size == 1;
+    if (e.isActive !== null) this.#validForLongPress = e.isActive === true && this.#mouseMappedTouchesDown.size === 1;
 
     const gestureActive = this.#touchLongPressTimeout !== null;
 
@@ -648,7 +671,7 @@ export abstract class InputManager extends Container implements IInputStateChang
   }
 
   #cancelTouchLongPress() {
-    debugAssert(this.#touchLongPressTimeout != null);
+    debugAssert(this.#touchLongPressTimeout !== null);
 
     this.#touchLongPressPosition = null;
 

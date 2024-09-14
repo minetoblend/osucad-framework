@@ -7,7 +7,7 @@ import { List } from '../utils/List.ts';
 
 export abstract class ButtonEventManager<TButton> {
   handleButtonStateChange(state: InputState, kind: ButtonStateChangeKind) {
-    if (kind == ButtonStateChangeKind.Pressed) {
+    if (kind === ButtonStateChangeKind.Pressed) {
       this.#handleButtonDown(state);
     } else {
       this.#handleButtonUp(state);
@@ -25,7 +25,7 @@ export abstract class ButtonEventManager<TButton> {
     const inputQueue = this.getInputQueue();
     const handledBy = this.handleButtonDown(state, inputQueue);
 
-    if (handledBy != null) {
+    if (handledBy !== null) {
       // only drawables up to the one that handled mouse down should handle mouse up, so remove all subsequent drawables from the queue (for future use).
       const count = inputQueue.indexOf(handledBy) + 1;
       inputQueue.splice(count, inputQueue.length - count);
@@ -33,7 +33,7 @@ export abstract class ButtonEventManager<TButton> {
 
     this.buttonDownInputQueue = [...inputQueue];
 
-    return handledBy != null;
+    return handledBy !== null;
   }
 
   abstract handleButtonDown(state: InputState, targets: List<Drawable>): Drawable | null;

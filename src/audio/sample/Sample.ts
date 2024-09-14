@@ -4,7 +4,9 @@ import { SamplePlayback } from './SamplePlayback';
 export interface SamplePlayOptions {
   rate?: number;
   volume?: number;
+  offset?: number;
   delay?: number;
+  loop?: boolean;
 }
 
 export class Sample {
@@ -21,6 +23,8 @@ export class Sample {
   play(options: SamplePlayOptions = {}): SamplePlayback {
     const source = this.context.createBufferSource();
     source.buffer = this.buffer;
+
+    source.loop = !!options.loop;
 
     if (options.rate) {
       source.playbackRate.value = options.rate;
@@ -51,7 +55,10 @@ export class Sample {
       playback.onEnded.emit(playback);
     };
 
-    source.start(options.delay ? this.context.currentTime + options.delay / 1000 : undefined, undefined);
+    source.start(
+      options.delay ? this.context.currentTime + options.delay / 1000 : undefined,
+      options.offset ? options.offset / 1000 : undefined,
+    );
 
     return playback;
   }

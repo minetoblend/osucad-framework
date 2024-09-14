@@ -53,7 +53,7 @@ export abstract class PoolableDrawable extends CompositeDrawable {
   setPool(pool: IDrawablePool | null) {
     if (this.isInUse) throw Error('This PoolableDrawable is still in use');
 
-    if (pool != null && this.#pool != null) throw new Error('This PoolableDrawable is already in a pool');
+    if (pool !== null && this.#pool !== null) throw new Error('This PoolableDrawable is already in a pool');
 
     this.#pool = pool;
   }
@@ -76,7 +76,7 @@ export abstract class PoolableDrawable extends CompositeDrawable {
   }
 
   override onInvalidate(invalidation: Invalidation, source: InvalidationSource): boolean {
-    if (source != InvalidationSource.Child && invalidation & Invalidation.Parent) {
+    if (source !== InvalidationSource.Child && invalidation & Invalidation.Parent) {
       if (this.isInUse && this.parent === null) this.return();
     }
 

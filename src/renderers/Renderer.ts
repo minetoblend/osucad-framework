@@ -2,6 +2,7 @@ import { FrameworkEnvironment } from '../FrameworkEnvironment';
 import type { Drawable } from '../graphics/drawables/Drawable';
 import { Vec2, type IVec2 } from '../math';
 import type { PIXIRenderer } from '../pixi';
+import type { InjectionToken } from '../di';
 
 export interface RendererOptions {
   size: IVec2;
@@ -85,3 +86,7 @@ export class Renderer {
     this.internalRenderer.resize(this.#size.x, this.#size.y);
   }
 }
+
+export type IRenderer = PIXIRenderer;
+
+export const IRenderer: InjectionToken<PIXIRenderer> = Symbol('IRenderer');

@@ -6,6 +6,7 @@ export enum StatisticsCounterType {
   ScheduleInvk,
   InputQueue,
   PositionalIQ,
+  DrawNodeTransforms,
 
   Length,
 }

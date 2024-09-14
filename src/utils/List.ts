@@ -3,7 +3,7 @@ export class List<T> implements Iterable<T> {
 
   #length = 0;
 
-  #initialCapacity: number;
+  readonly #initialCapacity: number;
 
   constructor(capacity: number) {
     this.#items = new Array(capacity);
@@ -162,5 +162,9 @@ export class List<T> implements Iterable<T> {
         };
       },
     };
+  }
+
+  get array(): T[] {
+    return this.#items.slice(0, this.#length) as T[];
   }
 }

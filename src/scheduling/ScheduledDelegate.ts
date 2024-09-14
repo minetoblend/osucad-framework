@@ -66,7 +66,7 @@ export class ScheduledDelegate {
   }
 
   setNextExecution(currentTime: number | null) {
-    if (this.state == RunState.Cancelled) return;
+    if (this.state === RunState.Cancelled) return;
 
     this.#state = RunState.Waiting;
 

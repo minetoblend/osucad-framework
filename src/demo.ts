@@ -12,7 +12,7 @@ class DemoGame extends Game {
       Container.create({
         autoSizeAxes: Axes.Both,
         children: [
-          new Box().apply({
+          new Box().with({
             relativeSizeAxes: Axes.Both,
             tint: 0xff0000,
           }),
@@ -20,7 +20,7 @@ class DemoGame extends Game {
             autoSizeAxes: Axes.Both,
             padding: 25,
             children: [
-              new MyBox().apply({
+              new MyBox().with({
                 width: 100,
                 height: 100,
               }),

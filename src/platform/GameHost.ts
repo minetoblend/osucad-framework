@@ -14,7 +14,7 @@ import { KeyboardHandler } from '../input/handlers/KeyboardHandler';
 import { MouseHandler } from '../input/handlers/MouseHandler';
 import { TouchHandler } from '../input/handlers/TouchHandler';
 import { Vec2 } from '../math';
-import { Renderer } from '../renderers/Renderer';
+import { IRenderer, Renderer } from '../renderers/Renderer';
 import { FramedClock } from '../timing/FramedClock';
 import type { IFrameBasedClock } from '../timing/IFrameBasedClock';
 import { FrameStatistics } from '../statistics/FrameStatistics.ts';
@@ -68,18 +68,22 @@ export abstract class GameHost {
 
     this.renderer.size = this.getWindowSize();
 
-    this.root.size = this.getWindowSize();
-
-    this.root.size = this.root.size.componentMax(Vec2.one());
+    this.root.size = this.getWindowSize().componentMax(Vec2.one());
 
     this.clock.processFrame();
 
     this.root.updateSubTree();
+    performance.mark('updateSubTreeTransforms');
     this.root.updateSubTreeTransforms();
+    performance.measure('updateSubTreeTransforms', 'updateSubTreeTransforms');
   }
 
   protected render() {
+    const startTime = performance.now();
+    performance.mark('render');
     this.renderer.render(this.root!);
+    performance.measure('render', 'render');
+    FrameStatistics.drawTime = performance.now() - startTime;
   }
 
   async takeScreenshot(): Promise<Blob> {
@@ -128,8 +132,10 @@ export abstract class GameHost {
     globalThis['__PIXI_RENDERER__'] = this.renderer.internalRenderer;
 
     while (this.executionState === ExecutionState.Running) {
+      const startTime = performance.now();
       this.update();
       this.render();
+      FrameStatistics.frameTime = performance.now() - startTime;
       await new Promise((resolve) => requestAnimationFrame(resolve));
     }
 
@@ -153,6 +159,8 @@ export abstract class GameHost {
       size: this.getWindowSize(),
       environment: new FrameworkEnvironment(),
     });
+
+    this.dependencies.provide(IRenderer, renderer.internalRenderer);
 
     this.#renderer = renderer;
   }
@@ -203,7 +211,8 @@ export abstract class GameHost {
   }
 
   dispose(disposing: boolean = true) {
-    if (this.isDisposed) return false;
+    if (this.isDisposed)
+      return;
 
     this.root?.dispose();
   }

@@ -1,6 +1,6 @@
 import { Texture } from 'pixi.js';
 import { PIXIContainer, PIXISprite } from '../../pixi';
-import { Drawable, type DrawableOptions } from './Drawable';
+import { Drawable, type DrawableOptions, Invalidation } from './Drawable';
 import { Vec2 } from '../../math';
 import { Axes } from './Axes';
 
@@ -52,6 +52,10 @@ export class DrawableSprite extends Drawable {
     this.drawNode;
 
     this.#sprite.texture = value || Texture.EMPTY;
+
+    this.fillAspectRatio = (value?.width ?? 1) / (value?.height ?? 1);
+
+    this.invalidate(Invalidation.DrawSize)
   }
 
   override updateDrawNodeTransform(): void {

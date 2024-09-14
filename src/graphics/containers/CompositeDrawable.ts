@@ -18,11 +18,12 @@ import type { Scheduler } from '../../scheduling/Scheduler.ts';
 import { DependencyContainer } from '../../di';
 import { Anchor } from '../drawables';
 import { List } from '../../utils/List.ts';
-import { type Comparer, SortedList } from '../../utils/SortedList.ts';
+import { SortedList } from '../../utils/SortedList.ts';
 import { Action } from '../../bindables/Action.ts';
 import { EasingFunction } from '../transforms/EasingFunction.ts';
 import { AbsoluteSequenceSender } from '../transforms/AbsoluteSequenceSender.ts';
 import { type IUsable, ValueInvokeOnDisposal } from '../../types/IUsable.ts';
+import type { IComparer } from '../../utils/IComparer.ts';
 
 export interface CompositeDrawableOptions extends DrawableOptions {
   padding?: MarginPaddingOptions;
@@ -30,8 +31,9 @@ export interface CompositeDrawableOptions extends DrawableOptions {
   masking?: boolean;
 }
 
-export class ChildComparer implements Comparer<Drawable> {
-  constructor(private readonly owner: CompositeDrawable) {}
+export class ChildComparer implements IComparer<Drawable> {
+  constructor(private readonly owner: CompositeDrawable) {
+  }
 
   compare = (a: Drawable, b: Drawable) => {
     return this.owner.compare(a, b);
@@ -94,6 +96,10 @@ export class CompositeDrawable extends Drawable {
 
   #currentChildId = 0;
 
+  override with(options: CompositeDrawableOptions) {
+    return super.with(options);
+  }
+
   protected addInternal<T extends Drawable>(drawable: T) {
     if (this.isDisposed) {
       return;
@@ -130,7 +136,7 @@ export class CompositeDrawable extends Drawable {
   }
 
   changeInternalChildDepth(child: Drawable, newDepth: number) {
-    if (child.depth == newDepth) return;
+    if (child.depth === newDepth) return;
 
     const index = this.indexOfInternal(child);
     if (index < 0)
@@ -269,7 +275,7 @@ export class CompositeDrawable extends Drawable {
   #loadingComponents: WeakSet<Drawable> | null = null;
 
   override onLoad() {
-    for (const child of this.internalChildren) {
+    for (const child of this.#internalChildren) {
       this.#loadChild(child);
     }
   }
@@ -283,13 +289,13 @@ export class CompositeDrawable extends Drawable {
 
   protected removeInternal(drawable: Drawable, disposeImmediately: boolean = true): boolean {
     try {
-      const index = this.internalChildren.indexOf(drawable);
+      const index = this.#internalChildren.indexOf(drawable);
       if (index < 0) return false;
 
       this.#internalChildren.removeAt(index);
 
       if (drawable.isAlive) {
-        const aliveIndex = this.aliveInternalChildren.indexOf(drawable);
+        const aliveIndex = this.#aliveInternalChildren.indexOf(drawable);
         debugAssert(aliveIndex >= 0, 'Drawable is alive but not in aliveInternalChildren');
         this.#aliveInternalChildren.removeAt(aliveIndex);
 
@@ -313,7 +319,7 @@ export class CompositeDrawable extends Drawable {
   }
 
   protected clearInternal(disposeChildren: boolean = true) {
-    if (super.isDisposed || this.internalChildren.length === 0) {
+    if (this.isDisposed || this.#internalChildren.length === 0) {
       return;
     }
 
@@ -321,6 +327,8 @@ export class CompositeDrawable extends Drawable {
       if (internalChild.isAlive) {
         this.childDied.emit(internalChild);
       }
+
+      this.drawNode.removeChild(internalChild.drawNode);
 
       internalChild.isAlive = false;
       internalChild.parent = null;
@@ -342,8 +350,9 @@ export class CompositeDrawable extends Drawable {
   }
 
   protected disposeChildAsync(child: Drawable) {
-    // TODO: disposeChildAsync
-    child.dispose();
+    requestIdleCallback(() => {
+      child.dispose();
+    });
   }
 
   get childSize(): Vec2 {
@@ -364,7 +373,7 @@ export class CompositeDrawable extends Drawable {
 
     this.#relativeChildSize = Vec2.from(value);
 
-    for (const c of this.internalChildren) c.invalidate(c.invalidationFromParentSize);
+    for (const c of this.#internalChildren) c.invalidate(c.invalidationFromParentSize);
   }
 
   get relativeToAbsoluteFactor() {
@@ -389,10 +398,10 @@ export class CompositeDrawable extends Drawable {
 
     if (invalidation === Invalidation.None) return anyInvalidated;
 
-    let targetChildren = this.aliveInternalChildren;
+    let targetChildren = this.#aliveInternalChildren.items;
 
     if ((invalidation & ~Invalidation.Layout) > 0) {
-      targetChildren = this.internalChildren;
+      targetChildren = this.#internalChildren.items;
     }
 
     for (const c of targetChildren) {
@@ -428,9 +437,14 @@ export class CompositeDrawable extends Drawable {
   set padding(value: MarginPaddingOptions | undefined) {
     if (this.#padding === value) return;
 
-    this.#padding = MarginPadding.from(value);
+    const padding = MarginPadding.from(value);
 
-    for (const c of this.internalChildren) c.invalidate(c.invalidationFromParentSize | Invalidation.Transform);
+    if (this.#padding.equals(padding))
+      return;
+
+    this.#padding = padding;
+
+    for (const c of this.#internalChildren) c.invalidate(c.invalidationFromParentSize | Invalidation.Transform);
   }
 
   get childOffset(): Vec2 {
@@ -444,7 +458,7 @@ export class CompositeDrawable extends Drawable {
   }
 
   protected set autoSizeAxes(value: Axes) {
-    if (value == this.#autoSizeAxes) return;
+    if (value === this.#autoSizeAxes) return;
 
     if (value & this.relativeSizeAxes) {
       throw new Error('Cannot set autoSizeAxes to include relative size axes');
@@ -489,13 +503,15 @@ export class CompositeDrawable extends Drawable {
   override updateSubTree(): boolean {
     if (!super.updateSubTree()) return false;
 
+
     this.updateChildrenLife();
 
     if (!this.isPresent || !this.requiresChildrenUpdate) return false;
 
     this.updateAfterChildrenLife();
 
-    for (const child of this.aliveInternalChildren) {
+
+    for (const child of this.#aliveInternalChildren.items) {
       child.updateSubTree();
     }
 
@@ -510,7 +526,7 @@ export class CompositeDrawable extends Drawable {
   override updateSubTreeTransforms(): boolean {
     if (!super.updateSubTreeTransforms()) return false;
 
-    for (const child of this.aliveInternalChildren) {
+    for (const child of this.#aliveInternalChildren.items) {
       child.updateSubTreeTransforms();
     }
     return true;
@@ -521,11 +537,14 @@ export class CompositeDrawable extends Drawable {
     return true;
   }
 
-  updateAfterChildrenLife() {}
+  updateAfterChildrenLife() {
+  }
 
-  updateAfterChildren() {}
+  updateAfterChildren() {
+  }
 
-  updateAfterAutoSize() {}
+  updateAfterAutoSize() {
+  }
 
   updateChildrenLife(): boolean {
     if (this.loadState < LoadState.Ready) return false;
@@ -538,10 +557,10 @@ export class CompositeDrawable extends Drawable {
   checkChildrenLife(): boolean {
     let anyAliveChanged = false;
 
-    for (let i = 0; i < this.internalChildren.length; i++) {
-      const state = this.#checkChildLife(this.internalChildren[i]);
+    for (let i = 0; i < this.#internalChildren.length; i++) {
+      const state = this.#checkChildLife(this.#internalChildren.items[i]);
 
-      anyAliveChanged ||= !!(state & ChildLifeStateChange.MadeAlive || state & ChildLifeStateChange.MadeDead);
+      anyAliveChanged ||= !!(state & ChildLifeStateChange.MadeAliveOrDead);
 
       if (state & ChildLifeStateChange.Removed) i--;
     }
@@ -579,27 +598,58 @@ export class CompositeDrawable extends Drawable {
 
     if (!this.receivePositionalInputAtSubTree(screenSpacePos)) return false;
 
-    for (const child of this.aliveInternalChildren) {
+    for (const child of this.#aliveInternalChildren.items) {
       child.buildPositionalInputQueue(screenSpacePos, queue);
     }
 
     return true;
   }
 
+  override buildPositionalInputQueueLocal(localPos: Vec2, queue: List<Drawable>): boolean {
+    if (!super.buildPositionalInputQueueLocal(localPos, queue)) return false;
+
+    if (!this.receivePositionalInputAtSubTreeLocal(localPos)) return false;
+
+    const x = localPos.x;
+    const y = localPos.y;
+
+    for (const child of this.#aliveInternalChildren.items) {
+      child.drawNode.updateLocalTransform();
+
+
+      child.drawNode.localTransform.applyInverse(localPos, localPos);
+
+      child.buildPositionalInputQueueLocal(localPos, queue);
+
+      localPos.x = x;
+      localPos.y = y;
+    }
+
+    return true;
+  }
+
   protected receivePositionalInputAtSubTree(screenSpacePos: Vec2): boolean {
-    return !this.masking || this.receivePositionalInputAt(screenSpacePos);
+    return !this.#masking || this.receivePositionalInputAt(screenSpacePos);
+  }
+
+  childrenWillGoOutOfBounds = true;
+
+  protected receivePositionalInputAtSubTreeLocal(localPos: Vec2): boolean {
+    return this.childrenWillGoOutOfBounds || this.receivePositionalInputAtLocal(localPos);
   }
 
   protected shouldBeConsideredForInput(child: Drawable) {
-    return child.loadState == LoadState.Loaded;
+    return child.loadState === LoadState.Loaded;
   }
 
   override buildNonPositionalInputQueue(queue: List<Drawable>, allowBlocking?: boolean): boolean {
     if (!super.buildNonPositionalInputQueue(queue, allowBlocking)) return false;
 
-    for (let i = 0; i < this.aliveInternalChildren.length; ++i) {
-      if (this.shouldBeConsideredForInput(this.aliveInternalChildren[i]))
-        this.aliveInternalChildren[i].buildNonPositionalInputQueue(queue, allowBlocking);
+    const children = this.aliveInternalChildren;
+
+    for (const child of children) {
+      if (child.loadState === LoadState.Loaded)
+        child.buildNonPositionalInputQueue(queue, allowBlocking);
     }
 
     return true;
@@ -646,6 +696,8 @@ export class CompositeDrawable extends Drawable {
       this.#aliveInternalChildren.removeAt(index);
       child.isAlive = false;
 
+      this.drawNode.removeChild(child.drawNode);
+
       this.childDied.emit(child);
     }
 
@@ -654,7 +706,7 @@ export class CompositeDrawable extends Drawable {
     if (child.removeWhenNotAlive) {
       this.removeInternal(child, false);
 
-      if (child.disposeOnDeathRemoval) child.dispose();
+      if (child.disposeOnDeathRemoval) this.disposeChildAsync(child);
 
       removed = true;
     }
@@ -689,7 +741,7 @@ export class CompositeDrawable extends Drawable {
   }
 
   override get size(): Vec2 {
-    if (!this.#isComputingChildrenSizeDependencies && this.autoSizeAxes != Axes.None)
+    if (!this.#isComputingChildrenSizeDependencies && this.autoSizeAxes !== Axes.None)
       this.#updateChildrenSizeDependencies();
     return super.size;
   }
@@ -704,14 +756,14 @@ export class CompositeDrawable extends Drawable {
     const originalMargin = this.margin;
 
     try {
-      if (this.autoSizeAxes == Axes.None) return this.drawSize;
+      if (this.autoSizeAxes === Axes.None) return this.drawSize;
 
       const maxBoundSize = new Vec2();
 
       this.padding = 0;
       this.margin = 0;
 
-      for (const c of this.aliveInternalChildren) {
+      for (const c of this.#aliveInternalChildren.items) {
         if (!c.isPresent) continue;
 
         const cBound = c.requiredParentSizeToFit;
@@ -761,33 +813,34 @@ export class CompositeDrawable extends Drawable {
     }
   }
 
-  #autoSizeResizeTo(size: IVec2, duration: number, easing: gsap.EaseString | gsap.EaseFunction) {
-    gsap.killTweensOf(this, 'x,y,width');
+  #autoSizeResizeTo(size: IVec2, duration: number, easing: EasingFunction) {
+    this.clearTransforms(false, 'width')
+    this.clearTransforms(false, 'height')
+    this.clearTransforms(false, 'size')
+
 
     if (duration === 0) {
       this.baseWidth = size.x;
       this.baseHeight = size.y;
     } else {
-      gsap.to(this, {
-        baseWidth: size.x,
-        baseHeight: size.y,
-      });
+      this.transformTo('baseWidth', size.x, duration, easing);
+      this.transformTo('baseHeight', size.y, duration, easing);
     }
   }
 
-  private get baseWidth() {
+  get baseWidth() {
     return super.width;
   }
 
-  private set baseWidth(value: number) {
+  set baseWidth(value: number) {
     super.width = value;
   }
 
-  private get baseHeight() {
+  get baseHeight() {
     return super.height;
   }
 
-  private set baseHeight(value: number) {
+  set baseHeight(value: number) {
     super.height = value;
   }
 
@@ -796,7 +849,7 @@ export class CompositeDrawable extends Drawable {
   }
 
   set masking(value: boolean) {
-    if (this.#masking == value) return;
+    if (this.#masking === value) return;
 
     this.#masking = value;
     this.#updateMasking();
@@ -827,7 +880,7 @@ export class CompositeDrawable extends Drawable {
 
   override dispose(isDisposing: boolean = true) {
     this.#disposalAbortController?.abort();
-    this.internalChildren.forEach((c) => c.dispose());
+    this.#internalChildren.items.forEach((c) => c.dispose());
 
     super.dispose(isDisposing);
   }
@@ -874,14 +927,14 @@ export class CompositeDrawable extends Drawable {
   }
 
   override beginAbsoluteSequence(newTransformStartTime: number, recursive: boolean = true): IUsable {
-    if (!recursive || this.internalChildren.length === 0) {
+    if (!recursive || this.#internalChildren.length === 0) {
       return super.beginAbsoluteSequence(newTransformStartTime, false);
     }
 
-    const absoluteSequenceActions = new List<AbsoluteSequenceSender>(this.internalChildren.length + 1);
+    const absoluteSequenceActions = new List<AbsoluteSequenceSender>(this.#internalChildren.length + 1);
 
     super.collectAbsoluteSequenceActionsFromSubTree(newTransformStartTime, absoluteSequenceActions);
-    for (const c of this.internalChildren)
+    for (const c of this.#internalChildren)
       c.collectAbsoluteSequenceActionsFromSubTree(newTransformStartTime, absoluteSequenceActions);
 
     return new ValueInvokeOnDisposal(() => {
@@ -899,7 +952,7 @@ export class CompositeDrawable extends Drawable {
     if (this.removeCompletedTransforms === value) return;
 
     super.removeCompletedTransforms = value;
-    for (const child of this.internalChildren) {
+    for (const child of this.#internalChildren.items) {
       child.removeCompletedTransforms = value;
     }
   }
@@ -910,7 +963,7 @@ export class CompositeDrawable extends Drawable {
   ) {
     super.collectAbsoluteSequenceActionsFromSubTree(newTransformStartTime, actions);
 
-    for (const child of this.internalChildren)
+    for (const child of this.#internalChildren)
       child.collectAbsoluteSequenceActionsFromSubTree(newTransformStartTime, actions);
   }
 }
@@ -920,4 +973,6 @@ const enum ChildLifeStateChange {
   MadeAlive = 1 << 0,
   MadeDead = 1 << 1,
   Removed = 1 << 2,
+
+  MadeAliveOrDead = MadeAlive | MadeDead,
 }

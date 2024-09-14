@@ -11,6 +11,7 @@ import { MouseUpEvent } from './events/MouseUpEvent';
 import type { InputState } from './state/InputState';
 import type { MouseButton } from './state/MouseButton';
 import { List } from '../utils';
+import { DoubleClickEvent } from './events/DoubleClickEvent.ts';
 
 export abstract class MouseButtonEventManager extends ButtonEventManager<MouseButton> {
   abstract get enableDrag(): boolean;
@@ -27,7 +28,11 @@ export abstract class MouseButtonEventManager extends ButtonEventManager<MouseBu
 
   draggedDrawable: Drawable | null = null;
 
+  doubleClickTime = 250;
+
   clickDragDistance = 10;
+
+  lastClickTime: number | null = null;
 
   handlePositionChange(state: InputState, lastPosition: Vec2) {
     if (this.enableDrag) {
@@ -56,7 +61,14 @@ export abstract class MouseButtonEventManager extends ButtonEventManager<MouseBu
       new MouseDownEvent(state, this.button, this.mouseDownPosition),
     );
 
-    // TODO: Double click
+    if (this.lastClickTime !== null && this.inputManager.time.current - this.lastClickTime < this.doubleClickTime) {
+      if (this.#handleDoubleClick(state, targets))
+      {
+        //when we handle a double-click we want to block a normal click from firing.
+        this.blockNextClick = true;
+        this.lastClickTime = null;
+      }
+    }
 
     return handledBy;
   }
@@ -64,12 +76,12 @@ export abstract class MouseButtonEventManager extends ButtonEventManager<MouseBu
   override handleButtonUp(state: InputState, targets: Drawable[] | null): void {
     debugAssert(!state.mouse.isPressed(this.button), 'Mouse button must be released');
 
-    if (targets != null)
+    if (targets !== null)
       this.propagateButtonEvent(targets, new MouseUpEvent(state, this.button, this.mouseDownPosition));
 
     if (this.enableClick && this.draggedDrawable?.dragBlocksClick !== true) {
       if (!this.blockNextClick) {
-        // LastClickTime = InputManager.Time.Current;
+        this.lastClickTime = this.inputManager.time.current;
         this.#handleClick(state, targets);
       }
     }
@@ -107,6 +119,15 @@ export abstract class MouseButtonEventManager extends ButtonEventManager<MouseBu
     }
   }
 
+  #handleDoubleClick(state: InputState, targets: List<Drawable>): boolean {
+    const clicked = this.clickedDrawable?.deref()
+    if (!clicked) return false;
+
+    if (!targets.contains(clicked)) return false;
+
+    return this.propagateButtonEvent(targets, new DoubleClickEvent(state, this.button, this.mouseDownPosition)) !== null;
+  }
+
   #handleDrag(state: InputState, lastPosition: Vec2) {
     if (this.draggedDrawable === null) return;
 
@@ -129,7 +150,7 @@ export abstract class MouseButtonEventManager extends ButtonEventManager<MouseBu
       drawables,
       new DragStartEvent(state, this.button, this.mouseDownPosition),
     );
-    if (draggable != null) this.#handleDragDrawableBegin(draggable);
+    if (draggable !== null) this.#handleDragDrawableBegin(draggable);
   }
 
   #handleDragDrawableBegin(draggedDrawable: Drawable) {
@@ -148,14 +169,14 @@ export abstract class MouseButtonEventManager extends ButtonEventManager<MouseBu
   #handleDragDrawableEnd(state: InputState | null = null) {
     const previousDragged = this.draggedDrawable;
 
-    if (previousDragged == null) return;
+    if (previousDragged === null) return;
 
     previousDragged.invalidated.removeListener(this.#draggedDrawableInvalidated);
     previousDragged.isDragged = false;
 
     this.draggedDrawable = null;
 
-    if (state != null)
+    if (state !== null)
       this.propagateButtonEvent([previousDragged], new DragEndEvent(state, this.button, this.mouseDownPosition));
   }
 }

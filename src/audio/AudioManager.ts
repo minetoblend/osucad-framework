@@ -28,6 +28,13 @@ export class AudioManager {
     return new Sample(this.context, channel, buffer);
   }
 
+  async createSampleFromArrayBuffer(channel: AudioChannel, buffer: ArrayBuffer) {
+    const dest = new ArrayBuffer(buffer.byteLength);
+    new Uint8Array(dest).set(new Uint8Array(buffer));
+
+    return this.context.decodeAudioData(dest).then((buffer) => this.createSample(channel, buffer));
+  }
+
   createSampleFromUrl(channel: AudioChannel, url: string) {
     return fetch(url)
       .then((res) => res.arrayBuffer())
