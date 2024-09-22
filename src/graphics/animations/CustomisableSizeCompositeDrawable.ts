@@ -1,5 +1,5 @@
+import type { IVec2, Vec2 } from '../../math';
 import { CompositeDrawable } from '../containers';
-import { type IVec2, Vec2 } from '../../math';
 import { Axes } from '../drawables';
 
 export abstract class CustomisableSizeCompositeDrawable extends CompositeDrawable {
@@ -41,7 +41,8 @@ export abstract class CustomisableSizeCompositeDrawable extends CompositeDrawabl
   protected updateSizing() {
     this.fillAspectRatio = this.getFillAspectRatio();
 
-    if (this.relativeSizeAxes === Axes.Both) return;
+    if (this.relativeSizeAxes === Axes.Both)
+      return;
 
     const frameSize = this.getCurrentDisplaySize();
 

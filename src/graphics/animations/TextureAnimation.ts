@@ -1,7 +1,8 @@
 import type { Texture } from 'pixi.js';
-import { Animation } from './Animation';
-import { Anchor, Axes, Drawable, DrawableSprite } from '../drawables';
+import type { Drawable } from '../drawables';
 import { Vec2 } from '../../math';
+import { Anchor, Axes, DrawableSprite } from '../drawables';
+import { Animation } from './Animation';
 
 export class TextureAnimation extends Animation<Texture> {
   #textureHolder!: DrawableSprite;

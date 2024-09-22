@@ -40,10 +40,9 @@ export class DependencyContainer implements ReadonlyDependencyContainer {
 }
 
 export interface ReadonlyDependencyContainer {
-  resolveOptional<T>(key: new (...args: any[]) => T): T;
+  resolveOptional: <T>(key: new (...args: any[]) => T) => T;
 
-  resolve<T>(key: new (...args: any[]) => T): T;
-  resolve<T>(key: InjectionToken<T>): T;
+  resolve: (<T>(key: new (...args: any[]) => T) => T) & (<T>(key: InjectionToken<T>) => T);
 }
 
 // eslint-disable-next-line @typescript-eslint/ban-types

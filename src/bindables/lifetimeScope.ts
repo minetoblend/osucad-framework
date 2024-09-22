@@ -18,7 +18,8 @@ export function withDrawableScope<T>(drawable: Drawable, callback: () => T): T {
   try {
     pushDrawableScope(drawable);
     return callback();
-  } finally {
+  }
+  finally {
     popDrawableScope();
   }
 }

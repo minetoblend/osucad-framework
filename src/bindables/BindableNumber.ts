@@ -1,9 +1,9 @@
-import { type Comparer } from '../utils/Comparer.ts';
-import { RangeConstrainedBindable } from './RangeConstrainedBindable.ts';
-import { NumberComparer } from '../utils/NumberComparer.ts';
+import type { Comparer } from '../utils/Comparer.ts';
+import type { Bindable } from './Bindable.ts';
 import { clamp } from '../utils';
+import { NumberComparer } from '../utils/NumberComparer.ts';
 import { Action } from './Action.ts';
-import { type Bindable } from './Bindable.ts';
+import { RangeConstrainedBindable } from './RangeConstrainedBindable.ts';
 
 export class BindableNumber extends RangeConstrainedBindable<number> {
   readonly precisionChanged = new Action<number>();
@@ -23,7 +23,8 @@ export class BindableNumber extends RangeConstrainedBindable<number> {
   }
 
   set precision(value: number) {
-    if (this.#precision === value) return;
+    if (this.#precision === value)
+      return;
 
     if (value < 0) {
       throw new Error('precision must be greater than 0.');
@@ -55,7 +56,8 @@ export class BindableNumber extends RangeConstrainedBindable<number> {
       doubleValue = Math.round(doubleValue / this.precision) * this.precision;
 
       super.value = doubleValue;
-    } else {
+    }
+    else {
       super.value = this.clampValue(value, this.minValue, this.maxValue);
     }
   }
@@ -83,7 +85,8 @@ export class BindableNumber extends RangeConstrainedBindable<number> {
 
     if (propagateToBindings && this.bindings) {
       for (const bindable of this.bindings) {
-        if (bindable === source) continue;
+        if (bindable === source)
+          continue;
 
         if (bindable && bindable instanceof BindableNumber) {
           bindable.setPrecision(this.#precision, false, this);

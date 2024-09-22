@@ -37,7 +37,8 @@ export class AudioChannel implements IDisposable {
   #filters: AudioFilter[] = [];
 
   addFilter(filter: AudioFilter) {
-    if (filter.channel === this) return;
+    if (filter.channel === this)
+      return;
     if (filter.channel) {
       throw new Error('Filter already connected to another channel');
     }
@@ -47,7 +48,8 @@ export class AudioChannel implements IDisposable {
 
     if (this.#filters.length > 0) {
       this.#filters[this.#filters.length - 1].connect(this, filter.input);
-    } else {
+    }
+    else {
       this.#input.disconnect();
       this.#input.connect(filter.input);
     }
@@ -58,7 +60,8 @@ export class AudioChannel implements IDisposable {
   removeFilter(filter: AudioFilter): boolean {
     const index = this.#filters.indexOf(filter);
 
-    if (index === -1) return false;
+    if (index === -1)
+      return false;
 
     filter.connect(this, this.#output);
 
@@ -67,7 +70,8 @@ export class AudioChannel implements IDisposable {
 
     if (index > 0) {
       this.#filters[index - 1].connect(this, nextDestination);
-    } else {
+    }
+    else {
       this.#input.disconnect();
       this.#input.connect(nextDestination);
     }
@@ -80,7 +84,7 @@ export class AudioChannel implements IDisposable {
   }
 
   dispose() {
-    this.#filters.forEach((filter) => filter.dispose());
+    this.#filters.forEach(filter => filter.dispose());
 
     this.#output.disconnect();
   }

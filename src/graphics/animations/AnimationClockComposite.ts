@@ -1,11 +1,12 @@
+import type { Drawable } from '../drawables';
 import type { IAnimation } from './IAnimation.ts';
-import { CustomisableSizeCompositeDrawable } from './CustomisableSizeCompositeDrawable.ts';
-import { ManualClock } from '../../timing/ManualClock.ts';
 import { dependencyLoader } from '../../di';
-import { Container } from '../containers';
 import { FramedClock, type IFrameBasedClock } from '../../timing';
-import { Axes, Drawable } from '../drawables';
+import { ManualClock } from '../../timing/ManualClock.ts';
 import { clamp } from '../../utils';
+import { Container } from '../containers';
+import { Axes } from '../drawables';
+import { CustomisableSizeCompositeDrawable } from './CustomisableSizeCompositeDrawable.ts';
 
 export abstract class AnimationClockComposite extends CustomisableSizeCompositeDrawable implements IAnimation {
   readonly #startAtCurrentTime: boolean;
@@ -55,7 +56,7 @@ export abstract class AnimationClockComposite extends CustomisableSizeCompositeD
   }
 
   protected override addInternal<T extends Drawable>(drawable: T): undefined | T {
-    throw Error('Use createContent instead.');
+    throw new Error('Use createContent instead.');
   }
 
   protected abstract createContent(): Drawable;
@@ -74,7 +75,8 @@ export abstract class AnimationClockComposite extends CustomisableSizeCompositeD
   get playbackPosition() {
     let current = this.#manualClock.currentTime;
 
-    if (this.loop) current %= this.duration;
+    if (this.loop)
+      current %= this.duration;
 
     return clamp(current, 0, this.duration);
   }

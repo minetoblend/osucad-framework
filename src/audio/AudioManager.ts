@@ -1,6 +1,7 @@
 import { AudioChannel } from './AudioChannel';
 import { Sample } from './sample/Sample';
 import { AudioBufferTrack } from './track/AudioBufferTrack';
+import { AudioElementTrack } from './track/AudioElementTrack.ts';
 
 export class AudioManager {
   constructor() {
@@ -19,9 +20,23 @@ export class AudioManager {
 
   createTrackFromUrl(channel: AudioChannel, url: string) {
     return fetch(url)
-      .then((res) => res.arrayBuffer())
-      .then((data) => this.context.decodeAudioData(data))
-      .then((buffer) => this.createTrack(channel, buffer));
+      .then(res => res.arrayBuffer())
+      .then(data => this.context.decodeAudioData(data))
+      .then(buffer => this.createTrack(channel, buffer));
+  }
+
+  async createStreamedTrackFromUrl(channel: AudioChannel, url: string) {
+    const el = document.createElement('audio');
+    el.src = url;
+
+    el.load();
+
+    await new Promise((resolve, reject) => {
+      el.oncanplay = resolve;
+      el.onerror = reject;
+    });
+
+    return new AudioElementTrack(this.context, channel, el);
   }
 
   createSample(channel: AudioChannel, buffer: AudioBuffer) {
@@ -32,14 +47,14 @@ export class AudioManager {
     const dest = new ArrayBuffer(buffer.byteLength);
     new Uint8Array(dest).set(new Uint8Array(buffer));
 
-    return this.context.decodeAudioData(dest).then((buffer) => this.createSample(channel, buffer));
+    return this.context.decodeAudioData(dest).then(buffer => this.createSample(channel, buffer));
   }
 
   createSampleFromUrl(channel: AudioChannel, url: string) {
     return fetch(url)
-      .then((res) => res.arrayBuffer())
-      .then((data) => this.context.decodeAudioData(data))
-      .then((buffer) => this.createSample(channel, buffer));
+      .then(res => res.arrayBuffer())
+      .then(data => this.context.decodeAudioData(data))
+      .then(buffer => this.createSample(channel, buffer));
   }
 
   #resumed = new AbortController();
@@ -62,7 +77,8 @@ export class AudioManager {
   }
 
   #resumeContext() {
-    if (this.context.state === 'running') return;
+    if (this.context.state === 'running')
+      return;
 
     this.context.resume();
     this.#resumed.abort();

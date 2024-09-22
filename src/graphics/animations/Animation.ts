@@ -1,8 +1,8 @@
 import type { IFramedAnimation } from './IFramedAnimation.ts';
-import { AnimationClockComposite } from './AnimationClockComposite.ts';
-import { FrameData } from '../../timing/FrameData.ts';
 import { Cached } from '../../caching';
+import { FrameData } from '../../timing/FrameData.ts';
 import { clamp } from '../../utils';
+import { AnimationClockComposite } from './AnimationClockComposite.ts';
 
 export abstract class Animation<T> extends AnimationClockComposite implements IFramedAnimation {
   defaultFrameLength = 1000 / 60;
@@ -60,7 +60,8 @@ export abstract class Animation<T> extends AnimationClockComposite implements IF
     for (const frame of frames) {
       if (frame instanceof FrameData) {
         this.addFrame(frame.content, frame.duration);
-      } else {
+      }
+      else {
         this.addFrame(frame);
       }
     }
@@ -99,16 +100,17 @@ export abstract class Animation<T> extends AnimationClockComposite implements IF
 
     if (diff < 0) {
       while (
-        this.currentFrameIndex > 0 &&
-        this.playbackPosition < this.#frameData[this.currentFrameIndex].displayStartTime
+        this.currentFrameIndex > 0
+        && this.playbackPosition < this.#frameData[this.currentFrameIndex].displayStartTime
       ) {
         this.#currentFrameIndex--;
         this.#currentFrameCache.invalidate();
       }
-    } else if (diff > 0) {
+    }
+    else if (diff > 0) {
       while (
-        this.currentFrameIndex < this.#frameData.length - 1 &&
-        this.playbackPosition >= this.#frameData[this.currentFrameIndex].displayEndTime
+        this.currentFrameIndex < this.#frameData.length - 1
+        && this.playbackPosition >= this.#frameData[this.currentFrameIndex].displayEndTime
       ) {
         this.#currentFrameIndex++;
         this.#currentFrameCache.invalidate();

@@ -1,6 +1,6 @@
-import { Bindable } from './Bindable.ts';
-import { Action } from './Action.ts';
 import type { Comparer } from '../utils/Comparer.ts';
+import { Action } from './Action.ts';
+import { Bindable } from './Bindable.ts';
 
 export abstract class RangeConstrainedBindable<T> extends Bindable<T> {
   readonly minValueChanged = new Action<T>();
@@ -50,8 +50,8 @@ export abstract class RangeConstrainedBindable<T> extends Bindable<T> {
 
   get hasDefinedRange() {
     return (
-      this.comparer.equals(this.#minValue, this.defaultMinValue) ||
-      this.comparer.equals(this.#maxValue, this.defaultMaxValue)
+      this.comparer.equals(this.#minValue, this.defaultMinValue)
+      || this.comparer.equals(this.#maxValue, this.defaultMaxValue)
     );
   }
 
@@ -70,7 +70,8 @@ export abstract class RangeConstrainedBindable<T> extends Bindable<T> {
     const min = this.#convertToSingle(this.#minValue);
     const max = this.#convertToSingle(this.#maxValue);
 
-    if (max - min === 0) return 1;
+    if (max - min === 0)
+      return 1;
 
     const val = this.#convertToSingle(this.value);
     return (val - min) / (max - min);
@@ -81,7 +82,7 @@ export abstract class RangeConstrainedBindable<T> extends Bindable<T> {
       return value;
     }
 
-    throw Error(`Cannot convert ${value} to single`);
+    throw new Error(`Cannot convert ${value} to single`);
   }
 
   setMinValue(value: T, updateCurrentValue: boolean, source: RangeConstrainedBindable<T>) {
@@ -114,7 +115,8 @@ export abstract class RangeConstrainedBindable<T> extends Bindable<T> {
 
     if (propagateToBindings && this.bindings) {
       for (const bindable of this.bindings) {
-        if (bindable === source) continue;
+        if (bindable === source)
+          continue;
 
         if (bindable && bindable instanceof RangeConstrainedBindable) {
           bindable.setMinValue(this.#minValue, false, this);
@@ -132,7 +134,8 @@ export abstract class RangeConstrainedBindable<T> extends Bindable<T> {
 
     if (propagateToBindings && this.bindings) {
       for (const bindable of this.bindings) {
-        if (bindable === source) continue;
+        if (bindable === source)
+          continue;
 
         if (bindable && bindable instanceof RangeConstrainedBindable) {
           bindable.setMaxValue(this.#maxValue, false, this);
@@ -156,10 +159,11 @@ export abstract class RangeConstrainedBindable<T> extends Bindable<T> {
 
   override bindTo(bindable: Bindable<T>) {
     if (bindable instanceof RangeConstrainedBindable) {
-      if (!this.isValidRange(bindable.minValue, bindable.maxValue))
-        throw Error(
+      if (!this.isValidRange(bindable.minValue, bindable.maxValue)) {
+        throw new Error(
           `The target bindable has specified an invalid range of [${bindable.minValue} - ${bindable.maxValue}].`,
         );
+      }
     }
 
     super.bindTo(bindable);
@@ -174,7 +178,6 @@ export abstract class RangeConstrainedBindable<T> extends Bindable<T> {
 
   override getBoundCopy(): Bindable<T> {
     const ctor = this.constructor;
-    console.assert(ctor.length === 1, 'Can only create a bound copy of bindable with 1 constructor parameter.');
 
     // @ts-expect-error - doing stuff here that I probably shouldn't
     const copy = new ctor(this.default);

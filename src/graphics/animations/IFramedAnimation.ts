@@ -5,5 +5,5 @@ export interface IFramedAnimation extends IAnimation {
 
   get currentFrameIndex(): number;
 
-  gotoFrame(frameIndex: number): void;
+  gotoFrame: (frameIndex: number) => void;
 }

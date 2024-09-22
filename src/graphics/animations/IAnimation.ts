@@ -7,7 +7,7 @@ export interface IAnimation {
 
   loop: boolean;
 
-  seek(time: number): void;
+  seek: (time: number) => void;
 
   playbackPosition: number;
 }

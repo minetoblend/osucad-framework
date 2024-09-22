@@ -1,3 +1,3 @@
-export { DependencyContainer, type ReadonlyDependencyContainer, type InjectionToken } from './DependencyContainer';
+export { asyncDependencyLoader, dependencyLoader, provide, resolved } from './decorators';
+export { DependencyContainer, type InjectionToken, type ReadonlyDependencyContainer } from './DependencyContainer';
 export { resolve } from './resolve';
-export { dependencyLoader, asyncDependencyLoader, resolved, provide } from './decorators';

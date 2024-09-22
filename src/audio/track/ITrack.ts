@@ -12,5 +12,5 @@ export interface ITrack extends IAdjustableClock {
 
   hasCompleted: boolean;
 
-  restart(): void;
+  restart: () => void;
 }

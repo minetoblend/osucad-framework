@@ -1,5 +1,5 @@
-import { Action } from './Action.ts';
 import { WeakList } from '../utils';
+import { Action } from './Action.ts';
 
 export type BindableListener<T> = (value: T) => void;
 
@@ -25,7 +25,8 @@ export class Bindable<T> implements ReadonlyBindable<T> {
   }
 
   set disabled(value) {
-    if (this.#disabled === value) return;
+    if (this.#disabled === value)
+      return;
 
     this.setDisabled(value);
   }
@@ -48,9 +49,11 @@ export class Bindable<T> implements ReadonlyBindable<T> {
   }
 
   set value(value: T) {
-    if (this.disabled) throw new Error('Cannot set value on a disabled bindable');
+    if (this.disabled)
+      throw new Error('Cannot set value on a disabled bindable');
 
-    if (this.equals(this.#value, value)) return;
+    if (this.equals(this.#value, value))
+      return;
 
     this.setValue(this.#value, value);
   }
@@ -65,7 +68,8 @@ export class Bindable<T> implements ReadonlyBindable<T> {
   }
 
   set default(value: T) {
-    if (this.equals(this.#defaultValue, value)) return;
+    if (this.equals(this.#defaultValue, value))
+      return;
 
     this.setDefaultValue(this.#defaultValue, value);
   }
@@ -96,7 +100,8 @@ export class Bindable<T> implements ReadonlyBindable<T> {
 
     if (propagateToBindings && this.bindings) {
       for (const bindable of this.bindings) {
-        if (bindable === source) continue;
+        if (bindable === source)
+          continue;
 
         bindable.setValue(beforePropagation, this.#value, bypassChecks, this);
       }
@@ -115,7 +120,8 @@ export class Bindable<T> implements ReadonlyBindable<T> {
 
     if (propagateToBindings && this.bindings) {
       for (const bindable of this.bindings) {
-        if (bindable === source) continue;
+        if (bindable === source)
+          continue;
 
         bindable.setDefaultValue(beforePropagation, this.#defaultValue, bypassChecks, this);
       }
@@ -134,7 +140,8 @@ export class Bindable<T> implements ReadonlyBindable<T> {
 
     if (propagateToBindings && this.bindings) {
       for (const bindable of this.bindings) {
-        if (bindable === source) continue;
+        if (bindable === source)
+          continue;
 
         bindable.setDisabled(this.#disabled, bypassChecks, this);
       }
@@ -152,7 +159,8 @@ export class Bindable<T> implements ReadonlyBindable<T> {
   }
 
   unbindBindings() {
-    if (!this.bindings) return;
+    if (!this.bindings)
+      return;
 
     for (const bindable of this.bindings) {
       this.unbindFrom(bindable);
@@ -171,7 +179,8 @@ export class Bindable<T> implements ReadonlyBindable<T> {
   }
 
   unbindFrom(bindable: Bindable<T>) {
-    if (!this.bindings) return;
+    if (!this.bindings)
+      return;
 
     this.#removeWeakReference(bindable);
     bindable.#removeWeakReference(this);
@@ -256,9 +265,9 @@ export interface ReadonlyBindable<T> {
 
   readonly defaultChanged: Action<ValueChangedEvent<T>>;
 
-  addOnChangeListener(listener: BindableListener<ValueChangedEvent<T>>, options?: AddOnChangeListenerOptions): void;
+  addOnChangeListener: (listener: BindableListener<ValueChangedEvent<T>>, options?: AddOnChangeListenerOptions) => void;
 
-  removeOnChangeListener(listener: BindableListener<ValueChangedEvent<T>>): boolean;
+  removeOnChangeListener: (listener: BindableListener<ValueChangedEvent<T>>) => boolean;
 
-  getBoundCopy(): ReadonlyBindable<T>;
+  getBoundCopy: () => ReadonlyBindable<T>;
 }

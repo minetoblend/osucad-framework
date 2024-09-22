@@ -36,7 +36,8 @@ export function resolved(type: any, optional = false): PropertyDecorator {
 
 export function provide(type?: any, optional = false): PropertyDecorator & ClassDecorator {
   return function (target: any, propertyKey?: string | symbol) {
-    if (!propertyKey) target = target.prototype;
+    if (!propertyKey)
+      target = target.prototype;
 
     const providers = getProviders(target);
     Reflect.defineMetadata(provideKey, [...providers, { key: propertyKey, type, optional }], target);

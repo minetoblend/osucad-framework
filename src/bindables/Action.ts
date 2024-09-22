@@ -45,7 +45,8 @@ export class Action<T = void> {
       const listener = this.#listeners[i];
       if (listener.receiver) {
         listener.fn.call(listener.receiver, value);
-      } else {
+      }
+      else {
         listener.fn(value);
       }
 

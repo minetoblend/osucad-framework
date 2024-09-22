@@ -45,7 +45,7 @@ export class AggregateBindable<T> {
   }
 
   #findExistingPair(bindable: Bindable<T>) {
-    return this.#sourceMapping.find((pair) => pair.weakReference.deref() === bindable);
+    return this.#sourceMapping.find(pair => pair.weakReference.deref() === bindable);
   }
 
   #recalculateAggregate = () => {
@@ -56,7 +56,8 @@ export class AggregateBindable<T> {
       if (!pair.weakReference.deref()) {
         this.#sourceMapping.splice(i, 1);
         i--;
-      } else {
+      }
+      else {
         calculated = this.#aggregateFunction(calculated, pair.boundCopy.value);
       }
     }

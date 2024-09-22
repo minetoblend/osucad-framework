@@ -1,9 +1,9 @@
 import type { IResourceStore } from '../../io/stores/IResourceStore.ts';
-import { ResourceStore } from '../../io/stores/ResourceStore.ts';
-import type { Sample } from './Sample.ts';
-import type { ISampleStore } from './ISampleStore.ts';
-import { SampleFactory } from './SampleFactory.ts';
 import type { AudioChannel } from '../AudioChannel.ts';
+import type { ISampleStore } from './ISampleStore.ts';
+import type { Sample } from './Sample.ts';
+import { ResourceStore } from '../../io/stores/ResourceStore.ts';
+import { SampleFactory } from './SampleFactory.ts';
 
 export class SampleStore implements ISampleStore {
   readonly #store: ResourceStore<ArrayBuffer>;
@@ -25,10 +25,12 @@ export class SampleStore implements ISampleStore {
   }
 
   async load(name: string) {
-    if (this.#factories.has(name)) return;
+    if (this.#factories.has(name))
+      return;
 
     const data = await this.#store.getAsync(name);
-    if (data === null) return;
+    if (data === null)
+      return;
 
     const audioBuffer = await this.#channel.manager.context.decodeAudioData(data);
     this.#factories.set(name, new SampleFactory(audioBuffer, name, this.#channel));
