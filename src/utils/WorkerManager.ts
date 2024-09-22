@@ -1,23 +1,23 @@
-import ImageBitmapWorker from './ImageBitmapWorker?worker';
-
 import type { ResolvedAsset, TextureSourceOptions } from 'pixi.js';
+
+import ImageBitmapWorker from './ImageBitmapWorker?worker';
 
 let UUID = 0;
 let MAX_WORKERS: number;
 
-type LoadImageBitmapResult = {
-  data?: ImageBitmap,
-  error?: Error,
-  uuid: number,
-  id: string,
-};
+interface LoadImageBitmapResult {
+  data?: ImageBitmap;
+  error?: Error;
+  uuid: number;
+  id: string;
+}
 
 export interface LoadImageBitmapOptions {
   resize?: {
-    width: number,
-    height: number,
-    mode: 'fit' | 'fill' | 'stretch',
-  },
+    width: number;
+    height: number;
+    mode: 'fit' | 'fill' | 'stretch';
+  };
 }
 
 class WorkerManagerClass {
@@ -26,8 +26,9 @@ class WorkerManagerClass {
     [key: string]: {
       resolve: (...param: any[]) => void;
       reject: (...param: any[]) => void;
-    }
+    };
   };
+
   readonly #workerPool: Worker[];
   readonly #queue: {
     id: string;
@@ -35,6 +36,7 @@ class WorkerManagerClass {
     resolve: (...param: any[]) => void;
     reject: (...param: any[]) => void;
   }[];
+
   #initialized = false;
   #createdWorkers = 0;
 
@@ -45,12 +47,13 @@ class WorkerManagerClass {
     this.#resolveHash = {};
   }
 
-  public loadImageBitmap(src: string, asset?: ResolvedAsset<TextureSourceOptions>, options?: LoadImageBitmapOptions): Promise<ImageBitmap> {
+  public loadImageBitmap(src: string | ArrayBuffer, asset?: ResolvedAsset<TextureSourceOptions>, options?: LoadImageBitmapOptions): Promise<ImageBitmap> {
     return this.#run('loadImageBitmap', [src, asset?.data?.alphaMode, options]) as Promise<ImageBitmap>;
   }
 
   async #initWorkers() {
-    if (this.#initialized) return;
+    if (this.#initialized)
+      return;
 
     this.#initialized = true;
   }
@@ -94,7 +97,8 @@ class WorkerManagerClass {
   #complete(data: LoadImageBitmapResult): void {
     if (data.error !== undefined) {
       this.#resolveHash[data.uuid].reject(data.error);
-    } else {
+    }
+    else {
       this.#resolveHash[data.uuid].resolve(data.data);
     }
 
@@ -116,7 +120,8 @@ class WorkerManagerClass {
 
   #next(): void {
     // nothing to do
-    if (!this.#queue.length) return;
+    if (!this.#queue.length)
+      return;
 
     const worker = this.#getWorker();
 

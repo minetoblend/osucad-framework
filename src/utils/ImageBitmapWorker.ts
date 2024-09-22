@@ -6,24 +6,31 @@ interface MessageData {
 
 interface LoadImageBitmapOptions {
   resize?: {
-    width: number,
-    height: number,
-    mode: 'fit' | 'fill' | 'stretch',
-  },
+    width: number;
+    height: number;
+    mode: 'fit' | 'fill' | 'stretch';
+  };
 }
 
 let canvas: OffscreenCanvas;
 
-async function loadImageBitmap(url: string, alphaMode?: string, options?: LoadImageBitmapOptions) {
-  const response = await fetch(url, {
-    cache: 'no-cache'
+async function getImageData(src: string | ArrayBuffer) {
+  if (src instanceof ArrayBuffer)
+    return new Blob([src]);
+
+  const response = await fetch(src, {
+    cache: 'no-cache',
   });
 
   if (!response.ok) {
-    throw new Error(`[WorkerManager.loadImageBitmap] Failed to fetch ${url}: ${response.status} ${response.statusText}`);
+    throw new Error(`[WorkerManager.loadImageBitmap] Failed to fetch ${src}: ${response.status} ${response.statusText}`);
   }
 
-  const imageBlob = await response.blob();
+  return await response.blob();
+}
+
+async function loadImageBitmap(src: string | ArrayBuffer, alphaMode?: string, options?: LoadImageBitmapOptions) {
+  const imageBlob = await getImageData(src)
 
   const imageBitmap = alphaMode === 'premultiplied-alpha'
     ? createImageBitmap(imageBlob, { premultiplyAlpha: 'none' })
@@ -40,7 +47,8 @@ async function loadImageBitmap(url: string, alphaMode?: string, options?: LoadIm
 
 async function resizeImageBitmap(imageBitmap: ImageBitmap, width: number, height: number, scaleMode: 'fit' | 'fill' | 'stretch') {
   const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('Canvas context is not available');
+  if (!ctx)
+    throw new Error('Canvas context is not available');
 
   ctx.imageSmoothingEnabled = false;
 
@@ -81,7 +89,6 @@ async function resizeImageBitmap(imageBitmap: ImageBitmap, width: number, height
 
   return canvas.transferToImageBitmap();
 }
-
 
 globalThis.onmessage = async (event: MessageEvent<MessageData>) => {
   if (!canvas) {

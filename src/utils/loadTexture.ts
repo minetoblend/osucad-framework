@@ -1,16 +1,18 @@
+import type { LoadImageBitmapOptions } from './WorkerManager.ts';
 import { ImageSource, path, Texture, type TextureSourceOptions } from 'pixi.js';
-import { LoadImageBitmapOptions, WorkerManager } from './WorkerManager.ts';
+import { WorkerManager } from './WorkerManager.ts';
 
-export async function loadTexture(url: string, options: TextureSourceOptions = {}, opts2: LoadImageBitmapOptions = {}): Promise<Texture | null> {
+export async function loadTexture(src: string | ArrayBuffer, options: TextureSourceOptions = {}, opts2: LoadImageBitmapOptions = {}): Promise<Texture | null> {
   try {
-    url = path.toAbsolute(url);
+    if (typeof  src === 'string')
+      src = path.toAbsolute(src);
 
-    const imageBitmap = await WorkerManager.loadImageBitmap(url, undefined, opts2);
+    const imageBitmap = await WorkerManager.loadImageBitmap(src, undefined, opts2);
 
     const source = new ImageSource({
       resource: imageBitmap,
       alphaMode: 'premultiply-alpha-on-upload',
-      label: url,
+      label: typeof src === 'string' ? src : undefined,
       resolution: 1,
       ...options,
     });
@@ -19,10 +21,11 @@ export async function loadTexture(url: string, options: TextureSourceOptions = {
 
     return new Texture({
       source,
-      label: url,
+      label: typeof src === 'string' ? src : undefined,
     });
-  } catch (error) {
-    console.error('Failed to load texture', url, error);
+  }
+  catch (error) {
+    console.error('Failed to load texture', src, error);
     return null;
   }
 }
